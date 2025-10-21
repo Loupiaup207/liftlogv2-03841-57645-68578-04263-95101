@@ -1,0 +1,14 @@
+workflows:
+  build-ios:
+    name: Build iOS (Expo / unsigned)
+    environment:
+      node: 20
+      cocoapods: default
+      xcode: latest
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+      - name: Build iOS
+        script: npx eas build --platform ios --profile release
+    artifacts:
+      - ios/*.app

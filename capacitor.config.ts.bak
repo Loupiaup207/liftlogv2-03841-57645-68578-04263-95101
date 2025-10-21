@@ -1,0 +1,13 @@
+import type { CapacitorConfig } from '@capacitor/cli';
+
+const config: CapacitorConfig = {
+  appId: 'app.lovable.94b57d4b23274186872cfab7af5f2cb3',
+  appName: 'Liftlog',
+  webDir: 'dist',
+  server: {
+    url: 'https://94b57d4b-2327-4186-872c-fab7af5f2cb3.lovableproject.com?forceHideBadge=true',
+    cleartext: true
+  }
+};
+
+export default config;

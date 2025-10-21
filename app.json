@@ -1,0 +1,8 @@
+{
+  "android": {
+    "package": "com.anonymous.vite_react_shadcn_ts"
+  },
+  "ios": {
+    "bundleIdentifier": "com.anonymous.vite-react-shadcn-ts"
+  }
+}
