@@ -1,19 +1,31 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Dumbbell, User, LogOut } from "lucide-react";
+import { Dumbbell, User, LogOut, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { WorkoutReminderSettings } from "@/components/WorkoutReminderSettings";
+import { usePWA } from "@/hooks/usePWA";
 
 const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isInstallable, isInstalled, installPWA } = usePWA();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     toast({ title: "Déconnexion réussie" });
     navigate("/auth");
+  };
+
+  const handleInstall = async () => {
+    const success = await installPWA();
+    if (success) {
+      toast({ 
+        title: "Installation réussie", 
+        description: "L'application est maintenant installée sur votre appareil" 
+      });
+    }
   };
 
   return (
@@ -37,6 +49,32 @@ const Profile = () => {
         </Card>
 
         <WorkoutReminderSettings />
+
+        {!isInstalled && isInstallable && (
+          <Card className="p-4 bg-card mb-3">
+            <h3 className="text-sm font-light tracking-wider mb-3">INSTALLATION</h3>
+            <p className="text-xs text-muted-foreground mb-3">
+              Installez l'application pour y accéder rapidement et profiter d'une expérience hors ligne optimale.
+            </p>
+            <Button 
+              variant="default" 
+              className="w-full h-10"
+              onClick={handleInstall}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Installer l'application
+            </Button>
+          </Card>
+        )}
+
+        {isInstalled && (
+          <Card className="p-4 bg-card mb-3">
+            <h3 className="text-sm font-light tracking-wider mb-3">APPLICATION INSTALLÉE</h3>
+            <p className="text-xs text-muted-foreground">
+              ✅ L'application est installée et fonctionne hors ligne
+            </p>
+          </Card>
+        )}
 
         <Card className="p-4 bg-card mb-3">
           <h3 className="text-sm font-light tracking-wider mb-3">PARAMÈTRES</h3>
