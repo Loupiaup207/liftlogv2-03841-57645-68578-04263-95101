@@ -16,14 +16,12 @@ export const setupNotifications = async () => {
       }
       
       return permStatus.display === "granted";
-    } catch (error) {
-      console.error("Error setting up native notifications:", error);
+    } catch {
       return false;
     }
   } else {
     // Web notifications (PWA)
     if (!("Notification" in window)) {
-      console.log("This browser does not support notifications");
       return false;
     }
 
@@ -84,8 +82,6 @@ export const scheduleWorkoutReminder = async (time: string) => {
           },
         ],
       });
-
-      console.log("Native notification scheduled for:", scheduledTime);
     } else {
       // Web notifications (PWA)
       // Clear any existing interval
@@ -119,11 +115,8 @@ export const scheduleWorkoutReminder = async (time: string) => {
 
       // Then check every minute
       notificationInterval = window.setInterval(checkAndNotify, 60000);
-
-      console.log("Web notification scheduled for:", time);
     }
   } catch (error) {
-    console.error("Error scheduling notification:", error);
     throw error;
   }
 };
@@ -141,9 +134,8 @@ export const cancelWorkoutReminder = async () => {
       }
       localStorage.removeItem("workoutReminderTime");
     }
-    console.log("Workout reminder cancelled");
-  } catch (error) {
-    console.error("Error cancelling notification:", error);
+  } catch {
+    // Ignore errors
   }
 };
 
@@ -152,8 +144,7 @@ export const initializeWebNotifications = () => {
   if (!isNative && typeof window !== "undefined") {
     const savedTime = localStorage.getItem("workoutReminderTime");
     if (savedTime) {
-      // Re-schedule the notification
-      scheduleWorkoutReminder(savedTime).catch(console.error);
+      scheduleWorkoutReminder(savedTime).catch(() => {});
     }
   }
 };

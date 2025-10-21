@@ -77,10 +77,7 @@ export const WeeklyProgramDialog = ({ open, onOpenChange, onSave }: WeeklyProgra
       .select("*")
       .eq("user_id", user.id);
 
-    if (error) {
-      console.error("Erreur chargement programme:", error);
-      return;
-    }
+    if (error) return;
 
     if (data && data.length > 0) {
       const loadedProgram: Record<number, string[]> = {};

@@ -48,8 +48,7 @@ export const useUserPreferences = () => {
         if (insertError) throw insertError;
         setPreferences(newPrefs);
       }
-    } catch (error) {
-      console.error("Error fetching preferences:", error);
+    } catch {
       toast({
         title: "Erreur",
         description: "Impossible de charger les préférences",
@@ -81,8 +80,7 @@ export const useUserPreferences = () => {
       });
 
       return data;
-    } catch (error) {
-      console.error("Error updating preferences:", error);
+    } catch {
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour les préférences",

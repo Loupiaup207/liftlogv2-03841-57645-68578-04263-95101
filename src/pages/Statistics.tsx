@@ -95,10 +95,7 @@ const Statistics = () => {
       .select("id, name, category, equipment")
       .order("name");
 
-    if (error) {
-      console.error("Error loading exercises:", error);
-      return;
-    }
+    if (error) return;
 
     setAllExercises(data || []);
   };
@@ -116,10 +113,7 @@ const Statistics = () => {
       `)
       .eq("user_id", user.id);
 
-    if (error) {
-      console.error("Error loading pinned exercises:", error);
-      return;
-    }
+    if (error) return;
 
     const formatted = data?.map((item: any) => ({
       id: item.id,
@@ -290,10 +284,7 @@ const Statistics = () => {
       .eq("exercise_id", exerciseId)
       .order("created_at", { ascending: true });
 
-    if (error || !sets) {
-      console.error("Error loading exercise performance:", error);
-      return;
-    }
+    if (error || !sets) return;
 
     const performance = sets.map((set: any) => ({
       date: new Date(set.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }),

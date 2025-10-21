@@ -62,10 +62,7 @@ const Library = () => {
       .eq("day_of_week", today)
       .maybeSingle();
 
-    if (error) {
-      console.error("Erreur chargement programme:", error);
-      return;
-    }
+    if (error) return;
 
     if (data) {
       // Parse muscles (comma-separated string)
@@ -93,10 +90,7 @@ const Library = () => {
       .select("exercise_id")
       .eq("user_id", user.id);
 
-    if (error) {
-      console.error("Error loading pinned exercises:", error);
-      return;
-    }
+    if (error) return;
 
     const ids = new Set(data?.map((p) => p.exercise_id) || []);
     setPinnedExerciseIds(ids);
