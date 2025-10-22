@@ -36,8 +36,32 @@ export default defineConfig(({ mode }) => ({
         ]
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2,jpg,jpeg,webp}"],
+        navigateFallback: "/index.html",
+        navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.destination === "document",
+            handler: "CacheFirst",
+            options: {
+              cacheName: "html-cache",
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 jours
+              }
+            }
+          },
+          {
+            urlPattern: ({ request }) => request.destination === "image",
+            handler: "CacheFirst",
+            options: {
+              cacheName: "image-cache",
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 jours
+              }
+            }
+          },
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: "CacheFirst",
@@ -54,17 +78,24 @@ export default defineConfig(({ mode }) => ({
           },
           {
             urlPattern: /^https:\/\/vlyxlberdjxudwrscnof\.supabase\.co\/.*/i,
-            handler: "NetworkFirst",
+            handler: "CacheFirst",
             options: {
               cacheName: "supabase-api-cache",
-              networkTimeoutSeconds: 10,
               expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 5
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 // 24 heures
               },
               cacheableResponse: {
                 statuses: [0, 200]
-              }
+              },
+              plugins: [
+                {
+                  cacheWillUpdate: async ({ response }) => {
+                    // Toujours mettre en cache pour une expérience fluide
+                    return response;
+                  }
+                }
+              ]
             }
           }
         ],
