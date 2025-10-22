@@ -80,10 +80,28 @@ export default {
             height: "0",
           },
         },
+        "slide-in-from-bottom": {
+          from: {
+            transform: "translateY(100%)",
+          },
+          to: {
+            transform: "translateY(0)",
+          },
+        },
+        "slide-out-to-bottom": {
+          from: {
+            transform: "translateY(0)",
+          },
+          to: {
+            transform: "translateY(100%)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "slide-in-from-bottom": "slide-in-from-bottom 0.3s ease-out",
+        "slide-out-to-bottom": "slide-out-to-bottom 0.3s ease-out",
       },
       padding: {
         safe: "env(safe-area-inset-top)",
