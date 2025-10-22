@@ -84,9 +84,15 @@ const Index = () => {
 
       {/* Content Area */}
       <main className="flex-1 overflow-y-auto">
-        {activeTab === "library" && <Library />}
-        {activeTab === "activity" && <Activity />}
-        {activeTab === "statistics" && <Statistics />}
+        <div className={activeTab === "library" ? "" : "hidden"}>
+          <Library />
+        </div>
+        <div className={activeTab === "activity" ? "" : "hidden"}>
+          <Activity />
+        </div>
+        <div className={activeTab === "statistics" ? "" : "hidden"}>
+          <Statistics />
+        </div>
       </main>
 
       {/* Logo + Logout */}

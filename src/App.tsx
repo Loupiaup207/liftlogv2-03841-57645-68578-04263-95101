@@ -13,7 +13,17 @@ import NotFound from "./pages/NotFound";
 import { initializeWebNotifications } from "./lib/notifications";
 
 const App = () => {
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 1000 * 60 * 30, // 30 minutes avant de considérer les données comme obsolètes
+        gcTime: 1000 * 60 * 60, // 1 heure avant de supprimer du cache
+        refetchOnWindowFocus: false, // Ne pas recharger au focus
+        refetchOnMount: false, // Ne pas recharger au montage si données en cache
+        refetchOnReconnect: false, // Ne pas recharger à la reconnexion
+      },
+    },
+  }));
 
   useEffect(() => {
     // Initialize web notifications on app load
