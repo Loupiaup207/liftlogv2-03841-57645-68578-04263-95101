@@ -47,9 +47,9 @@ const Index = () => {
   if (!user) return null;
 
   return (
-    <div className="flex min-h-screen flex-col bg-background pb-20 pt-12">
+    <div className="flex min-h-screen flex-col bg-background">
       {/* Titre Liftlog */}
-      <div className="px-4 pt-2 pb-3">
+      <div className="px-4 pt-2 pb-3" style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.5rem)" }}>
         <h1 className="text-2xl font-light tracking-widest text-foreground text-center">
           LIFTLOG
         </h1>
@@ -105,7 +105,10 @@ const Index = () => {
       </footer>
 
       {/* Fixed Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-[390px] mx-auto bg-card border-t border-border flex justify-around items-center py-3 px-4">
+      <nav 
+        className="fixed bottom-0 left-0 right-0 max-w-[390px] mx-auto bg-card border-t border-border flex justify-around items-center py-3 px-4"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
+      >
         <Button
           variant="ghost"
           size="icon"
