@@ -1,16 +1,34 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Dumbbell, User, LogOut, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { WorkoutReminderSettings } from "@/components/WorkoutReminderSettings";
 import { usePWA } from "@/hooks/usePWA";
+import { useState, useEffect } from "react";
 
 const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isInstallable, isInstalled, installPWA } = usePWA();
+  const [userEmail, setUserEmail] = useState<string>("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) {
+        setUserEmail(user.email);
+      }
+    };
+    getUser();
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -24,6 +42,33 @@ const Profile = () => {
       toast({ 
         title: "Installation réussie", 
         description: "L'application est maintenant installée sur votre appareil" 
+      });
+    }
+  };
+
+  const handleUpdateProfile = async () => {
+    try {
+      if (newEmail) {
+        const { error } = await supabase.auth.updateUser({ email: newEmail });
+        if (error) throw error;
+        toast({ title: "Email mis à jour avec succès" });
+        setUserEmail(newEmail);
+      }
+      
+      if (newPassword) {
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) throw error;
+        toast({ title: "Mot de passe mis à jour avec succès" });
+      }
+      
+      setNewEmail("");
+      setNewPassword("");
+      setIsDialogOpen(false);
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
       });
     }
   };
@@ -44,7 +89,7 @@ const Profile = () => {
             <div className="w-16 h-16 rounded-full bg-accent mx-auto mb-3 flex items-center justify-center">
               <User className="h-8 w-8 text-muted-foreground" />
             </div>
-            <h2 className="text-lg font-light">Utilisateur</h2>
+            <h2 className="text-sm font-light text-muted-foreground">{userEmail}</h2>
           </div>
         </Card>
 
@@ -79,15 +124,48 @@ const Profile = () => {
         <Card className="p-4 bg-card mb-3">
           <h3 className="text-sm font-light tracking-wider mb-3">PARAMÈTRES</h3>
           <div className="space-y-2">
-            <Button variant="ghost" className="w-full justify-start text-sm h-9">
-              Modifier le profil
-            </Button>
-            <Button variant="ghost" className="w-full justify-start text-sm h-9">
-              Préférences
-            </Button>
-            <Button variant="ghost" className="w-full justify-start text-sm h-9">
-              Notifications
-            </Button>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" className="w-full justify-start text-sm h-9">
+                  Modifier le profil
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Modifier le profil</DialogTitle>
+                  <DialogDescription>
+                    Modifiez votre email ou mot de passe
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Nouvel email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder={userEmail}
+                      value={newEmail}
+                      onChange={(e) => setNewEmail(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Nouveau mot de passe</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button onClick={handleUpdateProfile}>
+                    Enregistrer
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </Card>
 

@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Bell } from "lucide-react";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { setupNotifications, scheduleWorkoutReminder, cancelWorkoutReminder } from "@/lib/notifications";
@@ -90,6 +91,7 @@ export const WorkoutReminderSettings = () => {
       <div className="flex items-center gap-2 mb-3">
         <Bell className="h-5 w-5 text-muted-foreground" />
         <h3 className="text-sm font-light tracking-wider">RAPPEL D'ENTRAÎNEMENT</h3>
+        <Badge variant="secondary" className="text-[10px] px-2 py-0">BETA</Badge>
       </div>
       
       <div className="space-y-4">
