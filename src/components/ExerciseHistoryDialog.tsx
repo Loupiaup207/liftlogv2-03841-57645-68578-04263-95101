@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Minus, Check, X, Trash2, Edit2, ArrowLeft } from "lucide-react";
 import { supabase } from "@/lib/supabase-helpers";
 import { useToast } from "@/hooks/use-toast";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
@@ -44,6 +45,7 @@ export const ExerciseHistoryDialog = ({
   const [editedEquipment, setEditedEquipment] = useState("");
   const [editedNotes, setEditedNotes] = useState("");
   const { toast } = useToast();
+  const { preferences } = useUserPreferences();
 
   useEffect(() => {
     if (open) {
@@ -74,6 +76,11 @@ export const ExerciseHistoryDialog = ({
       setEditedCategory(data.category || "");
       setEditedEquipment(data.equipment || "");
       setEditedNotes(data.notes || "");
+
+      // Si c'est un exercice au poids de corps, initialiser le poids avec le poids de l'utilisateur
+      if (data.equipment === "bodyweight" && preferences?.current_bodyweight) {
+        setNewWeight(preferences.current_bodyweight);
+      }
     }
   };
 

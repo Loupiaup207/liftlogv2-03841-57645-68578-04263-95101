@@ -8,11 +8,23 @@ interface WorkoutSetInputProps {
   onSave: (reps: number, weight: number) => void;
   onCancel: () => void;
   previousWeight?: number;
+  isBodyweight?: boolean;
+  userBodyweight?: number;
 }
 
-export const WorkoutSetInput = ({ setNumber, onSave, onCancel, previousWeight }: WorkoutSetInputProps) => {
+export const WorkoutSetInput = ({ 
+  setNumber, 
+  onSave, 
+  onCancel, 
+  previousWeight, 
+  isBodyweight = false, 
+  userBodyweight 
+}: WorkoutSetInputProps) => {
   const [reps, setReps] = useState<string>("");
-  const [weight, setWeight] = useState<string>(previousWeight?.toString() || "");
+  const defaultWeight = isBodyweight && userBodyweight 
+    ? userBodyweight.toString() 
+    : previousWeight?.toString() || "";
+  const [weight, setWeight] = useState<string>(defaultWeight);
 
   const handleSave = () => {
     const repsNum = parseInt(reps);
