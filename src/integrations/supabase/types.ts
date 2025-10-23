@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      bodyweight_logs: {
+        Row: {
+          created_at: string
+          id: string
+          logged_at: string
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          logged_at?: string
+          user_id: string
+          weight: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          logged_at?: string
+          user_id?: string
+          weight?: number
+        }
+        Relationships: []
+      }
       exercise_goals: {
         Row: {
           created_at: string
@@ -260,6 +284,7 @@ export type Database = {
       user_preferences: {
         Row: {
           created_at: string
+          current_bodyweight: number | null
           id: string
           reminder_enabled: boolean
           updated_at: string
@@ -268,6 +293,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          current_bodyweight?: number | null
           id?: string
           reminder_enabled?: boolean
           updated_at?: string
@@ -276,6 +302,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          current_bodyweight?: number | null
           id?: string
           reminder_enabled?: boolean
           updated_at?: string

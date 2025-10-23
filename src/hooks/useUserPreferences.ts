@@ -7,6 +7,7 @@ export interface UserPreferences {
   user_id?: string;
   workout_reminder_time: string | null;
   reminder_enabled: boolean;
+  current_bodyweight: number | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -41,6 +42,7 @@ export const useUserPreferences = () => {
             user_id: user.id,
             reminder_enabled: false,
             workout_reminder_time: null,
+            current_bodyweight: null,
           })
           .select()
           .single();
