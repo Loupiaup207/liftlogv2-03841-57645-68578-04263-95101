@@ -13,6 +13,8 @@ import { usePWA } from "@/hooks/usePWA";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
+import { useQueryClient } from "@tanstack/react-query";
+import { fetchExercises, fetchPinnedExercises } from "@/hooks/useExercises";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -25,6 +27,7 @@ const Profile = () => {
   const [newPassword, setNewPassword] = useState("");
   const [bodyweight, setBodyweight] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const getUser = async () => {
@@ -41,6 +44,11 @@ const Profile = () => {
       setBodyweight(preferences.current_bodyweight.toString());
     }
   }, [preferences]);
+
+  useEffect(() => {
+    queryClient.prefetchQuery({ queryKey: ["exercises"], queryFn: fetchExercises });
+    queryClient.prefetchQuery({ queryKey: ["pinnedExercises"], queryFn: fetchPinnedExercises });
+  }, [queryClient]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
