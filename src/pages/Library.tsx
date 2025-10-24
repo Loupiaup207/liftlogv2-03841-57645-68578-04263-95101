@@ -12,25 +12,16 @@ import { MuscleSwapDialog } from "@/components/MuscleSwapDialog";
 import { Plus, Search, RefreshCw, Settings } from "lucide-react";
 import { supabase } from "@/lib/supabase-helpers";
 import { useToast } from "@/hooks/use-toast";
-
-interface Exercise {
-  id: string;
-  name: string;
-  category: string;
-  equipment: string | null;
-  notes: string | null;
-  is_custom: boolean;
-}
+import { useExercises } from "@/hooks/useExercises";
 
 const categories = ["chest", "back", "legs", "shoulders", "arms", "core"];
 const equipments = ["barbell", "dumbbell", "machine", "bodyweight", "cable"];
 
 const Library = () => {
-  const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [pinnedExerciseIds, setPinnedExerciseIds] = useState<Set<string>>(new Set());
+  const { exercises, pinnedExerciseIds, togglePin } = useExercises();
   const [search, setSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+  const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [isProgramDialogOpen, setIsProgramDialogOpen] = useState(false);
   const [isSwapDialogOpen, setIsSwapDialogOpen] = useState(false);
   const [todayMuscles, setTodayMuscles] = useState<string[]>([]);
@@ -44,9 +35,7 @@ const Library = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    loadExercises();
     loadTodayProgram();
-    loadPinnedExercises();
   }, []);
 
   const loadTodayProgram = async () => {
@@ -81,82 +70,6 @@ const Library = () => {
     }
   };
 
-  const loadPinnedExercises = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data, error } = await supabase
-      .from("pinned_exercises")
-      .select("exercise_id")
-      .eq("user_id", user.id);
-
-    if (error) return;
-
-    const ids = new Set(data?.map((p) => p.exercise_id) || []);
-    setPinnedExerciseIds(ids);
-  };
-
-  const loadExercises = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const [hiddenRes, exRes] = await Promise.all([
-      supabase
-        .from("user_hidden_exercises")
-        .select("exercise_id")
-        .eq("user_id", user.id),
-      supabase
-        .from("exercises")
-        .select("*")
-        .order("name"),
-    ]);
-
-    if (hiddenRes.error || exRes.error) {
-      toast({ title: "Erreur", description: (hiddenRes.error || exRes.error)?.message, variant: "destructive" });
-      return;
-    }
-
-    const hiddenIds = new Set((hiddenRes.data || []).map((h: { exercise_id: string }) => h.exercise_id));
-    const filtered = (exRes.data || []).filter((ex) => !hiddenIds.has(ex.id));
-    setExercises(filtered);
-  };
-
-  const togglePin = async (exerciseId: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const isPinned = pinnedExerciseIds.has(exerciseId);
-
-    if (isPinned) {
-      // Unpin
-      const { error } = await supabase
-        .from("pinned_exercises")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("exercise_id", exerciseId);
-
-      if (error) {
-        toast({ title: "Erreur", description: error.message, variant: "destructive" });
-        return;
-      }
-
-      toast({ title: "Exercice désépinglé" });
-    } else {
-      // Pin
-      const { error } = await supabase
-        .from("pinned_exercises")
-        .insert([{ user_id: user.id, exercise_id: exerciseId }]);
-
-      if (error) {
-        toast({ title: "Erreur", description: error.message, variant: "destructive" });
-        return;
-      }
-
-      toast({ title: "Exercice épinglé!" });
-    }
-
-    loadPinnedExercises();
-  };
 
   const handleSwapMuscle = () => {
     loadTodayProgram(); // Recharger pour avoir la version à jour
@@ -197,7 +110,7 @@ const Library = () => {
     toast({ title: "Exercice créé!" });
     setIsDialogOpen(false);
     setNewExercise({ name: "", category: "chest", equipment: "barbell", notes: "" });
-    loadExercises();
+    // React Query will auto-refresh
   };
 
   const deleteExercise = async (exerciseId: string, isCustom: boolean) => {
@@ -242,7 +155,7 @@ const Library = () => {
     }
 
     toast({ title: "Exercice et historique supprimés!" });
-    loadExercises();
+    // React Query will auto-refresh
   };
 
   const filteredExercises = exercises.filter((ex) => {
@@ -361,7 +274,7 @@ const Library = () => {
             notes={exercise.notes || undefined}
             onClick={() => setSelectedExercise(exercise)}
             onDelete={() => deleteExercise(exercise.id, exercise.is_custom)}
-            onPin={() => togglePin(exercise.id)}
+            onPin={() => togglePin({ exerciseId: exercise.id, isPinned: pinnedExerciseIds.has(exercise.id) })}
             isPinned={pinnedExerciseIds.has(exercise.id)}
             isCustom={exercise.is_custom}
           />
@@ -382,7 +295,6 @@ const Library = () => {
         onOpenChange={setIsProgramDialogOpen}
         onSave={() => {
           loadTodayProgram();
-          loadExercises();
         }}
       />
 
