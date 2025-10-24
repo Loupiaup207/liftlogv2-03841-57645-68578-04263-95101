@@ -7,21 +7,36 @@ import Library from "./Library";
 import Activity from "./Activity";
 import Statistics from "./Statistics";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
 
 type Tab = "library" | "activity" | "statistics";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<Tab>("library");
-  const { user, loading } = useAuth();
+  const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!loading && !user) {
-      navigate("/auth");
-    }
-  }, [loading, user, navigate]);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        navigate("/auth");
+      } else {
+        setUser(session.user);
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        navigate("/auth");
+      } else {
+        setUser(session.user);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
 
   const handleLogout = async () => {
@@ -69,9 +84,15 @@ const Index = () => {
 
       {/* Content Area */}
       <main className="flex-1 overflow-y-auto">
-        {activeTab === "library" && <Library />}
-        {activeTab === "activity" && <Activity />}
-        {activeTab === "statistics" && <Statistics />}
+        <div className={activeTab === "library" ? "" : "hidden"}>
+          <Library />
+        </div>
+        <div className={activeTab === "activity" ? "" : "hidden"}>
+          <Activity />
+        </div>
+        <div className={activeTab === "statistics" ? "" : "hidden"}>
+          <Statistics />
+        </div>
       </main>
 
       {/* Logo + Logout */}
