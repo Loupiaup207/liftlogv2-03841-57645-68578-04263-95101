@@ -510,19 +510,28 @@ const Statistics = () => {
 
       {/* Dialog pour les performances détaillées */}
       <Dialog open={isPerformanceDialogOpen} onOpenChange={setIsPerformanceDialogOpen}>
-        <DialogContent className="fixed inset-0 bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden flex flex-col relative px-4">
-          {/* Header avec bouton retour et titre en dessous de la barre d'état */}
-          <DialogHeader className="pt-safe-or-12 pb-4">
-            <div className="flex items-center gap-2">
+        <DialogContent className="bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden left-0 top-0 translate-x-0 translate-y-0 flex flex-col">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsPerformanceDialogOpen(false)}
+                  className="h-8 w-8 p-0"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <DialogTitle>Performances - {selectedPinnedExercise?.exercise_name}</DialogTitle>
+              </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsPerformanceDialogOpen(false)}
                 className="h-8 w-8 p-0"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <X className="h-4 w-4" />
               </Button>
-              <DialogTitle>Performances - {selectedPinnedExercise?.exercise_name}</DialogTitle>
             </div>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto pr-2">
