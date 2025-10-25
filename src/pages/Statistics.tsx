@@ -511,18 +511,8 @@ const Statistics = () => {
       {/* Dialog pour les performances détaillées */}
       <Dialog open={isPerformanceDialogOpen} onOpenChange={setIsPerformanceDialogOpen}>
         <DialogContent className="bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden left-0 top-0 translate-x-0 translate-y-0 flex flex-col relative">
-          {/* Bouton X en haut à droite au niveau de la barre d'état */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsPerformanceDialogOpen(false)}
-            className="absolute right-4 top-safe-or-4 h-8 w-8 p-0 z-50"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-          
           {/* Header avec bouton retour et titre en dessous de la barre d'état */}
-          <DialogHeader className="pt-safe-or-12 pb-4 pr-12">
+          <DialogHeader className="pt-safe-or-12 pb-4">
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
