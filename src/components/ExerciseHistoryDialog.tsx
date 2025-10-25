@@ -264,7 +264,7 @@ export const ExerciseHistoryDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="fixed inset-0 bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden relative">
+      <DialogContent className="fixed inset-0 bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden relative px-4">
         {/* Header avec bouton retour et titre en dessous de la barre d'état */}
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 pt-safe-or-12 pb-4">
           <div className="flex items-center gap-2">
