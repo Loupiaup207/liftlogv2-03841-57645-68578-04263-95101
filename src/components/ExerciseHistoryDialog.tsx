@@ -264,27 +264,28 @@ export const ExerciseHistoryDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden left-0 top-0 translate-x-0 translate-y-0">
-        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pt-safe-or-6 pb-4">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => onOpenChange(false)}
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <DialogTitle className="text-base sm:text-lg">{editedName}</DialogTitle>
-          </div>
+      <DialogContent className="bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden left-0 top-0 translate-x-0 translate-y-0 relative">
+        {/* Bouton Edit en haut à droite au niveau de la barre d'état */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute right-4 top-safe-or-4 h-8 w-8 z-50"
+          onClick={() => setIsEditing(!isEditing)}
+        >
+          <Edit2 className="h-4 w-4" />
+        </Button>
+        
+        {/* Header avec bouton retour et titre en dessous de la barre d'état */}
+        <DialogHeader className="flex flex-row items-center gap-2 space-y-0 pt-safe-or-12 pb-4 pr-12">
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={() => setIsEditing(!isEditing)}
+            onClick={() => onOpenChange(false)}
           >
-            <Edit2 className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4" />
           </Button>
+          <DialogTitle className="text-base sm:text-lg">{editedName}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-3 mt-2">
