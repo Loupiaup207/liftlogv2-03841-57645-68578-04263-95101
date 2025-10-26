@@ -337,7 +337,7 @@ const Statistics = () => {
         ) : (
           <>
             <Card className="p-4">
-              <ResponsiveContainer width="100%" height={200}>
+              <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
                   <Pie
                     data={muscleStats}
@@ -345,8 +345,9 @@ const Statistics = () => {
                     nameKey="category"
                     cx="50%"
                     cy="50%"
-                    outerRadius={80}
-                    label={(entry) => `${getMuscleLabel(entry.category)} ${entry.percentage}%`}
+                    outerRadius={60}
+                    label={(entry) => `${entry.percentage}%`}
+                    labelLine={false}
                   >
                     {muscleStats.map((entry, index) => (
                       <Cell
@@ -355,7 +356,9 @@ const Statistics = () => {
                       />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip 
+                    formatter={(value, name) => [`${value} séances`, getMuscleLabel(name as string)]}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </Card>
