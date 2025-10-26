@@ -35,6 +35,7 @@ const Library = () => {
   const [isSwapDialogOpen, setIsSwapDialogOpen] = useState(false);
   const [todayMuscles, setTodayMuscles] = useState<string[]>([]);
   const [todaySecondaryExercises, setTodaySecondaryExercises] = useState<string[]>([]);
+  const [userBodyweight, setUserBodyweight] = useState<number | null>(null);
   const [newExercise, setNewExercise] = useState({
     name: "",
     category: "chest",
@@ -47,7 +48,23 @@ const Library = () => {
     loadExercises();
     loadTodayProgram();
     loadPinnedExercises();
+    loadUserBodyweight();
   }, []);
+
+  const loadUserBodyweight = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("user_preferences")
+      .select("current_bodyweight")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (data?.current_bodyweight) {
+      setUserBodyweight(data.current_bodyweight);
+    }
+  };
 
   const loadTodayProgram = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -359,7 +376,18 @@ const Library = () => {
             category={exercise.category}
             equipment={exercise.equipment || undefined}
             notes={exercise.notes || undefined}
-            onClick={() => setSelectedExercise(exercise)}
+            onClick={() => {
+              // Vérifier si c'est un exercice au poids du corps et si le poids est défini
+              if (exercise.equipment === "bodyweight" && !userBodyweight) {
+                toast({
+                  title: "Poids corporel requis",
+                  description: "Veuillez d'abord renseigner votre poids dans les paramètres avant de commencer un exercice au poids du corps.",
+                  variant: "destructive",
+                });
+                return;
+              }
+              setSelectedExercise(exercise);
+            }}
             onDelete={() => deleteExercise(exercise.id, exercise.is_custom)}
             onPin={() => togglePin(exercise.id)}
             isPinned={pinnedExerciseIds.has(exercise.id)}

@@ -44,6 +44,7 @@ export const ExerciseHistoryDialog = ({
   const [editedCategory, setEditedCategory] = useState("");
   const [editedEquipment, setEditedEquipment] = useState("");
   const [editedNotes, setEditedNotes] = useState("");
+  const [isBodyweightExercise, setIsBodyweightExercise] = useState(false);
   const { toast } = useToast();
   const { preferences } = useUserPreferences();
 
@@ -77,8 +78,11 @@ export const ExerciseHistoryDialog = ({
       setEditedEquipment(data.equipment || "");
       setEditedNotes(data.notes || "");
 
+      const isBodyweight = data.equipment === "bodyweight";
+      setIsBodyweightExercise(isBodyweight);
+
       // Si c'est un exercice au poids de corps, initialiser le poids avec le poids de l'utilisateur
-      if (data.equipment === "bodyweight" && preferences?.current_bodyweight) {
+      if (isBodyweight && preferences?.current_bodyweight) {
         setNewWeight(preferences.current_bodyweight);
       }
     }
@@ -394,6 +398,7 @@ export const ExerciseHistoryDialog = ({
                   size="icon"
                   className="h-8 w-8"
                   onClick={() => setNewWeight(Math.max(0, newWeight - 2.5))}
+                  disabled={isBodyweightExercise && !!preferences?.current_bodyweight}
                 >
                   <Minus className="h-3 w-3" />
                 </Button>
@@ -403,12 +408,15 @@ export const ExerciseHistoryDialog = ({
                   onChange={(e) => setNewWeight(parseFloat(e.target.value) || 0)}
                   className="w-14 h-8 text-center text-sm"
                   step="2.5"
+                  disabled={isBodyweightExercise && !!preferences?.current_bodyweight}
+                  readOnly={isBodyweightExercise && !!preferences?.current_bodyweight}
                 />
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
                   onClick={() => setNewWeight(newWeight + 2.5)}
+                  disabled={isBodyweightExercise && !!preferences?.current_bodyweight}
                 >
                   <Plus className="h-3 w-3" />
                 </Button>
