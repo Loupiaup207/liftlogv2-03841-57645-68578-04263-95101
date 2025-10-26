@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabase-helpers";
 import { useToast } from "@/hooks/use-toast";
-import { Pin, Target, TrendingUp, Dumbbell, Search, Trash2, ArrowLeft, X } from "lucide-react";
+import { Pin, Target, TrendingUp, Dumbbell, Search, Trash2, ArrowLeft } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Badge } from "@/components/ui/badge";
 
@@ -511,27 +511,17 @@ const Statistics = () => {
       {/* Dialog pour les performances détaillées */}
       <Dialog open={isPerformanceDialogOpen} onOpenChange={setIsPerformanceDialogOpen}>
         <DialogContent className="bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden left-0 top-0 translate-x-0 translate-y-0 flex flex-col">
-          <DialogHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsPerformanceDialogOpen(false)}
-                  className="h-8 w-8 p-0"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <DialogTitle>Performances - {selectedPinnedExercise?.exercise_name}</DialogTitle>
-              </div>
+          <DialogHeader className="pt-[calc(env(safe-area-inset-top)+8px)]">
+            <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsPerformanceDialogOpen(false)}
                 className="h-8 w-8 p-0"
               >
-                <X className="h-4 w-4" />
+                <ArrowLeft className="h-4 w-4" />
               </Button>
+              <DialogTitle>Performances - {selectedPinnedExercise?.exercise_name}</DialogTitle>
             </div>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto pr-2">
