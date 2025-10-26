@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabase-helpers";
 import { useToast } from "@/hooks/use-toast";
 import { Pin, Target, TrendingUp, Dumbbell, Search, Trash2, ArrowLeft } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Badge } from "@/components/ui/badge";
 
 interface PinnedExercise {
@@ -337,17 +337,16 @@ const Statistics = () => {
         ) : (
           <>
             <Card className="p-4">
-              <ResponsiveContainer width="100%" height={320}>
-                <PieChart margin={{ top: 32, bottom: 40, left: 40, right: 40 }}>
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
                   <Pie
                     data={muscleStats}
                     dataKey="count"
                     nameKey="category"
                     cx="50%"
                     cy="50%"
-                    outerRadius={70}
+                    outerRadius={80}
                     label={(entry) => `${getMuscleLabel(entry.category)} ${entry.percentage}%`}
-                    labelLine
                   >
                     {muscleStats.map((entry, index) => (
                       <Cell
@@ -356,10 +355,7 @@ const Statistics = () => {
                       />
                     ))}
                   </Pie>
-                  <Tooltip 
-                    formatter={(value, name) => [`${value} séances`, getMuscleLabel(name as string)]}
-                  />
-                  <Legend verticalAlign="bottom" align="center" iconType="circle" />
+                  <Tooltip />
                 </PieChart>
               </ResponsiveContainer>
             </Card>
