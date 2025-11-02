@@ -12,6 +12,7 @@ import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useCachedWorkoutSets, useCachedExerciseDetails, useAddWorkoutSet, useDeleteWorkoutSet } from "@/hooks/useCache";
 
 interface ExerciseHistoryDialogProps {
   open: boolean;
@@ -35,138 +36,69 @@ export const ExerciseHistoryDialog = ({
   exerciseId,
   exerciseName,
 }: ExerciseHistoryDialogProps) => {
-  const [sets, setSets] = useState<WorkoutSet[]>([]);
   const [newReps, setNewReps] = useState(10);
   const [newWeight, setNewWeight] = useState(20);
-  const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(exerciseName);
   const [editedCategory, setEditedCategory] = useState("");
   const [editedEquipment, setEditedEquipment] = useState("");
   const [editedNotes, setEditedNotes] = useState("");
-  const [isBodyweightExercise, setIsBodyweightExercise] = useState(false);
   const { toast } = useToast();
   const { preferences } = useUserPreferences();
 
+  // Utiliser les hooks de cache - les données sont instantanées depuis le cache
+  const { data: sets = [], isLoading: setsLoading } = useCachedWorkoutSets(exerciseId, open);
+  const { data: exerciseDetails, isLoading: detailsLoading } = useCachedExerciseDetails(exerciseId, open);
+  const addSetMutation = useAddWorkoutSet();
+  const deleteSetMutation = useDeleteWorkoutSet();
+
+  const isBodyweightExercise = exerciseDetails?.equipment === "bodyweight";
+
   useEffect(() => {
-    if (open) {
-      loadSets();
-      loadExerciseDetails();
-      // Récupérer le dernier poids utilisé
-      const lastWeight = localStorage.getItem(`exercise_${exerciseId}_weight`);
-      if (lastWeight) {
-        setNewWeight(parseFloat(lastWeight));
-      }
-    }
-  }, [open, exerciseId]);
+    if (open && exerciseDetails) {
+      setEditedName(exerciseDetails.name);
+      setEditedCategory(exerciseDetails.category || "");
+      setEditedEquipment(exerciseDetails.equipment || "");
+      setEditedNotes(exerciseDetails.notes || "");
 
-  const loadExerciseDetails = async () => {
-    const { data, error } = await supabase
-      .from("exercises")
-      .select("name, category, equipment, notes")
-      .eq("id", exerciseId)
-      .single();
-
-    if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
-      return;
-    }
-
-    if (data) {
-      setEditedName(data.name);
-      setEditedCategory(data.category || "");
-      setEditedEquipment(data.equipment || "");
-      setEditedNotes(data.notes || "");
-
-      const isBodyweight = data.equipment === "bodyweight";
-      setIsBodyweightExercise(isBodyweight);
-
-      // Si c'est un exercice au poids de corps, initialiser le poids avec le poids de l'utilisateur
-      if (isBodyweight && preferences?.current_bodyweight) {
+      if (isBodyweightExercise && preferences?.current_bodyweight) {
         setNewWeight(preferences.current_bodyweight);
       }
     }
-  };
+  }, [open, exerciseDetails, isBodyweightExercise, preferences]);
 
-  const loadSets = async () => {
-    const { data, error } = await supabase
-      .from("workout_sets")
-      .select("*")
-      .eq("exercise_id", exerciseId)
-      .order("created_at", { ascending: false })
-      .limit(20);
-
-    if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
-      return;
+  useEffect(() => {
+    if (open) {
+      const lastWeight = localStorage.getItem(`exercise_${exerciseId}_weight`);
+      if (lastWeight && !isBodyweightExercise) {
+        setNewWeight(parseFloat(lastWeight));
+      }
     }
-
-    setSets(data || []);
-  };
+  }, [open, exerciseId, isBodyweightExercise]);
 
   const addSet = async () => {
-    setIsAdding(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setIsAdding(false);
-      return;
-    }
-
-    // Create a quick workout for this set
-    const { data: workout, error: workoutError } = await supabase
-      .from("workouts")
-      .insert([{
-        user_id: user.id,
-        name: exerciseName,
-        started_at: new Date().toISOString(),
-        completed_at: new Date().toISOString(),
-      }])
-      .select()
-      .single();
-
-    if (workoutError) {
-      toast({ title: "Erreur", description: workoutError.message, variant: "destructive" });
-      setIsAdding(false);
-      return;
-    }
-
-    const nextSetNumber = Math.max(0, ...sets.map(s => s.set_number)) + 1;
-
-    const { error } = await supabase.from("workout_sets").insert([{
-      workout_id: workout.id,
-      exercise_id: exerciseId,
-      reps: newReps,
-      weight: newWeight,
-      set_number: nextSetNumber,
-    }]);
-
-    if (error) {
+    try {
+      await addSetMutation.mutateAsync({
+        exerciseId,
+        exerciseName,
+        reps: newReps,
+        weight: newWeight,
+      });
+      
+      localStorage.setItem(`exercise_${exerciseId}_weight`, newWeight.toString());
+      toast({ title: "Série ajoutée!" });
+    } catch (error: any) {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
-      setIsAdding(false);
-      return;
     }
-
-    // Sauvegarder le poids pour la prochaine fois
-    localStorage.setItem(`exercise_${exerciseId}_weight`, newWeight.toString());
-
-    toast({ title: "Série ajoutée!" });
-    setIsAdding(false);
-    loadSets();
   };
 
   const deleteSet = async (setId: string) => {
-    const { error } = await supabase
-      .from("workout_sets")
-      .delete()
-      .eq("id", setId);
-
-    if (error) {
+    try {
+      await deleteSetMutation.mutateAsync({ setId, exerciseId });
+      toast({ title: "Série supprimée" });
+    } catch (error: any) {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
-      return;
     }
-
-    toast({ title: "Série supprimée" });
-    loadSets();
   };
 
   const groupSetsByDate = () => {
@@ -350,10 +282,15 @@ export const ExerciseHistoryDialog = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => {
-                    setIsEditing(false);
-                    loadExerciseDetails();
-                  }}
+                onClick={() => {
+                  setIsEditing(false);
+                  if (exerciseDetails) {
+                    setEditedName(exerciseDetails.name);
+                    setEditedCategory(exerciseDetails.category || "");
+                    setEditedEquipment(exerciseDetails.equipment || "");
+                    setEditedNotes(exerciseDetails.notes || "");
+                  }
+                }}
                   className="flex-1"
                 >
                   <X className="h-4 w-4 mr-1" />
@@ -430,7 +367,7 @@ export const ExerciseHistoryDialog = ({
                 size="sm"
                 onClick={addSet}
                 className="h-8 gap-1"
-                disabled={isAdding}
+                disabled={addSetMutation.isPending}
               >
                 <Check className="h-3 w-3 text-green-400" />
                 <span className="text-xs">Valider</span>

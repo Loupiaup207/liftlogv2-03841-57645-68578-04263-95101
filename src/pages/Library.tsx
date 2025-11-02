@@ -12,6 +12,8 @@ import { MuscleSwapDialog } from "@/components/MuscleSwapDialog";
 import { Plus, Search, RefreshCw, Settings } from "lucide-react";
 import { supabase } from "@/lib/supabase-helpers";
 import { useToast } from "@/hooks/use-toast";
+import { useCachedExercises, useCachedPinnedExercises, useCachedTodayProgram, useTogglePin } from "@/hooks/useCache";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Exercise {
   id: string;
@@ -26,15 +28,11 @@ const categories = ["chest", "back", "legs", "shoulders", "arms", "core"];
 const equipments = ["barbell", "dumbbell", "machine", "bodyweight", "cable"];
 
 const Library = () => {
-  const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [pinnedExerciseIds, setPinnedExerciseIds] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [isProgramDialogOpen, setIsProgramDialogOpen] = useState(false);
   const [isSwapDialogOpen, setIsSwapDialogOpen] = useState(false);
-  const [todayMuscles, setTodayMuscles] = useState<string[]>([]);
-  const [todaySecondaryExercises, setTodaySecondaryExercises] = useState<string[]>([]);
   const [userBodyweight, setUserBodyweight] = useState<number | null>(null);
   const [newExercise, setNewExercise] = useState({
     name: "",
@@ -43,13 +41,24 @@ const Library = () => {
     notes: "",
   });
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Utiliser les hooks de cache - données instantanées depuis le cache
+  const { data: exercises = [], isLoading: exercisesLoading } = useCachedExercises();
+  const { data: pinnedExerciseIds = new Set<string>(), isLoading: pinnedLoading } = useCachedPinnedExercises();
+  const { data: todayProgram = { muscles: [], secondaryExercises: [] } } = useCachedTodayProgram();
+  const togglePinMutation = useTogglePin();
+
+  const todayMuscles = todayProgram.muscles;
+  const todaySecondaryExercises = todayProgram.secondaryExercises;
 
   useEffect(() => {
-    loadExercises();
-    loadTodayProgram();
-    loadPinnedExercises();
     loadUserBodyweight();
-  }, []);
+    // Vérifier si c'est la première utilisation
+    if (!todayProgram.muscles.length && !todayProgram.secondaryExercises.length) {
+      setIsProgramDialogOpen(true);
+    }
+  }, [todayProgram]);
 
   const loadUserBodyweight = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -66,117 +75,19 @@ const Library = () => {
     }
   };
 
-  const loadTodayProgram = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const today = new Date().getDay();
-    
-    const { data, error } = await supabase
-      .from("user_weekly_programs")
-      .select("*")
-      .eq("user_id", user.id)
-      .eq("day_of_week", today)
-      .maybeSingle();
-
-    if (error) return;
-
-    if (data) {
-      // Parse muscles (comma-separated string)
-      const muscles = data.muscle_group.split(',').filter(Boolean);
-      
-      // Parse secondary exercises (comma-separated UUIDs)
-      const secondaryExercises = data.secondary_muscle 
-        ? data.secondary_muscle.split(',').filter(Boolean)
-        : [];
-      
-      setTodayMuscles(muscles.filter(m => m !== "rest"));
-      setTodaySecondaryExercises(secondaryExercises);
-    } else {
-      // Première utilisation, ouvrir le dialogue de configuration
-      setIsProgramDialogOpen(true);
-    }
-  };
-
-  const loadPinnedExercises = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data, error } = await supabase
-      .from("pinned_exercises")
-      .select("exercise_id")
-      .eq("user_id", user.id);
-
-    if (error) return;
-
-    const ids = new Set(data?.map((p) => p.exercise_id) || []);
-    setPinnedExerciseIds(ids);
-  };
-
-  const loadExercises = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const [hiddenRes, exRes] = await Promise.all([
-      supabase
-        .from("user_hidden_exercises")
-        .select("exercise_id")
-        .eq("user_id", user.id),
-      supabase
-        .from("exercises")
-        .select("*")
-        .order("name"),
-    ]);
-
-    if (hiddenRes.error || exRes.error) {
-      toast({ title: "Erreur", description: (hiddenRes.error || exRes.error)?.message, variant: "destructive" });
-      return;
-    }
-
-    const hiddenIds = new Set((hiddenRes.data || []).map((h: { exercise_id: string }) => h.exercise_id));
-    const filtered = (exRes.data || []).filter((ex) => !hiddenIds.has(ex.id));
-    setExercises(filtered);
-  };
-
   const togglePin = async (exerciseId: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
     const isPinned = pinnedExerciseIds.has(exerciseId);
-
-    if (isPinned) {
-      // Unpin
-      const { error } = await supabase
-        .from("pinned_exercises")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("exercise_id", exerciseId);
-
-      if (error) {
-        toast({ title: "Erreur", description: error.message, variant: "destructive" });
-        return;
-      }
-
-      toast({ title: "Exercice désépinglé" });
-    } else {
-      // Pin
-      const { error } = await supabase
-        .from("pinned_exercises")
-        .insert([{ user_id: user.id, exercise_id: exerciseId }]);
-
-      if (error) {
-        toast({ title: "Erreur", description: error.message, variant: "destructive" });
-        return;
-      }
-
-      toast({ title: "Exercice épinglé!" });
+    
+    try {
+      await togglePinMutation.mutateAsync({ exerciseId, isPinned });
+      toast({ title: isPinned ? "Exercice désépinglé" : "Exercice épinglé!" });
+    } catch (error: any) {
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
     }
-
-    loadPinnedExercises();
   };
 
   const handleSwapMuscle = () => {
-    loadTodayProgram(); // Recharger pour avoir la version à jour
+    queryClient.invalidateQueries({ queryKey: ["today-program"] });
   };
 
   const getMuscleLabel = (muscle: string) => {
@@ -214,7 +125,7 @@ const Library = () => {
     toast({ title: "Exercice créé!" });
     setIsDialogOpen(false);
     setNewExercise({ name: "", category: "chest", equipment: "barbell", notes: "" });
-    loadExercises();
+    queryClient.invalidateQueries({ queryKey: ["exercises"] });
   };
 
   const deleteExercise = async (exerciseId: string, isCustom: boolean) => {
@@ -259,7 +170,7 @@ const Library = () => {
     }
 
     toast({ title: "Exercice et historique supprimés!" });
-    loadExercises();
+    queryClient.invalidateQueries({ queryKey: ["exercises"] });
   };
 
   const filteredExercises = exercises.filter((ex) => {
@@ -409,8 +320,8 @@ const Library = () => {
         open={isProgramDialogOpen}
         onOpenChange={setIsProgramDialogOpen}
         onSave={() => {
-          loadTodayProgram();
-          loadExercises();
+          queryClient.invalidateQueries({ queryKey: ["today-program"] });
+          queryClient.invalidateQueries({ queryKey: ["exercises"] });
         }}
       />
 
