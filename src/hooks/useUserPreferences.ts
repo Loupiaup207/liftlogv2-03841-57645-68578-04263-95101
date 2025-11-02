@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useCachedUserPreferences } from "./useCache";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 export interface UserPreferences {
   id?: string;
@@ -13,58 +14,20 @@ export interface UserPreferences {
 }
 
 export const useUserPreferences = () => {
-  const [preferences, setPreferences] = useState<UserPreferences | null>(null);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-
-  const fetchPreferences = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from("user_preferences")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
-
-      if (error && error.code !== "PGRST116") {
-        throw error;
-      }
-
-      if (data) {
-        setPreferences(data);
-      } else {
-        // Create default preferences
-        const { data: newPrefs, error: insertError } = await supabase
-          .from("user_preferences")
-          .insert({
-            user_id: user.id,
-            reminder_enabled: false,
-            workout_reminder_time: null,
-            current_bodyweight: null,
-          })
-          .select()
-          .single();
-
-        if (insertError) throw insertError;
-        setPreferences(newPrefs);
-      }
-    } catch {
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les préférences",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const queryClient = useQueryClient();
+  const { data: preferences, isLoading: loading } = useCachedUserPreferences();
 
   const updatePreferences = async (updates: Partial<UserPreferences>) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || !preferences) return;
+
+      // Optimistic update
+      queryClient.setQueryData(["user-preferences"], (old: any) => ({
+        ...old,
+        ...updates,
+      }));
 
       const { data, error } = await supabase
         .from("user_preferences")
@@ -75,14 +38,18 @@ export const useUserPreferences = () => {
 
       if (error) throw error;
 
-      setPreferences(data);
       toast({
         title: "Préférences mises à jour",
         description: "Vos préférences ont été enregistrées",
       });
 
+      // Invalider pour refetch
+      queryClient.invalidateQueries({ queryKey: ["user-preferences"] });
+
       return data;
     } catch {
+      // Restaurer en cas d'erreur
+      queryClient.invalidateQueries({ queryKey: ["user-preferences"] });
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour les préférences",
@@ -91,14 +58,14 @@ export const useUserPreferences = () => {
     }
   };
 
-  useEffect(() => {
-    fetchPreferences();
-  }, []);
+  const refetch = () => {
+    queryClient.invalidateQueries({ queryKey: ["user-preferences"] });
+  };
 
   return {
     preferences,
     loading,
     updatePreferences,
-    refetch: fetchPreferences,
+    refetch,
   };
 };

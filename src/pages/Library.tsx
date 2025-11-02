@@ -12,7 +12,7 @@ import { MuscleSwapDialog } from "@/components/MuscleSwapDialog";
 import { Plus, Search, RefreshCw, Settings } from "lucide-react";
 import { supabase } from "@/lib/supabase-helpers";
 import { useToast } from "@/hooks/use-toast";
-import { useCachedExercises, useCachedPinnedExercises, useCachedTodayProgram, useTogglePin } from "@/hooks/useCache";
+import { useCachedExercises, useCachedPinnedExercises, useCachedTodayProgram, useTogglePin, useCreateExercise } from "@/hooks/useCache";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface Exercise {
@@ -48,6 +48,7 @@ const Library = () => {
   const { data: pinnedExerciseIds = new Set<string>(), isLoading: pinnedLoading } = useCachedPinnedExercises();
   const { data: todayProgram = { muscles: [], secondaryExercises: [] } } = useCachedTodayProgram();
   const togglePinMutation = useTogglePin();
+  const createExerciseMutation = useCreateExercise();
 
   const todayMuscles = todayProgram.muscles;
   const todaySecondaryExercises = todayProgram.secondaryExercises;
@@ -110,22 +111,14 @@ const Library = () => {
   };
 
   const createExercise = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { error } = await supabase.from("exercises").insert([
-      { ...newExercise, user_id: user.id, is_custom: true }
-    ]);
-
-    if (error) {
+    try {
+      await createExerciseMutation.mutateAsync(newExercise);
+      toast({ title: "Exercice créé!" });
+      setIsDialogOpen(false);
+      setNewExercise({ name: "", category: "chest", equipment: "barbell", notes: "" });
+    } catch (error: any) {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
-      return;
     }
-
-    toast({ title: "Exercice créé!" });
-    setIsDialogOpen(false);
-    setNewExercise({ name: "", category: "chest", equipment: "barbell", notes: "" });
-    queryClient.invalidateQueries({ queryKey: ["exercises"] });
   };
 
   const deleteExercise = async (exerciseId: string, isCustom: boolean) => {
