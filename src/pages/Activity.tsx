@@ -9,14 +9,24 @@ import { fr } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ExerciseHistoryDialog } from "@/components/ExerciseHistoryDialog";
 
+interface WorkoutSet {
+  id: string;
+  exercise_id: string;
+  weight: number;
+  reps: number;
+  set_number: number;
+  exercises: {
+    name: string;
+    category: string;
+  };
+}
+
 interface Workout {
   id: string;
   name: string;
   started_at: string;
   completed_at: string | null;
-  workout_sets?: Array<{
-    exercise_id: string;
-  }>;
+  workout_sets: WorkoutSet[];
 }
 
 const Activity = () => {
@@ -58,7 +68,14 @@ const Activity = () => {
       .from("workouts")
       .select(`
         *,
-        workout_sets(exercise_id)
+        workout_sets(
+          id,
+          exercise_id,
+          weight,
+          reps,
+          set_number,
+          exercises(name, category)
+        )
       `)
       .order("started_at", { ascending: false })
       .limit(20);
@@ -71,11 +88,25 @@ const Activity = () => {
     setWorkouts(data || []);
   };
 
-  const handleWorkoutClick = (workout: Workout) => {
-    if (workout.workout_sets && workout.workout_sets.length > 0) {
-      const exerciseId = workout.workout_sets[0].exercise_id;
-      setSelectedExercise({ id: exerciseId, name: workout.name });
-    }
+  const handleExerciseClick = (exerciseId: string, exerciseName: string) => {
+    setSelectedExercise({ id: exerciseId, name: exerciseName });
+  };
+
+  const groupSetsByExercise = (sets: WorkoutSet[]) => {
+    const grouped: Record<string, { name: string; category: string; sets: WorkoutSet[] }> = {};
+    
+    sets.forEach(set => {
+      if (!grouped[set.exercise_id]) {
+        grouped[set.exercise_id] = {
+          name: set.exercises.name,
+          category: set.exercises.category,
+          sets: []
+        };
+      }
+      grouped[set.exercise_id].sets.push(set);
+    });
+
+    return grouped;
   };
 
   // Filter workouts by selected date
@@ -153,25 +184,54 @@ const Activity = () => {
             Aucune séance ce jour
           </p>
         ) : (
-          filteredWorkouts.map((workout) => (
-            <Card 
-              key={workout.id} 
-              className="p-3 sm:p-4 cursor-pointer transition-all hover:bg-accent/80"
-              onClick={() => handleWorkoutClick(workout)}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium text-sm sm:text-base">{workout.name}</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    {format(new Date(workout.started_at), "d MMMM yyyy · HH:mm", { locale: fr })}
-                  </p>
+          filteredWorkouts.map((workout) => {
+            const exerciseGroups = groupSetsByExercise(workout.workout_sets || []);
+            
+            return (
+              <Card key={workout.id} className="p-3 sm:p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium text-sm sm:text-base">{workout.name}</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      {format(new Date(workout.started_at), "d MMMM yyyy · HH:mm", { locale: fr })}
+                    </p>
+                  </div>
+                  <div className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded">
+                    Terminé
+                  </div>
                 </div>
-                <div className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded">
-                  Terminé
+
+                {/* Afficher tous les exercices et leurs séries */}
+                <div className="space-y-3 pt-2 border-t border-border">
+                  {Object.entries(exerciseGroups).map(([exerciseId, group]) => (
+                    <div key={exerciseId} className="space-y-2">
+                      <button
+                        onClick={() => handleExerciseClick(exerciseId, group.name)}
+                        className="text-sm font-medium hover:text-primary transition-colors"
+                      >
+                        {group.name}
+                      </button>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {group.sets
+                          .sort((a, b) => a.set_number - b.set_number)
+                          .map((set) => (
+                            <div 
+                              key={set.id}
+                              className="text-xs p-2 bg-accent rounded-lg"
+                            >
+                              <span className="text-muted-foreground">Série {set.set_number}:</span>
+                              <span className="ml-1 font-medium">
+                                {set.weight}kg × {set.reps}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            </Card>
-          ))
+              </Card>
+            );
+          })
         )}
       </div>
 
