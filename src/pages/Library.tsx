@@ -55,11 +55,25 @@ const Library = () => {
 
   useEffect(() => {
     loadUserBodyweight();
-    // Vérifier si c'est la première utilisation
-    if (!todayProgram.muscles.length && !todayProgram.secondaryExercises.length) {
+    checkFirstTimeUser();
+  }, []);
+
+  const checkFirstTimeUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Vérifier si l'utilisateur a déjà un programme sauvegardé
+    const { data: existingProgram } = await supabase
+      .from("user_weekly_programs")
+      .select("id")
+      .eq("user_id", user.id)
+      .limit(1);
+
+    // Ouvrir le dialogue seulement si aucun programme n'existe
+    if (!existingProgram || existingProgram.length === 0) {
       setIsProgramDialogOpen(true);
     }
-  }, [todayProgram]);
+  };
 
   const loadUserBodyweight = async () => {
     const { data: { user } } = await supabase.auth.getUser();
