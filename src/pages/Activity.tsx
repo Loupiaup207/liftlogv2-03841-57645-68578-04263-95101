@@ -61,6 +61,37 @@ const Activity = () => {
 
   useEffect(() => {
     loadWorkouts();
+
+    // Subscribe to real-time updates for workouts and workout_sets
+    const channel = supabase
+      .channel('activity-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'workouts'
+        },
+        () => {
+          loadWorkouts();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'workout_sets'
+        },
+        () => {
+          loadWorkouts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const loadWorkouts = async () => {
