@@ -138,19 +138,20 @@ const Statistics = () => {
 
     if (error || !goals) return;
 
-    // Pour chaque objectif, récupérer la progression actuelle
+    // Pour chaque objectif, récupérer la progression actuelle (max weight)
     const goalsWithProgress = await Promise.all(
       goals.map(async (goal: any) => {
         const { data: sets } = await supabase
           .from("workout_sets")
           .select("weight")
-          .eq("exercise_id", goal.exercise_id)
-          .order("created_at", { ascending: false })
-          .limit(1);
+          .eq("exercise_id", goal.exercise_id);
 
-        const currentWeight = sets?.[0]?.weight || 0;
+        const maxWeight = sets && sets.length > 0
+          ? Math.max(...sets.map(s => s.weight || 0))
+          : 0;
+        
         const progress = goal.target_weight 
-          ? Math.min((currentWeight / goal.target_weight) * 100, 100)
+          ? Math.min((maxWeight / goal.target_weight) * 100, 100)
           : 0;
 
         return {
@@ -159,7 +160,7 @@ const Statistics = () => {
           exercise_name: goal.exercises?.name || "Exercice",
           target_weight: goal.target_weight,
           target_reps: goal.target_reps,
-          current_weight: currentWeight,
+          current_weight: maxWeight,
           progress,
         };
       })
