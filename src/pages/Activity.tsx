@@ -202,7 +202,7 @@ const Activity = () => {
                 </div>
 
                 {/* Afficher tous les exercices et leurs séries */}
-                <div className="space-y-3 pt-2 border-t border-border">
+                <div className="space-y-4 pt-2 border-t border-border">
                   {Object.entries(exerciseGroups).map(([exerciseId, group]) => (
                     <div key={exerciseId} className="space-y-2">
                       <button
@@ -211,19 +211,22 @@ const Activity = () => {
                       >
                         {group.name}
                       </button>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      <div className="space-y-2">
                         {group.sets
                           .sort((a, b) => a.set_number - b.set_number)
                           .map((set) => (
-                            <div 
+                            <Card 
                               key={set.id}
-                              className="text-xs p-2 bg-accent rounded-lg"
+                              className="p-3"
                             >
-                              <span className="text-muted-foreground">Série {set.set_number}:</span>
-                              <span className="ml-1 font-medium">
-                                {set.weight}kg × {set.reps}
-                              </span>
-                            </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs">Série {set.set_number}</span>
+                                <div className="flex gap-3 text-xs">
+                                  <span>{set.reps} reps</span>
+                                  <span>{set.weight} kg</span>
+                                </div>
+                              </div>
+                            </Card>
                           ))}
                       </div>
                     </div>
