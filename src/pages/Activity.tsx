@@ -206,10 +206,7 @@ const Activity = () => {
         })}
       </div>
 
-      <div className="space-y-2">
-        <h2 className="text-sm uppercase tracking-wider text-muted-foreground">
-          {format(selectedDate, "d MMMM yyyy", { locale: fr })}
-        </h2>
+      <div className="space-y-4">
         {filteredWorkouts.length === 0 ? (
           <p className="text-center text-muted-foreground py-12 text-sm">
             Aucune séance ce jour
@@ -219,51 +216,41 @@ const Activity = () => {
             const exerciseGroups = groupSetsByExercise(workout.workout_sets || []);
             
             return (
-              <Card key={workout.id} className="p-3 sm:p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium text-sm sm:text-base">{workout.name}</h3>
-                    <p className="text-xs sm:text-sm text-muted-foreground">
-                      {format(new Date(workout.started_at), "d MMMM yyyy · HH:mm", { locale: fr })}
-                    </p>
-                  </div>
-                  <div className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded">
-                    Terminé
-                  </div>
-                </div>
-
-                {/* Afficher tous les exercices et leurs séries */}
-                <div className="space-y-4 pt-2 border-t border-border">
-                  {Object.entries(exerciseGroups).map(([exerciseId, group]) => (
-                    <div key={exerciseId} className="space-y-2">
-                      <button
-                        onClick={() => handleExerciseClick(exerciseId, group.name)}
-                        className="text-sm font-medium hover:text-primary transition-colors"
-                      >
-                        {group.name}
-                      </button>
-                      <div className="space-y-2">
-                        {group.sets
-                          .sort((a, b) => a.set_number - b.set_number)
-                          .map((set) => (
-                            <Card 
-                              key={set.id}
-                              className="p-3"
-                            >
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs">Série {set.set_number}</span>
-                                <div className="flex gap-3 text-xs">
-                                  <span>{set.reps} reps</span>
-                                  <span>{set.weight} kg</span>
-                                </div>
-                              </div>
-                            </Card>
-                          ))}
-                      </div>
+              <div key={workout.id} className="space-y-4">
+                {Object.entries(exerciseGroups).map(([exerciseId, group]) => (
+                  <Card key={exerciseId} className="p-4 sm:p-6 space-y-3">
+                    <button
+                      onClick={() => handleExerciseClick(exerciseId, group.name)}
+                      className="text-lg sm:text-xl font-medium hover:text-primary transition-colors text-left"
+                    >
+                      {group.name}
+                    </button>
+                    
+                    <div className="space-y-2">
+                      {group.sets
+                        .sort((a, b) => a.set_number - b.set_number)
+                        .map((set) => (
+                          <div 
+                            key={set.id}
+                            className="flex items-center justify-between py-2"
+                          >
+                            <span className="text-muted-foreground text-sm sm:text-base">
+                              Set {set.set_number}
+                            </span>
+                            <div className="flex items-center gap-6 sm:gap-12">
+                              <span className="text-lg sm:text-xl font-medium">
+                                {set.weight} <span className="text-sm text-muted-foreground">kgs</span>
+                              </span>
+                              <span className="text-lg sm:text-xl font-medium">
+                                {set.reps} <span className="text-sm text-muted-foreground">reps</span>
+                              </span>
+                            </div>
+                          </div>
+                        ))}
                     </div>
-                  ))}
-                </div>
-              </Card>
+                  </Card>
+                ))}
+              </div>
             );
           })
         )}
