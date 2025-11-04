@@ -15,6 +15,8 @@ interface WorkoutSet {
   weight: number;
   reps: number;
   set_number: number;
+  is_bodyweight?: boolean;
+  additional_weight?: number;
   exercises: {
     name: string;
     category: string;
@@ -105,6 +107,8 @@ const Activity = () => {
           weight,
           reps,
           set_number,
+          is_bodyweight,
+          additional_weight,
           exercises(name, category)
         )
       `)
@@ -254,18 +258,26 @@ const Activity = () => {
                       <div className="space-y-2">
                         {group.sets
                           .sort((a, b) => a.set_number - b.set_number)
-                          .map((set) => (
-                            <div 
-                              key={set.id}
-                              className="flex items-center justify-between py-2 px-3 rounded-md bg-muted/50"
-                            >
-                              <span className="text-sm text-muted-foreground">Série {set.set_number}</span>
-                              <div className="flex gap-4 text-sm">
-                                <span className="font-medium">{set.reps} reps</span>
-                                <span className="font-medium">{set.weight} kg</span>
+                          .map((set) => {
+                            const displayWeight = set.is_bodyweight
+                              ? (set.additional_weight && set.additional_weight > 0
+                                  ? `lesté à ${set.additional_weight}kg`
+                                  : `au poids du corps`)
+                              : `${set.weight} kg`;
+                            
+                            return (
+                              <div 
+                                key={set.id}
+                                className="flex items-center justify-between py-2 px-3 rounded-md bg-muted/50"
+                              >
+                                <span className="text-sm text-muted-foreground">Série {set.set_number}</span>
+                                <div className="flex gap-4 text-sm">
+                                  <span className="font-medium">{set.reps} reps</span>
+                                  <span className="font-medium">{displayWeight}</span>
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                       </div>
                     </Card>
                   ))}
