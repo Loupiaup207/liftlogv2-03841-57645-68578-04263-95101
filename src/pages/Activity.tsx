@@ -124,22 +124,23 @@ const Activity = () => {
   };
 
   const groupSetsByExercise = (sets: WorkoutSet[]) => {
-    const grouped: Record<string, { name: string; category: string; sets: WorkoutSet[] }> = {};
+    const grouped: Record<string, { displayName: string; category: string; sets: WorkoutSet[]; exerciseId: string }> = {};
     
     sets.forEach(set => {
-      if (!grouped[set.exercise_id]) {
-        grouped[set.exercise_id] = {
-          name: set.exercises.name,
+      const nameKey = (set.exercises.name || "").trim().toLowerCase();
+      if (!grouped[nameKey]) {
+        grouped[nameKey] = {
+          displayName: set.exercises.name,
           category: set.exercises.category,
+          exerciseId: set.exercise_id, // representative id for history dialog
           sets: []
         };
       }
-      grouped[set.exercise_id].sets.push(set);
+      grouped[nameKey].sets.push(set);
     });
 
     return grouped;
   };
-
   // Filter workouts by selected date
   const filteredWorkouts = workouts.filter(workout => 
     isSameDay(new Date(workout.started_at), selectedDate)
@@ -234,13 +235,13 @@ const Activity = () => {
 
                 {/* Afficher tous les exercices et leurs séries */}
                 <div className="space-y-3 pt-2 border-t border-border">
-                  {Object.entries(exerciseGroups).map(([exerciseId, group]) => (
-                    <Card key={exerciseId} className="p-4 space-y-3">
+                  {Object.entries(exerciseGroups).map(([nameKey, group]) => (
+                    <Card key={nameKey} className="p-4 space-y-3">
                       <button
-                        onClick={() => handleExerciseClick(exerciseId, group.name)}
+                        onClick={() => handleExerciseClick(group.exerciseId, group.displayName)}
                         className="text-base font-medium hover:text-primary transition-colors"
                       >
-                        {group.name}
+                        {group.displayName}
                       </button>
                       <div className="space-y-2">
                         {group.sets
