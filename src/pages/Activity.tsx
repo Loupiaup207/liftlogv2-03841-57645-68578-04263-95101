@@ -233,12 +233,12 @@ const Activity = () => {
                 </div>
 
                 {/* Afficher tous les exercices et leurs séries */}
-                <div className="space-y-4 pt-2 border-t border-border">
+                <div className="space-y-3 pt-2 border-t border-border">
                   {Object.entries(exerciseGroups).map(([exerciseId, group]) => (
-                    <div key={exerciseId} className="space-y-2">
+                    <Card key={exerciseId} className="p-4 space-y-3">
                       <button
                         onClick={() => handleExerciseClick(exerciseId, group.name)}
-                        className="text-sm font-medium hover:text-primary transition-colors"
+                        className="text-base font-medium hover:text-primary transition-colors"
                       >
                         {group.name}
                       </button>
@@ -246,21 +246,19 @@ const Activity = () => {
                         {group.sets
                           .sort((a, b) => a.set_number - b.set_number)
                           .map((set) => (
-                            <Card 
+                            <div 
                               key={set.id}
-                              className="p-3"
+                              className="flex items-center justify-between py-2 px-3 rounded-md bg-muted/50"
                             >
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs">Série {set.set_number}</span>
-                                <div className="flex gap-3 text-xs">
-                                  <span>{set.reps} reps</span>
-                                  <span>{set.weight} kg</span>
-                                </div>
+                              <span className="text-sm text-muted-foreground">Série {set.set_number}</span>
+                              <div className="flex gap-4 text-sm">
+                                <span className="font-medium">{set.reps} reps</span>
+                                <span className="font-medium">{set.weight} kg</span>
                               </div>
-                            </Card>
+                            </div>
                           ))}
                       </div>
-                    </div>
+                    </Card>
                   ))}
                 </div>
               </Card>
