@@ -119,6 +119,14 @@ const Activity = () => {
     setWorkouts(data || []);
   };
 
+  // Rafraîchissement auto toutes les 5s (polling)
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      loadWorkouts();
+    }, 5000);
+    return () => clearInterval(intervalId);
+  }, []);
+
   const handleExerciseClick = (exerciseId: string, exerciseName: string) => {
     setSelectedExercise({ id: exerciseId, name: exerciseName });
   };
