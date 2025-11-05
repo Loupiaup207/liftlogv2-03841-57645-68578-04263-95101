@@ -158,6 +158,11 @@ const Activity = () => {
     isSameDay(new Date(workout.started_at), selectedDate)
   );
 
+  // Group all sets across the day by exercise
+  const allSetsForDay = filteredWorkouts.flatMap(w => w.workout_sets || []);
+  const exerciseGroupsForDay = groupSetsByExercise(allSetsForDay);
+  const allCompleted = filteredWorkouts.length > 0 && filteredWorkouts.every(w => w.completed_at);
+
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <h1 className="text-xl sm:text-2xl font-light tracking-wide">ACTIVITÉ</h1>
@@ -228,63 +233,50 @@ const Activity = () => {
             Aucune séance ce jour
           </p>
         ) : (
-          filteredWorkouts.map((workout) => {
-            const exerciseGroups = groupSetsByExercise(workout.workout_sets || []);
-            
-            return (
-              <Card key={workout.id} className="p-3 sm:p-4 space-y-3">
+          <div className="space-y-3">
+            {Object.entries(exerciseGroupsForDay).map(([nameKey, group]) => (
+              <Card key={nameKey} className="p-3 sm:p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium text-sm sm:text-base">{workout.name}</h3>
-                    <p className="text-xs sm:text-sm text-muted-foreground">
-                      {format(new Date(workout.started_at), "d MMMM yyyy · HH:mm", { locale: fr })}
-                    </p>
-                  </div>
-                  <div className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded">
-                    Terminé
-                  </div>
+                  <button
+                    onClick={() => handleExerciseClick(group.exerciseId, group.displayName)}
+                    className="text-base font-medium hover:text-primary transition-colors"
+                  >
+                    {group.displayName}
+                  </button>
+                  {allCompleted && (
+                    <div className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded">
+                      Terminé
+                    </div>
+                  )}
                 </div>
 
-                {/* Afficher tous les exercices et leurs séries */}
-                <div className="space-y-3 pt-2 border-t border-border">
-                  {Object.entries(exerciseGroups).map(([nameKey, group]) => (
-                    <Card key={nameKey} className="p-4 space-y-3">
-                      <button
-                        onClick={() => handleExerciseClick(group.exerciseId, group.displayName)}
-                        className="text-base font-medium hover:text-primary transition-colors"
-                      >
-                        {group.displayName}
-                      </button>
-                      <div className="space-y-2">
-                        {group.sets
-                          .sort((a, b) => a.set_number - b.set_number)
-                          .map((set) => {
-                            const displayWeight = set.is_bodyweight
-                              ? (set.additional_weight && set.additional_weight > 0
-                                  ? `lesté à ${set.additional_weight}kg`
-                                  : `au poids du corps`)
-                              : `${set.weight} kg`;
-                            
-                            return (
-                              <div 
-                                key={set.id}
-                                className="flex items-center justify-between py-2 px-3 rounded-md bg-muted/50"
-                              >
-                                <span className="text-sm text-muted-foreground">Série {set.set_number}</span>
-                                <div className="flex gap-4 text-sm">
-                                  <span className="font-medium">{set.reps} reps</span>
-                                  <span className="font-medium">{displayWeight}</span>
-                                </div>
-                              </div>
-                            );
-                          })}
-                      </div>
-                    </Card>
-                  ))}
+                <div className="space-y-2 pt-2 border-t border-border">
+                  {group.sets
+                    .sort((a, b) => a.set_number - b.set_number)
+                    .map((set, idx) => {
+                      const displayWeight = set.is_bodyweight
+                        ? (set.additional_weight && set.additional_weight > 0
+                            ? `lesté à ${set.additional_weight}kg`
+                            : `au poids du corps`)
+                        : `${set.weight} kg`;
+
+                      return (
+                        <div 
+                          key={set.id}
+                          className="flex items-center justify-between py-2 px-3 rounded-md bg-muted/50"
+                        >
+                          <span className="text-sm text-muted-foreground">Série {idx + 1}</span>
+                          <div className="flex gap-4 text-sm">
+                            <span className="font-medium">{set.reps} reps</span>
+                            <span className="font-medium">{displayWeight}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
               </Card>
-            );
-          })
+            ))}
+          </div>
         )}
       </div>
 
