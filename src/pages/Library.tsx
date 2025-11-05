@@ -58,6 +58,16 @@ const Library = () => {
     checkFirstTimeUser();
   }, []);
 
+  // Auto-refresh toutes les 3 secondes
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ['exercises'] });
+      queryClient.invalidateQueries({ queryKey: ['pinned_exercises'] });
+      queryClient.invalidateQueries({ queryKey: ['weekly_program'] });
+    }, 3000);
+    return () => clearInterval(intervalId);
+  }, [queryClient]);
+
   const checkFirstTimeUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;

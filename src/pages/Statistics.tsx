@@ -77,6 +77,14 @@ const Statistics = () => {
     loadStatistics();
   }, []);
 
+  // Auto-refresh toutes les 3 secondes
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      loadStatistics();
+    }, 3000);
+    return () => clearInterval(intervalId);
+  }, []);
+
   const loadStatistics = async () => {
     await Promise.all([
       loadPinnedExercises(),

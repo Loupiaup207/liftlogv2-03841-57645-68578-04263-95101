@@ -123,11 +123,11 @@ const Activity = () => {
     setWorkouts(data || []);
   };
 
-  // Rafraîchissement auto toutes les 5s (polling)
+  // Rafraîchissement auto toutes les 3s (polling)
   useEffect(() => {
     const intervalId = setInterval(() => {
       loadWorkouts();
-    }, 5000);
+    }, 3000);
     return () => clearInterval(intervalId);
   }, []);
 
