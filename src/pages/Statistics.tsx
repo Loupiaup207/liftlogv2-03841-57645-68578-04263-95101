@@ -23,6 +23,9 @@ interface ExercisePerformance {
   weight: number;
   reps: number;
   volume: number;
+  is_bodyweight?: boolean;
+  additional_weight?: number;
+  displayWeight: string;
 }
 
 interface ExerciseGoal {
@@ -71,10 +74,12 @@ const Statistics = () => {
   const [selectedPinnedExercise, setSelectedPinnedExercise] = useState<PinnedExercise | null>(null);
   const [exercisePerformance, setExercisePerformance] = useState<ExercisePerformance[]>([]);
   const [isPerformanceDialogOpen, setIsPerformanceDialogOpen] = useState(false);
+  const [userBodyweight, setUserBodyweight] = useState<number | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     loadStatistics();
+    loadUserBodyweight();
   }, []);
 
   // Auto-refresh toutes les 3 secondes
@@ -84,6 +89,21 @@ const Statistics = () => {
     }, 3000);
     return () => clearInterval(intervalId);
   }, []);
+
+  const loadUserBodyweight = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("user_preferences")
+      .select("current_bodyweight")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (data?.current_bodyweight) {
+      setUserBodyweight(data.current_bodyweight);
+    }
+  };
 
   const loadStatistics = async () => {
     await Promise.all([
@@ -289,18 +309,44 @@ const Statistics = () => {
 
     const { data: sets, error } = await supabase
       .from("workout_sets")
-      .select("weight, reps, created_at")
+      .select("weight, reps, created_at, is_bodyweight, additional_weight")
       .eq("exercise_id", exerciseId)
       .order("created_at", { ascending: true });
 
     if (error || !sets) return;
 
-    const performance = sets.map((set: any) => ({
-      date: new Date(set.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }),
-      weight: set.weight || 0,
-      reps: set.reps || 0,
-      volume: (set.weight || 0) * (set.reps || 0),
-    }));
+    const performance = sets.map((set: any) => {
+      const isBodyweight = set.is_bodyweight || false;
+      const additionalWeight = set.additional_weight || 0;
+      const bodyweight = userBodyweight || 0;
+      
+      // Calculer le poids effectif
+      const effectiveWeight = isBodyweight 
+        ? bodyweight + additionalWeight 
+        : (set.weight || 0);
+
+      // Construire le texte d'affichage
+      let displayWeight = "";
+      if (isBodyweight) {
+        if (additionalWeight > 0) {
+          displayWeight = `PDC (${bodyweight}kg) lesté à ${additionalWeight}kg`;
+        } else {
+          displayWeight = `PDC (${bodyweight}kg)`;
+        }
+      } else {
+        displayWeight = `${set.weight || 0}kg`;
+      }
+
+      return {
+        date: new Date(set.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }),
+        weight: effectiveWeight,
+        reps: set.reps || 0,
+        volume: effectiveWeight * (set.reps || 0),
+        is_bodyweight: isBodyweight,
+        additional_weight: additionalWeight,
+        displayWeight,
+      };
+    });
 
     setExercisePerformance(performance);
   };
@@ -575,7 +621,21 @@ const Statistics = () => {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" />
                       <YAxis />
-                      <Tooltip />
+                      <Tooltip 
+                        content={({ active, payload }) => {
+                          if (active && payload && payload.length) {
+                            const data = payload[0].payload as ExercisePerformance;
+                            return (
+                              <div className="bg-card border border-border p-2 rounded shadow-lg">
+                                <p className="text-sm font-medium">{data.date}</p>
+                                <p className="text-sm text-muted-foreground">{data.displayWeight}</p>
+                                <p className="text-sm">{data.reps} reps</p>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
                       <Line 
                         type="monotone" 
                         dataKey="weight" 
