@@ -135,6 +135,29 @@ const Activity = () => {
     setSelectedExercise({ id: exerciseId, name: exerciseName });
   };
 
+  // Prevent click during scroll on mobile
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    setTouchStart({ x: touch.clientX, y: touch.clientY });
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent, exerciseId: string, exerciseName: string) => {
+    if (!touchStart) return;
+    
+    const touch = e.changedTouches[0];
+    const deltaX = Math.abs(touch.clientX - touchStart.x);
+    const deltaY = Math.abs(touch.clientY - touchStart.y);
+    
+    // Only trigger click if movement is less than 10px (not scrolling)
+    if (deltaX < 10 && deltaY < 10) {
+      handleExerciseClick(exerciseId, exerciseName);
+    }
+    
+    setTouchStart(null);
+  };
+
   const groupSetsByExercise = (sets: WorkoutSet[]) => {
     const grouped: Record<string, { displayName: string; category: string; sets: WorkoutSet[]; exerciseId: string }> = {};
     
@@ -239,7 +262,9 @@ const Activity = () => {
                 <div className="flex items-center justify-between">
                   <button
                     onClick={() => handleExerciseClick(group.exerciseId, group.displayName)}
-                    className="text-base font-medium hover:text-primary transition-colors"
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={(e) => handleTouchEnd(e, group.exerciseId, group.displayName)}
+                    className="text-base font-medium hover:text-primary transition-colors touch-none"
                   >
                     {group.displayName}
                   </button>
