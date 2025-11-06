@@ -143,7 +143,7 @@ export const WeeklyProgramDialog = ({ open, onOpenChange, onSave }: WeeklyProgra
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card max-w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-card max-w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto rounded-2xl">
         <DialogHeader>
           <DialogTitle>Mon programme hebdomadaire</DialogTitle>
         </DialogHeader>

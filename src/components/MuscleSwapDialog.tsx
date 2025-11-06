@@ -52,7 +52,7 @@ export const MuscleSwapDialog = ({ open, onOpenChange, currentMuscle, onSelect }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card max-w-[95vw] sm:max-w-md">
+      <DialogContent className="bg-card max-w-[95vw] sm:max-w-md rounded-xl sm:rounded-2xl">
         <DialogHeader>
           <DialogTitle>Changer le muscle du jour</DialogTitle>
         </DialogHeader>

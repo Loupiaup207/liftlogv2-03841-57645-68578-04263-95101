@@ -229,7 +229,7 @@ const Library = () => {
                 <Plus className="h-5 w-5" />
               </Button>
             </DialogTrigger>
-          <DialogContent className="bg-card max-w-[95vw] sm:max-w-md">
+          <DialogContent className="bg-card max-w-[95vw] sm:max-w-md rounded-2xl">
             <DialogHeader>
               <DialogTitle>Nouvel exercice</DialogTitle>
             </DialogHeader>
