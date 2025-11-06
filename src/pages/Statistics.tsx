@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabase-helpers";
 import { useToast } from "@/hooks/use-toast";
-import { Pin, Target, TrendingUp, Dumbbell, Search, Trash2, ArrowLeft } from "lucide-react";
+import { Pin, Target, TrendingUp, Dumbbell, Search, Trash2, ArrowLeft, Maximize2 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Badge } from "@/components/ui/badge";
+import { DetailedStatsDialog } from "@/components/DetailedStatsDialog";
 
 interface PinnedExercise {
   id: string;
@@ -75,6 +76,8 @@ const Statistics = () => {
   const [exercisePerformance, setExercisePerformance] = useState<ExercisePerformance[]>([]);
   const [isPerformanceDialogOpen, setIsPerformanceDialogOpen] = useState(false);
   const [userBodyweight, setUserBodyweight] = useState<number | null>(null);
+  const [isDetailedStatsOpen, setIsDetailedStatsOpen] = useState(false);
+  const [totalWorkouts, setTotalWorkouts] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -208,10 +211,11 @@ const Statistics = () => {
         exercise_id,
         exercises (category)
       `)
-      .order("created_at", { ascending: false })
-      .limit(100);
+      .order("created_at", { ascending: false });
 
     if (!workouts) return;
+
+    setTotalWorkouts(workouts.length);
 
     // Compter par muscle
     const muscleCounts: Record<string, number> = {};
@@ -380,10 +384,23 @@ const Statistics = () => {
 
       {/* Répartition des muscles */}
       <section className="space-y-3">
-        <h2 className="text-lg font-medium flex items-center gap-2">
-          <TrendingUp className="h-5 w-5" />
-          Muscles travaillés
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-medium flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            Muscles travaillés
+          </h2>
+          {muscleStats.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsDetailedStatsOpen(true)}
+              className="gap-1"
+            >
+              <Maximize2 className="h-4 w-4" />
+              <span className="text-xs">Détails</span>
+            </Button>
+          )}
+        </div>
         
         {muscleStats.length === 0 ? (
           <Card className="p-6 text-center text-muted-foreground">
@@ -720,6 +737,13 @@ const Statistics = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <DetailedStatsDialog
+        open={isDetailedStatsOpen}
+        onOpenChange={setIsDetailedStatsOpen}
+        muscleStats={muscleStats}
+        totalWorkouts={totalWorkouts}
+      />
     </div>
   );
 };
