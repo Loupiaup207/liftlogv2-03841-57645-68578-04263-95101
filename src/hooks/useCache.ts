@@ -175,11 +175,13 @@ export const useAddWorkoutSet = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ exerciseId, exerciseName, reps, weight }: { 
+    mutationFn: async ({ exerciseId, exerciseName, reps, weight, additionalWeight, isBodyweight }: { 
       exerciseId: string; 
       exerciseName: string; 
       reps: number; 
-      weight: number; 
+      weight: number;
+      additionalWeight?: number;
+      isBodyweight?: boolean;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Non authentifié");
@@ -208,6 +210,8 @@ export const useAddWorkoutSet = () => {
           reps,
           weight,
           set_number: nextSetNumber,
+          is_bodyweight: isBodyweight || false,
+          additional_weight: additionalWeight || 0,
         }])
         .select()
         .single();

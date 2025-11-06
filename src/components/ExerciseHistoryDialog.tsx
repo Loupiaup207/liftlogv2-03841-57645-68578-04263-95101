@@ -43,6 +43,8 @@ export const ExerciseHistoryDialog = ({
   const [editedCategory, setEditedCategory] = useState("");
   const [editedEquipment, setEditedEquipment] = useState("");
   const [editedNotes, setEditedNotes] = useState("");
+  const [isWeighted, setIsWeighted] = useState(false);
+  const [additionalWeight, setAdditionalWeight] = useState(0);
   const { toast } = useToast();
   const { preferences } = useUserPreferences();
 
@@ -83,10 +85,14 @@ export const ExerciseHistoryDialog = ({
         exerciseName,
         reps: newReps,
         weight: newWeight,
+        additionalWeight: isBodyweightExercise && isWeighted ? additionalWeight : 0,
+        isBodyweight: isBodyweightExercise,
       });
       
       localStorage.setItem(`exercise_${exerciseId}_weight`, newWeight.toString());
       toast({ title: "Série ajoutée!" });
+      setIsWeighted(false);
+      setAdditionalWeight(0);
     } catch (error: any) {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
     }
@@ -360,6 +366,30 @@ export const ExerciseHistoryDialog = ({
                 <span className="text-xs text-muted-foreground">kg</span>
               </div>
             </div>
+
+            {isBodyweightExercise && (
+              <div className="flex items-center gap-2 pt-2 border-t border-border">
+                <Button
+                  type="button"
+                  variant={isWeighted ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setIsWeighted(!isWeighted)}
+                  className="flex-shrink-0"
+                >
+                  {isWeighted ? "Lesté ✓" : "+ Ajouter lest"}
+                </Button>
+                {isWeighted && (
+                  <Input
+                    type="number"
+                    placeholder="kg lest"
+                    value={additionalWeight}
+                    onChange={(e) => setAdditionalWeight(parseFloat(e.target.value) || 0)}
+                    className="w-24 h-9"
+                    step="0.5"
+                  />
+                )}
+              </div>
+            )}
 
             <div className="flex gap-1 justify-end">
               <Button
