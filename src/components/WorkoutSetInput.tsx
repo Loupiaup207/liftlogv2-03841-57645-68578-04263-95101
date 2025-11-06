@@ -46,7 +46,7 @@ export const WorkoutSetInput = ({
   };
 
   return (
-    <div className="flex flex-col gap-2 p-3 bg-card rounded-lg border border-border">
+    <div className="flex flex-col gap-3 p-3 bg-card rounded-lg border border-border">
       <div className="flex gap-2 items-center">
         <span className="text-sm font-medium w-12">Série {setNumber}</span>
         <Input
@@ -58,45 +58,46 @@ export const WorkoutSetInput = ({
           autoFocus
         />
         {isBodyweight ? (
-          <div className="flex-1 flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">{displayWeight}</span>
-          </div>
+          <span className="text-xs text-muted-foreground flex-1">{displayWeight}</span>
         ) : (
-          <span className="text-xs text-muted-foreground">{displayWeight}</span>
+          <span className="text-xs text-muted-foreground flex-1">{displayWeight}</span>
         )}
-        <div className="flex gap-1">
-          <Button variant="ghost" size="icon" onClick={handleSave} className="h-8 w-8">
-            <Check className="h-4 w-4 text-green-400" />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={onCancel} className="h-8 w-8">
-            <X className="h-4 w-4 text-red-400" />
-          </Button>
-        </div>
       </div>
-      
+
       {isBodyweight && (
-        <div className="flex items-center gap-2 pl-14">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={isWeighted}
-              onChange={(e) => setIsWeighted(e.target.checked)}
-              className="h-4 w-4"
-            />
-            <span className="text-xs">Lesté</span>
-          </label>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant={isWeighted ? "default" : "outline"}
+            size="sm"
+            onClick={() => setIsWeighted(!isWeighted)}
+            className="flex-shrink-0"
+          >
+            {isWeighted ? "Lesté ✓" : "+ Ajouter lest"}
+          </Button>
           {isWeighted && (
             <Input
               type="number"
-              placeholder="kg"
+              placeholder="kg lest"
               value={additionalWeight}
               onChange={(e) => setAdditionalWeight(e.target.value)}
-              className="w-20 h-7 text-xs"
+              className="w-24 h-9"
               step="0.5"
             />
           )}
         </div>
       )}
+      
+      <div className="flex gap-2 justify-end">
+        <Button variant="outline" size="sm" onClick={onCancel}>
+          <X className="h-4 w-4 mr-1" />
+          Annuler
+        </Button>
+        <Button variant="default" size="sm" onClick={handleSave}>
+          <Check className="h-4 w-4 mr-1" />
+          Valider
+        </Button>
+      </div>
     </div>
   );
 };
