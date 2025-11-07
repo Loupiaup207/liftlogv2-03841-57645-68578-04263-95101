@@ -49,14 +49,14 @@ const Index = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background pb-20">
       {/* Titre Liftlog - Fixed */}
-      <div className="fixed top-0 left-0 right-0 z-10 bg-background border-b border-border px-4 pt-2 pb-3">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border px-4 pt-2 pb-3">
         <h1 className="text-2xl font-light tracking-widest text-foreground text-center">
           LIFTLOG
         </h1>
       </div>
 
       {/* Navigation Buttons - Fixed */}
-      <nav className="fixed top-[52px] left-0 right-0 z-10 bg-background border-b border-border flex gap-2 px-4 py-2">
+      <nav className="fixed top-[52px] left-0 right-0 z-40 bg-background border-b border-border flex gap-2 px-4 py-2">
         <Button
           variant="minimal"
           className={`flex-1 h-12 rounded-xl ${activeTab === "library" ? "bg-accent" : ""}`}
