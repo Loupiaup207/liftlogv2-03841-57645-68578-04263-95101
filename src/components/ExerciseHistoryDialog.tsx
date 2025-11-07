@@ -28,6 +28,7 @@ interface WorkoutSet {
   set_number: number;
   created_at: string;
   workout_id: string;
+  additional_weight?: number | null;
 }
 
 export const ExerciseHistoryDialog = ({
@@ -475,7 +476,7 @@ export const ExerciseHistoryDialog = ({
                         </span>
                         <div className="flex items-center gap-2">
                           <span className="font-medium">
-                            {set.reps} reps {set.weight ? `× ${set.weight} kg` : ""}
+                            {set.reps} reps {set.weight ? `× ${set.weight} kg` : ""}{set.additional_weight && set.additional_weight > 0 ? ` +${set.additional_weight}kg` : ""}
                           </span>
                           <Button
                             variant="ghost"
