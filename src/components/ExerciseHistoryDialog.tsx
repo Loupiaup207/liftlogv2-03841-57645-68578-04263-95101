@@ -207,7 +207,7 @@ export const ExerciseHistoryDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto left-0 top-0 translate-x-0 translate-y-0 [&>button]:hidden">
+      <DialogContent className="bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden">
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 pt-12">
           <div className="flex items-center gap-2">
             <Button

@@ -204,7 +204,7 @@ const Library = () => {
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl sm:text-2xl font-light tracking-wide">LIBRAIRIE</h1>
+        <h1 className="text-xl sm:text-2xl font-light tracking-wide pt-2">LIBRAIRIE</h1>
         <div className="flex gap-2">
           <Button 
             variant="outline" 

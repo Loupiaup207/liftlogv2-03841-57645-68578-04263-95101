@@ -380,7 +380,7 @@ const Statistics = () => {
 
   return (
     <div className="p-6 space-y-6 pt-safe">
-      <h1 className="text-2xl font-light tracking-wide">STATISTIQUES</h1>
+      <h1 className="text-2xl font-light tracking-wide pt-2">STATISTIQUES</h1>
 
       {/* Répartition des muscles */}
       <section className="space-y-3">
@@ -389,17 +389,6 @@ const Statistics = () => {
             <TrendingUp className="h-5 w-5" />
             Muscles travaillés
           </h2>
-          {muscleStats.length > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsDetailedStatsOpen(true)}
-              className="gap-1"
-            >
-              <Maximize2 className="h-4 w-4" />
-              <span className="text-xs">Détails</span>
-            </Button>
-          )}
         </div>
         
         {muscleStats.length === 0 ? (
@@ -582,7 +571,7 @@ const Statistics = () => {
 
       {/* Dialog pour les performances détaillées */}
       <Dialog open={isPerformanceDialogOpen} onOpenChange={setIsPerformanceDialogOpen}>
-        <DialogContent className="bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden left-0 top-0 translate-x-0 translate-y-0 flex flex-col">
+        <DialogContent className="bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden flex flex-col">
           <DialogHeader className="pt-[calc(env(safe-area-inset-top)+8px)]">
             <div className="flex items-center gap-2">
               <Button
