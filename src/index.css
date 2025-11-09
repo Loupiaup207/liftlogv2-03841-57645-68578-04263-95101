@@ -79,6 +79,7 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
     font-size: 14px;
+    padding-top: env(safe-area-inset-top); /* Ajout du padding pour l'encoche */
   }
 
   html, body, #root {
@@ -91,5 +92,16 @@ All colors MUST be HSL.
     html, body, #root {
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
     }
+  }
+
+  /* Feedback tactile immédiat (Code ajouté) */
+  button, [role="button"] {
+    -webkit-tap-highlight-color: transparent; /* Supprime l'effet de surbrillance tactile iOS/Android */
+    touch-action: manipulation; /* Optimise la réponse tactile */
+  }
+  
+  button:active, [role="button"]:active {
+    transform: scale(0.97); /* Ajoute un effet de "pression" */
+    transition: transform 0.05s; /* Rend la transition rapide et agréable */
   }
 }

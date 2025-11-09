@@ -40,3 +40,11 @@
 .read-the-docs {
   color: #888;
 }
+
+.logo-text {
+  padding-top: env(safe-area-inset-top);
+  /* ou utilisez une valeur fixe si vous préférez */
+  padding-top: max(env(safe-area-inset-top), 2rem);
+}
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
