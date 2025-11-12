@@ -1,6 +1,6 @@
 workflows:
   build-ios:
-    name: Build iOS (Expo / unsigned)
+    name: Build iOS (Capacitor)
     environment:
       node: 20
       cocoapods: default
@@ -8,7 +8,11 @@ workflows:
     scripts:
       - name: Install dependencies
         script: npm ci
-      - name: Build iOS
-        script: npx eas build --platform ios --profile release
+      - name: Build web app
+        script: npm run build
+      - name: Sync with Capacitor
+        script: npx cap sync ios
+      - name: Build iOS app
+        script: xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Release
     artifacts:
-      - ios/*.app
+      - ios/App/build/**/*.ipa

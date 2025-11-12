@@ -49,17 +49,17 @@ const Index = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background pb-20">
       {/* Titre Liftlog - Fixed */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-background px-4 pt-8 pb-3">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-background px-4 pt-14 pb-2">
         <h1 className="text-2xl font-light tracking-widest text-foreground text-center">
           LIFTLOG
         </h1>
       </div>
 
       {/* Navigation Buttons - Fixed */}
-      <nav className="fixed top-[60px] left-0 right-0 z-40 bg-background flex gap-2 px-4 py-2">
+      <nav className="fixed top-[80px] left-0 right-0 z-40 bg-background flex gap-2 px-4 py-2">
         <Button
           variant="minimal"
-          className={`flex-1 h-12 rounded-xl ${activeTab === "library" ? "bg-accent" : ""}`}
+          className={`flex-1 h-12 rounded-t-3xl ${activeTab === "library" ? "bg-accent" : ""}`}
           onClick={() => setActiveTab("library")}
         >
           <span className="text-xs font-light tracking-wider uppercase">Librairie</span>
@@ -67,7 +67,7 @@ const Index = () => {
         
         <Button
           variant="minimal"
-          className={`flex-1 h-12 rounded-xl ${activeTab === "statistics" ? "bg-accent" : ""}`}
+          className={`flex-1 h-12 rounded-t-3xl ${activeTab === "statistics" ? "bg-accent" : ""}`}
           onClick={() => setActiveTab("statistics")}
         >
           <span className="text-xs font-light tracking-wider uppercase">Stats</span>
@@ -75,7 +75,7 @@ const Index = () => {
         
         <Button
           variant="minimal"
-          className={`flex-1 h-12 rounded-xl ${activeTab === "activity" ? "bg-accent" : ""}`}
+          className={`flex-1 h-12 rounded-t-3xl ${activeTab === "activity" ? "bg-accent" : ""}`}
           onClick={() => setActiveTab("activity")}
         >
           <span className="text-xs font-light tracking-wider uppercase">Activité</span>
@@ -83,7 +83,7 @@ const Index = () => {
       </nav>
 
       {/* Content Area */}
-      <main className="flex-1 overflow-y-auto mt-[124px]">
+      <main className="flex-1 overflow-y-auto mt-[144px]">
         <div className={activeTab === "library" ? "" : "hidden"}>
           <Library />
         </div>

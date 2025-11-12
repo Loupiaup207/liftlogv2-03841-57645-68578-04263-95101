@@ -28,7 +28,6 @@ interface WorkoutSet {
   set_number: number;
   created_at: string;
   workout_id: string;
-  additional_weight?: number | null;
 }
 
 export const ExerciseHistoryDialog = ({
@@ -44,8 +43,6 @@ export const ExerciseHistoryDialog = ({
   const [editedCategory, setEditedCategory] = useState("");
   const [editedEquipment, setEditedEquipment] = useState("");
   const [editedNotes, setEditedNotes] = useState("");
-  const [isWeighted, setIsWeighted] = useState(false);
-  const [additionalWeight, setAdditionalWeight] = useState(0);
   const { toast } = useToast();
   const { preferences } = useUserPreferences();
 
@@ -86,14 +83,10 @@ export const ExerciseHistoryDialog = ({
         exerciseName,
         reps: newReps,
         weight: newWeight,
-        additionalWeight: isBodyweightExercise && isWeighted ? additionalWeight : 0,
-        isBodyweight: isBodyweightExercise,
       });
       
       localStorage.setItem(`exercise_${exerciseId}_weight`, newWeight.toString());
       toast({ title: "Série ajoutée!" });
-      setIsWeighted(false);
-      setAdditionalWeight(0);
     } catch (error: any) {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
     }
@@ -207,7 +200,7 @@ export const ExerciseHistoryDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden">
+      <DialogContent className="bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto left-0 top-0 translate-x-0 translate-y-0 [&>button]:hidden">
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 pt-12">
           <div className="flex items-center gap-2">
             <Button
@@ -368,30 +361,6 @@ export const ExerciseHistoryDialog = ({
               </div>
             </div>
 
-            {isBodyweightExercise && (
-              <div className="flex items-center gap-2 pt-2 border-t border-border">
-                <Button
-                  type="button"
-                  variant={isWeighted ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setIsWeighted(!isWeighted)}
-                  className="flex-shrink-0"
-                >
-                  {isWeighted ? "Lesté ✓" : "+ Ajouter lest"}
-                </Button>
-                {isWeighted && (
-                  <Input
-                    type="number"
-                    placeholder="kg lest"
-                    value={additionalWeight}
-                    onChange={(e) => setAdditionalWeight(parseFloat(e.target.value) || 0)}
-                    className="w-24 h-9"
-                    step="0.5"
-                  />
-                )}
-              </div>
-            )}
-
             <div className="flex gap-1 justify-end">
               <Button
                 variant="ghost"
@@ -417,7 +386,7 @@ export const ExerciseHistoryDialog = ({
 
           {progressionData.length > 0 && (
             <Card className="p-4 rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-              <h3 className="font-semibold text-sm text-foreground mb-4">📈 Progression du poids</h3>
+              <h3 className="font-semibold text-sm text-foreground mb-4"> Progression du poids</h3>
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={progressionData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
@@ -476,7 +445,7 @@ export const ExerciseHistoryDialog = ({
                         </span>
                         <div className="flex items-center gap-2">
                           <span className="font-medium">
-                            {set.reps} reps {set.weight ? `× ${set.weight} kg` : ""}{set.additional_weight && set.additional_weight > 0 ? ` +${set.additional_weight}kg` : ""}
+                            {set.reps} reps {set.weight ? `× ${set.weight} kg` : ""}
                           </span>
                           <Button
                             variant="ghost"

@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Dumbbell, User, LogOut, Moon, Sun } from "lucide-react";
+import { Dumbbell, User, LogOut, Moon, Sun, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +23,8 @@ const Profile = () => {
   const [newPassword, setNewPassword] = useState("");
   const [bodyweight, setBodyweight] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [legalDialogOpen, setLegalDialogOpen] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false); // <-- nouveau
 
   useEffect(() => {
     const getUser = async () => {
@@ -104,6 +106,16 @@ const Profile = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleDeleteAccount = async () => {
+    // Ne rien supprimer pour l'instant, juste afficher l'erreur demandée
+    setIsDeleteDialogOpen(false);
+    toast({
+      title: "Impossible de supprimer le compte",
+      description: "Vous ne pouvez pas supprimer le compte pour le moment. Réessayez plus tard.",
+      variant: "destructive",
+    });
   };
 
   return (
@@ -213,12 +225,124 @@ const Profile = () => {
 
         <Button 
           variant="destructive" 
-          className="w-full h-10"
+          className="w-full h-10 mb-3"
           onClick={handleLogout}
         >
           <LogOut className="h-4 w-4 mr-2" />
           Déconnexion
         </Button>
+
+        {/* Bouton Supprimer le compte */}
+        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="destructive" className="w-full h-10 mb-4">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Supprimer le compte
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-card rounded-2xl max-w-[95vw] sm:max-w-md"> {/* arrondi sur mobile */}
+            <DialogHeader>
+              <DialogTitle>Supprimer le compte</DialogTitle>
+              <DialogDescription>Êtes-vous sûr ? Cette action est irréversible.</DialogDescription>
+            </DialogHeader>
+            <div className="py-4 text-sm text-muted-foreground">
+              <p>Toutes vos données seront définitivement supprimées.</p>
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setIsDeleteDialogOpen(false)}>Annuler</Button>
+              <Button variant="destructive" onClick={handleDeleteAccount}>Confirmer la suppression</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* INFORMATIONS LÉGALES - ajouter rounded-2xl aux DialogContent existants */}
+        <Card className="p-4 bg-card mb-3">
+          <h3 className="text-sm font-light tracking-wider mb-3">INFORMATIONS LÉGALES</h3>
+          <div className="space-y-2">
+            <Dialog open={legalDialogOpen === "terms"} onOpenChange={(open) => setLegalDialogOpen(open ? "terms" : null)}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" className="w-full justify-start text-sm h-9">
+                  Conditions d'utilisation
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-h-[80vh] overflow-y-auto rounded-2xl"> {/* arrondi ajouté */}
+                <DialogHeader>
+                  <DialogTitle>Conditions d'utilisation</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 text-sm text-muted-foreground">
+                  <p>En utilisant cette application, vous acceptez les conditions suivantes :</p>
+                  <h4 className="font-semibold text-foreground">1. Utilisation de l'application</h4>
+                  <p>L'application LIFTLOG est destinée à un usage personnel pour le suivi de vos entraînements sportifs.</p>
+                  <h4 className="font-semibold text-foreground">2. Données personnelles</h4>
+                  <p>Vos données d'entraînement sont stockées de manière sécurisée et ne sont pas partagées avec des tiers.</p>
+                  <h4 className="font-semibold text-foreground">3. Responsabilité</h4>
+                  <p>L'utilisation de l'application se fait sous votre responsabilité. Consultez un professionnel avant de commencer un programme d'entraînement.</p>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={legalDialogOpen === "privacy"} onOpenChange={(open) => setLegalDialogOpen(open ? "privacy" : null)}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" className="w-full justify-start text-sm h-9">
+                  Politique de confidentialité
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-h-[80vh] overflow-y-auto rounded-2xl"> {/* arrondi ajouté */}
+                <DialogHeader>
+                  <DialogTitle>Politique de confidentialité</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 text-sm text-muted-foreground">
+                  <h4 className="font-semibold text-foreground">Collecte des données</h4>
+                  <p>Nous collectons uniquement les informations nécessaires au fonctionnement de l'application : email, données d'entraînement, poids corporel.</p>
+                  <h4 className="font-semibold text-foreground">Utilisation des données</h4>
+                  <p>Vos données sont utilisées exclusivement pour vous fournir les fonctionnalités de l'application.</p>
+                  <h4 className="font-semibold text-foreground">Sécurité</h4>
+                  <p>Nous mettons en œuvre des mesures de sécurité pour protéger vos données personnelles.</p>
+                  <h4 className="font-semibold text-foreground">Vos droits</h4>
+                  <p>Vous pouvez à tout moment accéder, modifier ou supprimer vos données en nous contactant.</p>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={legalDialogOpen === "legal"} onOpenChange={(open) => setLegalDialogOpen(open ? "legal" : null)}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" className="w-full justify-start text-sm h-9">
+                  Mentions légales
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-h-[80vh] overflow-y-auto rounded-2xl"> {/* arrondi ajouté */}
+                <DialogHeader>
+                  <DialogTitle>Mentions légales</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 text-sm text-muted-foreground">
+                  <h4 className="font-semibold text-foreground">Éditeur</h4>
+                  <p>LIFTLOG - Application de suivi d'entraînement sportif</p>
+                  <h4 className="font-semibold text-foreground">Hébergement</h4>
+                  <p>Les données sont hébergées de manière sécurisée sur des serveurs certifiés.</p>
+                  <h4 className="font-semibold text-foreground">Propriété intellectuelle</h4>
+                  <p>Tous les éléments de l'application (design, logos, textes) sont protégés par le droit d'auteur.</p>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={legalDialogOpen === "contact"} onOpenChange={(open) => setLegalDialogOpen(open ? "contact" : null)}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" className="w-full justify-start text-sm h-9">
+                  Contact
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="rounded-2xl"> {/* arrondi ajouté */}
+                <DialogHeader>
+                  <DialogTitle>Nous contacter</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 text-sm text-muted-foreground">
+                  <p>Pour toute question ou demande concernant l'application :</p>
+                  <p className="text-foreground">Email : support@liftlog.app</p>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </Card>
       </main>
 
       {/* Fixed Bottom Navigation */}
