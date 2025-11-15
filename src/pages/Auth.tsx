@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -14,6 +15,7 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
+  const [oauthUnavailableOpen, setOauthUnavailableOpen] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -68,35 +70,13 @@ const Auth = () => {
   };
 
   const handleGoogleSignIn = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/`,
-      },
-    });
-    if (error) {
-      toast({
-        title: "Erreur",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
+    // Affiche le dialog d'indisponibilité pour l'instant
+    setOauthUnavailableOpen(true);
   };
 
   const handleAppleSignIn = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'apple',
-      options: {
-        redirectTo: `${window.location.origin}/`,
-      },
-    });
-    if (error) {
-      toast({
-        title: "Erreur",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
+    // Affiche le dialog d'indisponibilité pour l'instant
+    setOauthUnavailableOpen(true);
   };
 
   return (
@@ -232,6 +212,21 @@ const Auth = () => {
             {isLogin ? "Pas de compte ? S'inscrire" : "Déjà un compte ? Se connecter"}
           </Button>
         )}
+
+        {/* Dialog d'indisponibilité OAuth */}
+        <Dialog open={oauthUnavailableOpen} onOpenChange={setOauthUnavailableOpen}>
+          <DialogContent className="max-w-[95vw] sm:max-w-md rounded-2xl bg-card">
+            <DialogHeader>
+              <DialogTitle>Indisponible</DialogTitle>
+              <DialogDescription>
+                L'authentification via Google / Apple n'est pas disponible pour le moment. Réessayez plus tard.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button onClick={() => setOauthUnavailableOpen(false)}>Fermer</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </Card>
     </div>
   );

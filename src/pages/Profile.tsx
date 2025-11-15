@@ -12,6 +12,17 @@ import { WorkoutReminderSettings } from "@/components/WorkoutReminderSettings";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -19,12 +30,11 @@ const Profile = () => {
   const { preferences, loading, updatePreferences } = useUserPreferences();
   const { theme, setTheme } = useTheme();
   const [userEmail, setUserEmail] = useState<string>("");
-  const [newEmail, setNewEmail] = useState("");
+  const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [bodyweight, setBodyweight] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [legalDialogOpen, setLegalDialogOpen] = useState<string | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false); // <-- nouveau
 
   useEffect(() => {
     const getUser = async () => {
@@ -48,22 +58,90 @@ const Profile = () => {
     navigate("/auth");
   };
 
+  const handleDeleteAccount = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("Not authenticated");
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to delete account');
+      }
+
+      toast({ 
+        title: "Compte supprimé", 
+        description: "Votre compte a été supprimé avec succès" 
+      });
+      navigate("/auth");
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleUpdateProfile = async () => {
     try {
-      if (newEmail) {
-        const { error } = await supabase.auth.updateUser({ email: newEmail });
-        if (error) throw error;
-        toast({ title: "Email mis à jour avec succès" });
-        setUserEmail(newEmail);
+      if (!oldPassword) {
+        toast({
+          title: "Erreur",
+          description: "Veuillez entrer votre ancien mot de passe",
+          variant: "destructive",
+        });
+        return;
       }
-      
-      if (newPassword) {
-        const { error } = await supabase.auth.updateUser({ password: newPassword });
-        if (error) throw error;
-        toast({ title: "Mot de passe mis à jour avec succès" });
+
+      if (!newPassword) {
+        toast({
+          title: "Erreur",
+          description: "Veuillez entrer un nouveau mot de passe",
+          variant: "destructive",
+        });
+        return;
       }
+
+      // Verify old password by attempting to sign in
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) {
+        throw new Error("Utilisateur non trouvé");
+      }
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: oldPassword,
+      });
+
+      if (signInError) {
+        toast({
+          title: "Erreur",
+          description: "L'ancien mot de passe est incorrect",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // If old password is correct, update to new password
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
       
-      setNewEmail("");
+      toast({ title: "Mot de passe mis à jour avec succès" });
+      
+      setOldPassword("");
       setNewPassword("");
       setIsDialogOpen(false);
     } catch (error: any) {
@@ -108,16 +186,6 @@ const Profile = () => {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    // Ne rien supprimer pour l'instant, juste afficher l'erreur demandée
-    setIsDeleteDialogOpen(false);
-    toast({
-      title: "Impossible de supprimer le compte",
-      description: "Vous ne pouvez pas supprimer le compte pour le moment. Réessayez plus tard.",
-      variant: "destructive",
-    });
-  };
-
   return (
     <div className="flex min-h-screen flex-col bg-background pb-20 pt-12">
       {/* Header */}
@@ -144,31 +212,31 @@ const Profile = () => {
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="ghost" className="w-full justify-start text-sm h-9">
-                  Modifier le profil
+                  Modifier le mot de passe
                 </Button>
               </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Modifier le profil</DialogTitle>
-                  <DialogDescription>
-                    Modifiez votre email ou mot de passe
-                  </DialogDescription>
-                </DialogHeader>
+              <DialogContent className="max-w-[95vw] sm:max-w-md rounded-2xl bg-card">
+               <DialogHeader>
+                 <DialogTitle>Modifier le mot de passe</DialogTitle>
+                 <DialogDescription>
+                   Entrez votre ancien et nouveau mot de passe
+                 </DialogDescription>
+               </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email">Nouvel email</Label>
+                    <Label htmlFor="old-password">Ancien mot de passe</Label>
                     <Input
-                      id="email"
-                      type="email"
-                      placeholder={userEmail}
-                      value={newEmail}
-                      onChange={(e) => setNewEmail(e.target.value)}
+                      id="old-password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={oldPassword}
+                      onChange={(e) => setOldPassword(e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="password">Nouveau mot de passe</Label>
+                    <Label htmlFor="new-password">Nouveau mot de passe</Label>
                     <Input
-                      id="password"
+                      id="new-password"
                       type="password"
                       placeholder="••••••••"
                       value={newPassword}
@@ -232,30 +300,36 @@ const Profile = () => {
           Déconnexion
         </Button>
 
-        {/* Bouton Supprimer le compte */}
-        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="destructive" className="w-full h-10 mb-4">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button 
+              variant="outline" 
+              className="w-full h-10 mb-3 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            >
               <Trash2 className="h-4 w-4 mr-2" />
               Supprimer le compte
             </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-card rounded-2xl max-w-[95vw] sm:max-w-md"> {/* arrondi sur mobile */}
-            <DialogHeader>
-              <DialogTitle>Supprimer le compte</DialogTitle>
-              <DialogDescription>Êtes-vous sûr ? Cette action est irréversible.</DialogDescription>
-            </DialogHeader>
-            <div className="py-4 text-sm text-muted-foreground">
-              <p>Toutes vos données seront définitivement supprimées.</p>
-            </div>
-            <DialogFooter>
-              <Button variant="ghost" onClick={() => setIsDeleteDialogOpen(false)}>Annuler</Button>
-              <Button variant="destructive" onClick={handleDeleteAccount}>Confirmer la suppression</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          </AlertDialogTrigger>
+          <AlertDialogContent className="max-w-[95vw] sm:max-w-md rounded-2xl bg-card">
+           <AlertDialogHeader>
+             <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+             <AlertDialogDescription>
+               Cette action est irréversible. Toutes vos données (entraînements, exercices, statistiques) seront définitivement supprimées.
+             </AlertDialogDescription>
+           </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Annuler</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteAccount}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Supprimer définitivement
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
-        {/* INFORMATIONS LÉGALES - ajouter rounded-2xl aux DialogContent existants */}
+        {/* Legal Section */}
         <Card className="p-4 bg-card mb-3">
           <h3 className="text-sm font-light tracking-wider mb-3">INFORMATIONS LÉGALES</h3>
           <div className="space-y-2">
@@ -265,10 +339,10 @@ const Profile = () => {
                   Conditions d'utilisation
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-h-[80vh] overflow-y-auto rounded-2xl"> {/* arrondi ajouté */}
-                <DialogHeader>
-                  <DialogTitle>Conditions d'utilisation</DialogTitle>
-                </DialogHeader>
+              <DialogContent className="max-h-[80vh] overflow-y-auto rounded-2xl bg-card">
+                 <DialogHeader>
+                   <DialogTitle>Conditions d'utilisation</DialogTitle>
+                 </DialogHeader>
                 <div className="space-y-4 text-sm text-muted-foreground">
                   <p>En utilisant cette application, vous acceptez les conditions suivantes :</p>
                   <h4 className="font-semibold text-foreground">1. Utilisation de l'application</h4>
@@ -287,10 +361,10 @@ const Profile = () => {
                   Politique de confidentialité
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-h-[80vh] overflow-y-auto rounded-2xl"> {/* arrondi ajouté */}
-                <DialogHeader>
-                  <DialogTitle>Politique de confidentialité</DialogTitle>
-                </DialogHeader>
+              <DialogContent className="max-h-[80vh] overflow-y-auto rounded-2xl bg-card">
+                 <DialogHeader>
+                   <DialogTitle>Politique de confidentialité</DialogTitle>
+                 </DialogHeader>
                 <div className="space-y-4 text-sm text-muted-foreground">
                   <h4 className="font-semibold text-foreground">Collecte des données</h4>
                   <p>Nous collectons uniquement les informations nécessaires au fonctionnement de l'application : email, données d'entraînement, poids corporel.</p>
@@ -310,17 +384,25 @@ const Profile = () => {
                   Mentions légales
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-h-[80vh] overflow-y-auto rounded-2xl"> {/* arrondi ajouté */}
-                <DialogHeader>
-                  <DialogTitle>Mentions légales</DialogTitle>
-                </DialogHeader>
+              <DialogContent className="max-h-[80vh] overflow-y-auto rounded-2xl bg-card">
+                 <DialogHeader>
+                   <DialogTitle>Mentions légales</DialogTitle>
+                 </DialogHeader>
                 <div className="space-y-4 text-sm text-muted-foreground">
                   <h4 className="font-semibold text-foreground">Éditeur</h4>
                   <p>LIFTLOG - Application de suivi d'entraînement sportif</p>
                   <h4 className="font-semibold text-foreground">Hébergement</h4>
-                  <p>Les données sont hébergées de manière sécurisée sur des serveurs certifiés.</p>
+                  <p>L'application LiftLog est hébergée sur des serveurs sécurisés, utilisant des technologies de protection avancées pour garantir la sécurité de tes données et de ton expérience utilisateur.
+
+Nous mettons en place des mesures de sécurité rigoureuses pour protéger les informations stockées, y compris le chiffrement des données sensibles, la surveillance des serveurs en temps réel, ainsi que des protocoles de sauvegarde réguliers pour assurer la continuité des services.
+
+Bien que nous prenions toutes les précautions nécessaires pour garantir un environnement sécurisé, il est important de noter qu’aucun système n'est totalement à l'abri des risques. En utilisant LiftLog, tu reconnais accepter ces risques tout en bénéficiant de la sécurité renforcée que nous mettons en place.</p>
                   <h4 className="font-semibold text-foreground">Propriété intellectuelle</h4>
-                  <p>Tous les éléments de l'application (design, logos, textes) sont protégés par le droit d'auteur.</p>
+                  <p>L'application LiftLog et tous ses éléments associés (design, code, fonctionnalités, contenu, logos, etc.) sont la propriété exclusive de Loupiaup. Toute utilisation non autorisée, reproduction, modification, distribution ou exploitation de l'application, en tout ou en partie, est interdite.
+
+L'accès à LiftLog est accordé uniquement pour une utilisation personnelle et non commerciale. Toute tentative de décompilation, d'ingénierie inverse ou de reproduction du code source est strictement interdite.
+
+En utilisant LiftLog, tu reconnais que l’application et son contenu sont protégés par des droits de propriété intellectuelle, y compris des droits d’auteur et des marques déposées, et tu t’engages à respecter ces droits.</p>
                 </div>
               </DialogContent>
             </Dialog>
@@ -331,13 +413,16 @@ const Profile = () => {
                   Contact
                 </Button>
               </DialogTrigger>
-              <DialogContent className="rounded-2xl"> {/* arrondi ajouté */}
-                <DialogHeader>
-                  <DialogTitle>Nous contacter</DialogTitle>
-                </DialogHeader>
+              <DialogContent className="max-w-[95vw] sm:max-w-md rounded-2xl bg-card">
+                 <DialogHeader>
+                   <DialogTitle>Nous contacter</DialogTitle>
+                 </DialogHeader>
                 <div className="space-y-4 text-sm text-muted-foreground">
                   <p>Pour toute question ou demande concernant l'application :</p>
-                  <p className="text-foreground">Email : support@liftlog.app</p>
+                  <p className="text-foreground">Email : support@liftlog.app 
+                  
+                    Discord: loupiaup207
+                  </p>
                 </div>
               </DialogContent>
             </Dialog>
