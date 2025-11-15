@@ -421,7 +421,7 @@ En utilisant LiftLog, tu reconnais que lâ€™application et son contenu sont protÃ
                   <p>Pour toute question ou demande concernant l'application :</p>
                   <p className="text-foreground">Email : support@liftlog.app 
                   
-                    Discord: loupiaup207
+Discord: loupiaup207
                   </p>
                 </div>
               </DialogContent>

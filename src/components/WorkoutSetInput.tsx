@@ -50,7 +50,8 @@ export const WorkoutSetInput = ({
       <div className="flex gap-2 items-center">
         <span className="text-sm font-medium w-12">Série {setNumber}</span>
         <Input
-          type="number"
+          type="text"
+          inputMode="numeric"
           placeholder="Reps"
           value={reps}
           onChange={(e) => setReps(e.target.value)}
@@ -77,12 +78,12 @@ export const WorkoutSetInput = ({
           </Button>
           {isWeighted && (
             <Input
-              type="number"
+              type="text"
+              inputMode="decimal"
               placeholder="kg lest"
               value={additionalWeight}
               onChange={(e) => setAdditionalWeight(e.target.value)}
               className="w-24 h-9"
-              step="0.5"
             />
           )}
         </div>
