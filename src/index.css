@@ -104,4 +104,40 @@ All colors MUST be HSL.
     transform: scale(0.97); /* Ajoute un effet de "pression" */
     transition: transform 0.05s; /* Rend la transition rapide et agréable */
   }
+
+  /* Masquer la scrollbar sur mobile */
+  html {
+    -webkit-appearance: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Masquer la scrollbar mais garder la fonction de scroll */
+  html::-webkit-scrollbar {
+    display: none;
+  }
+
+  html {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    overflow-y: scroll; /* Force scroll si contenu > viewport */
+  }
+
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
+  body {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+
+  /* Pour tous les éléments scrollables */
+  * {
+    scrollbar-width: none; /* Firefox */
+  }
+
+  *::-webkit-scrollbar {
+    display: none;
+  }
 }

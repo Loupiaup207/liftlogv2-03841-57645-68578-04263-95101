@@ -259,8 +259,8 @@ const Profile = () => {
               <div className="flex gap-2">
                 <Input
                   id="bodyweight"
-                  type="number"
-                  step="0.1"
+                  type="text"
+                  inputMode="decimal"
                   placeholder="75.0"
                   value={bodyweight}
                   onChange={(e) => setBodyweight(e.target.value)}

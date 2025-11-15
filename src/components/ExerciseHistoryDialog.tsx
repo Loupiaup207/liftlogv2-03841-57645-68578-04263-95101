@@ -49,7 +49,6 @@ export const ExerciseHistoryDialog = ({
   const { toast } = useToast();
   const { preferences } = useUserPreferences();
 
-  // Utiliser les hooks de cache - les données sont instantanées depuis le cache
   const { data: sets = [], isLoading: setsLoading } = useCachedWorkoutSets(exerciseId, open);
   const { data: exerciseDetails, isLoading: detailsLoading } = useCachedExerciseDetails(exerciseId, open);
   const addSetMutation = useAddWorkoutSet();
@@ -64,20 +63,31 @@ export const ExerciseHistoryDialog = ({
       setEditedEquipment(exerciseDetails.equipment || "");
       setEditedNotes(exerciseDetails.notes || "");
 
-      if (isBodyweightExercise && preferences?.current_bodyweight) {
-        setNewWeight(String(preferences.current_bodyweight));
-      }
-    }
-  }, [open, exerciseDetails, isBodyweightExercise, preferences]);
-
-  useEffect(() => {
-    if (open) {
+      // Récupérer les dernières valeurs depuis localStorage (en strings)
       const lastWeight = localStorage.getItem(`exercise_${exerciseId}_weight`);
+      const lastReps = localStorage.getItem(`exercise_${exerciseId}_reps`);
+      const lastAdditionalWeight = localStorage.getItem(`exercise_${exerciseId}_additionalWeight`);
+
+      // Pré-remplir les reps
+      if (lastReps) {
+        setNewReps(lastReps);
+      }
+
+      // Pré-remplir le poids
       if (lastWeight && !isBodyweightExercise) {
-        setNewWeight(lastWeight);
+        setNewWeight(lastWeight); // <-- déjà une string depuis localStorage
+      } else if (isBodyweightExercise && preferences?.current_bodyweight) {
+        setNewWeight(String(preferences.current_bodyweight)); // <-- convertir en string
+      }
+
+      // Pré-remplir le poids additionnel (lesté)
+      if (isBodyweightExercise && lastAdditionalWeight) {
+        setAdditionalWeight(lastAdditionalWeight);
+        setIsWeighted(true); // activer le bouton lesté
       }
     }
-  }, [open, exerciseId, isBodyweightExercise]);
+  }, [open, exerciseDetails, isBodyweightExercise, preferences, exerciseId]);
+
 
   const addSet = async () => {
     try {
@@ -94,10 +104,18 @@ export const ExerciseHistoryDialog = ({
         isBodyweight: isBodyweightExercise,
       });
       
-      localStorage.setItem(`exercise_${exerciseId}_weight`, weightNum.toString());
+      // Sauvegarder les dernières valeurs utilisées (en strings)
+      localStorage.setItem(`exercise_${exerciseId}_weight`, newWeight);
+      localStorage.setItem(`exercise_${exerciseId}_reps`, newReps);
+      if (isBodyweightExercise && isWeighted) {
+        localStorage.setItem(`exercise_${exerciseId}_additionalWeight`, additionalWeight);
+      }
+      
       toast({ title: "Série ajoutée!" });
-      setIsWeighted(false);
-      setAdditionalWeight("");
+      // Ne pas vider les champs — garder les dernières valeurs
+      // setNewReps("");
+      // setNewWeight("");
+      // setIsWeighted(false);
     } catch (error: any) {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
     }
@@ -402,12 +420,12 @@ export const ExerciseHistoryDialog = ({
                 </Button>
                 {isWeighted && (
                   <Input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     placeholder="kg lest"
                     value={additionalWeight}
-                    onChange={(e) => setAdditionalWeight(parseFloat(e.target.value) || 0)}
+                    onChange={(e) => setAdditionalWeight(e.target.value)}
                     className="w-24 h-9"
-                    step="0.5"
                   />
                 )}
               </div>
