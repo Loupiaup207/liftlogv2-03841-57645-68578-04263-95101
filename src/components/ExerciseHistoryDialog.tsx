@@ -75,9 +75,9 @@ export const ExerciseHistoryDialog = ({
 
       // Pré-remplir le poids
       if (lastWeight && !isBodyweightExercise) {
-        setNewWeight(lastWeight); // <-- déjà une string depuis localStorage
-      } else if (isBodyweightExercise && preferences?.current_bodyweight) {
-        setNewWeight(String(preferences.current_bodyweight)); // <-- convertir en string
+        setNewWeight(lastWeight);
+      } else if (isBodyweightExercise && preferences) {
+        setNewWeight(String(70)); // Valeur par défaut
       }
 
       // Pré-remplir le poids additionnel (lesté)
@@ -205,17 +205,7 @@ export const ExerciseHistoryDialog = ({
       }
     }
 
-    // Masquer l'exercice
-    const { error } = await supabase
-      .from("user_hidden_exercises")
-      .upsert({ user_id: user.id, exercise_id: exerciseId }, { onConflict: "user_id,exercise_id" });
-
-    if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
-      return;
-    }
-
-    toast({ title: "Exercice et historique supprimés" });
+    toast({ title: "Exercice supprimé", description: "L'exercice et son historique ont été supprimés." });
     onOpenChange(false);
     window.location.reload();
   };
@@ -377,7 +367,7 @@ export const ExerciseHistoryDialog = ({
                     const next = Math.max(0, current - 2.5);
                     setNewWeight(String(next));
                   }}
-                  disabled={isBodyweightExercise && !!preferences?.current_bodyweight}
+                  disabled={isBodyweightExercise}
                 >
                   <Minus className="h-3 w-3" />
                 </Button>
@@ -387,8 +377,8 @@ export const ExerciseHistoryDialog = ({
                   value={newWeight}
                   onChange={(e) => setNewWeight(e.target.value)}
                   className="w-14 h-8 text-center text-sm"
-                  disabled={isBodyweightExercise && !!preferences?.current_bodyweight}
-                  readOnly={isBodyweightExercise && !!preferences?.current_bodyweight}
+                  disabled={isBodyweightExercise}
+                  readOnly={isBodyweightExercise}
                 />
                 <Button
                   variant="ghost"
@@ -399,7 +389,7 @@ export const ExerciseHistoryDialog = ({
                     const next = current + 2.5;
                     setNewWeight(String(next));
                   }}
-                  disabled={isBodyweightExercise && !!preferences?.current_bodyweight}
+                  disabled={isBodyweightExercise}
                 >
                   <Plus className="h-3 w-3" />
                 </Button>

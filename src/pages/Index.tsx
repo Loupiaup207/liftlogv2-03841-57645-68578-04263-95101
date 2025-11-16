@@ -56,7 +56,7 @@ const Index = () => {
       </div>
 
       {/* Navigation Buttons - Fixed */}
-        <nav className="fixed top-[92px] left-0 right-0 z-50 bg-background flex gap-2 px-4 py-2">
+        <nav className="fixed top-[92px] left-0 right-0 z-50 bg-background flex gap-2 px-4 pb-2">
         <Button
           variant="minimal"
           className={`flex-1 h-12 rounded-lg ${activeTab === "library" ? "bg-accent" : ""}`}
@@ -83,7 +83,7 @@ const Index = () => {
       </nav>
 
       {/* Content Area */}
-      <main className="flex-1 overflow-y-auto mt-[156px]">
+      <main className="flex-1 overflow-y-auto mt-[148px]">
         <div className={activeTab === "library" ? "" : "hidden"}>
           <Library />
         </div>

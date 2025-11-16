@@ -19,23 +19,16 @@ export const useCachedExercises = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      const [hiddenRes, exRes] = await Promise.all([
-        supabase
-          .from("user_hidden_exercises")
-          .select("exercise_id")
-          .eq("user_id", user.id),
-        supabase
-          .from("exercises")
-          .select("*")
-          .order("name"),
-      ]);
+      const { data, error } = await supabase
+        .from("exercises")
+        .select("*")
+        .order("name");
 
-      if (hiddenRes.error || exRes.error) throw new Error("Erreur de chargement");
+      if (error) throw new Error("Erreur de chargement");
 
-      const hiddenIds = new Set((hiddenRes.data || []).map((h: { exercise_id: string }) => h.exercise_id));
-      return (exRes.data || []).filter((ex) => !hiddenIds.has(ex.id));
+      return data || [];
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: Infinity,
   });
 };
 
@@ -83,18 +76,9 @@ export const useCachedPinnedExercises = () => {
   return useQuery({
     queryKey: ["pinned-exercises"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return new Set<string>();
-
-      const { data, error } = await supabase
-        .from("pinned_exercises")
-        .select("exercise_id")
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-      return new Set(data?.map((p) => p.exercise_id) || []);
+      return new Set<string>();
     },
-    staleTime: 10 * 60 * 1000,
+    staleTime: Infinity,
   });
 };
 
@@ -103,31 +87,9 @@ export const useCachedTodayProgram = () => {
   return useQuery({
     queryKey: ["today-program"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return { muscles: [], secondaryExercises: [] };
-
-      const today = new Date().getDay();
-      
-      const { data, error } = await supabase
-        .from("user_weekly_programs")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("day_of_week", today)
-        .maybeSingle();
-
-      if (error || !data) return { muscles: [], secondaryExercises: [] };
-
-      const muscles = data.muscle_group.split(',').filter(Boolean);
-      const secondaryExercises = data.secondary_muscle 
-        ? data.secondary_muscle.split(',').filter(Boolean)
-        : [];
-      
-      return { 
-        muscles: muscles.filter((m: string) => m !== "rest"), 
-        secondaryExercises 
-      };
+      return { muscles: [], secondaryExercises: [] };
     },
-    staleTime: 10 * 60 * 1000,
+    staleTime: Infinity,
   });
 };
 

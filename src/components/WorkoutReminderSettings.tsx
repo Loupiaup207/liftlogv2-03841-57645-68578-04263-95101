@@ -18,8 +18,8 @@ export const WorkoutReminderSettings = () => {
 
   useEffect(() => {
     if (preferences) {
-      setReminderEnabled(preferences.reminder_enabled);
-      setReminderTime(preferences.workout_reminder_time || "18:00");
+      setReminderEnabled(false);
+      setReminderTime("18:00");
     }
   }, [preferences]);
 
@@ -41,9 +41,9 @@ export const WorkoutReminderSettings = () => {
 
       try {
         await scheduleWorkoutReminder(reminderTime);
-        await updatePreferences({
-          reminder_enabled: true,
-          workout_reminder_time: reminderTime,
+        toast({
+          title: "Fonctionnalité temporairement désactivée",
+          description: "Les rappels seront disponibles prochainement.",
         });
       } catch (error) {
         toast({
@@ -55,9 +55,6 @@ export const WorkoutReminderSettings = () => {
       }
     } else {
       await cancelWorkoutReminder();
-      await updatePreferences({
-        reminder_enabled: false,
-      });
     }
   };
 
@@ -65,8 +62,9 @@ export const WorkoutReminderSettings = () => {
     if (reminderEnabled) {
       try {
         await scheduleWorkoutReminder(reminderTime);
-        await updatePreferences({
-          workout_reminder_time: reminderTime,
+        toast({
+          title: "Fonctionnalité temporairement désactivée",
+          description: "Les rappels seront disponibles prochainement.",
         });
       } catch (error) {
         toast({
@@ -75,10 +73,6 @@ export const WorkoutReminderSettings = () => {
           variant: "destructive",
         });
       }
-    } else {
-      await updatePreferences({
-        workout_reminder_time: reminderTime,
-      });
     }
   };
 
