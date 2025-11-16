@@ -140,4 +140,9 @@ All colors MUST be HSL.
   *::-webkit-scrollbar {
     display: none;
   }
+
+  /* Réserver l'espace de la scrollbar pour éviter les sauts de layout */
+  html, body {
+    scrollbar-gutter: stable;
+  }
 }
