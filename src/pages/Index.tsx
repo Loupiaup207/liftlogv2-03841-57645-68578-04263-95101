@@ -48,7 +48,7 @@ const Index = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background pb-20">
       {/* Titre Liftlog - Fixed */}
-      <div className="fixed top-0 left-0 right-0 z-40 bg-background px-4 h-16 flex items-center justify-center border-b border-border max-w-[390px] mx-auto">
+      <div className="fixed top-0 left-0 right-0 z-40 bg-background px-4 h-16 flex items-center justify-center border-b border-border">
         <h1 className="text-2xl font-light tracking-widest text-foreground text-center">
           LIFTLOG
         </h1>
