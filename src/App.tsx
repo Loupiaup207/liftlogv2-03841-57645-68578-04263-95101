@@ -11,6 +11,7 @@ import Workout from "./pages/Workout";
 import Nutrition from "./pages/Nutrition";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import { PageTransition } from "./components/PageTransition";
 import { initializeWebNotifications } from "./lib/notifications";
 
 const App = () => {
