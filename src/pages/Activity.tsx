@@ -112,7 +112,8 @@ const Activity = () => {
           exercises(name, category)
         )
       `)
-      .order("started_at", { ascending: false });
+      .order("started_at", { ascending: false })
+      .limit(10000);
 
     if (error) {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });

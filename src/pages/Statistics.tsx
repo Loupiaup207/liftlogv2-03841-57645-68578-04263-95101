@@ -175,7 +175,8 @@ const Statistics = () => {
         const { data: sets } = await supabase
           .from("workout_sets")
           .select("weight")
-          .eq("exercise_id", goal.exercise_id);
+          .eq("exercise_id", goal.exercise_id)
+          .limit(50000);
 
         const maxWeight = sets && sets.length > 0
           ? Math.max(...sets.map(s => s.weight || 0))
@@ -211,7 +212,8 @@ const Statistics = () => {
         exercise_id,
         exercises (category)
       `)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(50000);
 
     if (!workouts) return;
 
@@ -315,7 +317,8 @@ const Statistics = () => {
       .from("workout_sets")
       .select("weight, reps, created_at, is_bodyweight, additional_weight")
       .eq("exercise_id", exerciseId)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: true })
+      .limit(50000);
 
     if (error || !sets) return;
 
