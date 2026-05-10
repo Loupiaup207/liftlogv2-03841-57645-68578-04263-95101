@@ -29,7 +29,7 @@ const Profile = () => {
   const { toast } = useToast();
   const { preferences, loading, updatePreferences } = useUserPreferences();
   const { theme, setTheme } = useTheme();
-  const [userEmail, setUserEmail] = useState<string>("");
+  const [userEmail, setUserEmail] = useState<string>(() => localStorage.getItem("liftlog_user_email") || "");
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [bodyweight, setBodyweight] = useState<string>("");
@@ -41,6 +41,7 @@ const Profile = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user?.email) {
         setUserEmail(user.email);
+        localStorage.setItem("liftlog_user_email", user.email);
       }
     };
     getUser();
