@@ -88,6 +88,14 @@ export default {
           from: { transform: "translate3d(0, 0, 0)", opacity: "1" },
           to: { transform: "translate3d(-100%, 0, 0)", opacity: "0" },
         },
+        "dialog-slide-from-right": {
+          from: { transform: "translate(100vw, -50%)", opacity: "0" },
+          to: { transform: "translate(-50%, -50%)", opacity: "1" },
+        },
+        "dialog-slide-to-left": {
+          from: { transform: "translate(-50%, -50%)", opacity: "1" },
+          to: { transform: "translate(-100vw, -50%)", opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
