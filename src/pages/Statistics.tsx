@@ -175,7 +175,8 @@ const Statistics = () => {
         const { data: sets } = await supabase
           .from("workout_sets")
           .select("weight")
-          .eq("exercise_id", goal.exercise_id);
+          .eq("exercise_id", goal.exercise_id)
+          .limit(50000);
 
         const maxWeight = sets && sets.length > 0
           ? Math.max(...sets.map(s => s.weight || 0))
