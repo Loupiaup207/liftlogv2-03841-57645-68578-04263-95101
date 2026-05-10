@@ -212,7 +212,8 @@ const Statistics = () => {
         exercise_id,
         exercises (category)
       `)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(50000);
 
     if (!workouts) return;
 
