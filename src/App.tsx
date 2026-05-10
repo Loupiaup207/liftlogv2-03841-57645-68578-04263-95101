@@ -11,6 +11,7 @@ import Workout from "./pages/Workout";
 import Nutrition from "./pages/Nutrition";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import { PageTransition } from "./components/PageTransition";
 import { initializeWebNotifications } from "./lib/notifications";
 
 const App = () => {
@@ -38,15 +39,17 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/workout/:id" element={<Workout />} />
-              <Route path="/nutrition" element={<Nutrition />} />
-              <Route path="/profile" element={<Profile />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <PageTransition>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/workout/:id" element={<Workout />} />
+                <Route path="/nutrition" element={<Nutrition />} />
+                <Route path="/profile" element={<Profile />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </PageTransition>
           </BrowserRouter>
         </TooltipProvider>
       </ThemeProvider>
