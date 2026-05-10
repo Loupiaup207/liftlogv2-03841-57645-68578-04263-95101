@@ -55,6 +55,7 @@ const Profile = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    localStorage.removeItem("liftlog_user_email");
     toast({ title: "Déconnexion réussie" });
     navigate("/auth");
   };
