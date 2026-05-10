@@ -80,10 +80,20 @@ export default {
             height: "0",
           },
         },
+        "slide-from-right": {
+          from: { transform: "translate3d(100%, 0, 0)", opacity: "0" },
+          to: { transform: "translate3d(0, 0, 0)", opacity: "1" },
+        },
+        "slide-to-left": {
+          from: { transform: "translate3d(0, 0, 0)", opacity: "1" },
+          to: { transform: "translate3d(-100%, 0, 0)", opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "slide-from-right": "slide-from-right 0.3s cubic-bezier(0.32, 0.72, 0, 1)",
+        "slide-to-left": "slide-to-left 0.3s cubic-bezier(0.32, 0.72, 0, 1)",
       },
       padding: {
         safe: "env(safe-area-inset-top)",
