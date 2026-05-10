@@ -317,7 +317,8 @@ const Statistics = () => {
       .from("workout_sets")
       .select("weight, reps, created_at, is_bodyweight, additional_weight")
       .eq("exercise_id", exerciseId)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: true })
+      .limit(50000);
 
     if (error || !sets) return;
 
