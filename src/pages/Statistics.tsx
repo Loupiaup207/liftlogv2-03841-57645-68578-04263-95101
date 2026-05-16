@@ -382,8 +382,8 @@ const Statistics = () => {
   };
 
   return (
-    <div className="p-6 space-y-6 pt-safe">
-      <h1 className="text-2xl font-light tracking-wide pt-2">STATISTIQUES</h1>
+    <div className="px-4 sm:px-6 space-y-6 pt-safe">
+      <h1 className="text-2xl font-light tracking-wide">STATISTIQUES</h1>
 
       {/* Répartition des muscles */}
       <section className="space-y-3">

@@ -392,7 +392,7 @@ const Profile = () => {
                  </DialogHeader>
                 <div className="space-y-4 text-sm text-muted-foreground">
                   <h4 className="font-semibold text-foreground">Éditeur</h4>
-                  <p>LIFTLOG - Application de suivi d'entraînement sportif</p>
+                  <p>Loupiaup</p>
                   <h4 className="font-semibold text-foreground">Hébergement</h4>
                   <p>L'application LiftLog est hébergée sur des serveurs sécurisés, utilisant des technologies de protection avancées pour garantir la sécurité de tes données et de ton expérience utilisateur.
 
@@ -421,7 +421,7 @@ En utilisant LiftLog, tu reconnais que l’application et son contenu sont prot�
                  </DialogHeader>
                 <div className="space-y-4 text-sm text-muted-foreground">
                   <p>Pour toute question ou demande concernant l'application :</p>
-                  <p className="text-foreground">Email : support@liftlog.app 
+                  <p className="text-foreground">Email : support@liftlog.fr 
                   
 Discord: loupiaup207
                   </p>

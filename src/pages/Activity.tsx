@@ -187,8 +187,8 @@ const Activity = () => {
   const allCompleted = filteredWorkouts.length > 0 && filteredWorkouts.every(w => w.completed_at);
 
   return (
-    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-      <h1 className="text-xl sm:text-2xl font-light tracking-wide pt-2">ACTIVITÉ</h1>
+    <div className="px-4 sm:px-6 space-y-4 sm:space-y-6">
+      <h1 className="text-xl sm:text-2xl font-light tracking-wide">ACTIVITÉ</h1>
 
       {/* Month/Year Navigation */}
       <div className="flex items-center justify-between gap-4">
