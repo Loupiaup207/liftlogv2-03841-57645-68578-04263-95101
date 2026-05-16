@@ -219,8 +219,14 @@ export const ExerciseHistoryDialog = ({
  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card w-screen max-w-none max-h-none m-0 rounded-none overflow-hidden flex flex-col [&>button]:hidden p-0" style={{ height: '100dvh' }}>
-        <div className="flex-1 overflow-y-auto px-4 pb-8" style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'calc(2rem + env(safe-area-inset-bottom))' }}>
+      <DialogContent className="bg-card w-screen [&>button]:hidden">
+        <div
+          className="flex-1 overflow-y-auto px-4"
+          style={{
+            paddingTop: 'env(safe-area-inset-top)',
+            paddingBottom: 'calc(2rem + env(safe-area-inset-bottom))',
+          }}
+        >
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 pt-4">
           <div className="flex items-center gap-2">
             <Button
