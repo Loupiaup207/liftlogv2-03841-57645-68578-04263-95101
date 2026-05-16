@@ -49,7 +49,10 @@ const Index = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background pb-20">
       {/* Header - Fixed */}
-      <div className="fixed top-0 left-0 right-0 z-40 bg-background px-4 h-16 flex items-center justify-center border-b border-border">
+      <div
+        className="fixed top-0 left-0 right-0 z-40 bg-background px-4 h-16 flex items-center justify-center border-b border-border"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
         <h1 className="text-2xl font-light tracking-widest text-foreground text-center">
           LIFTLOG
         </h1>
@@ -57,7 +60,10 @@ const Index = () => {
  
       {/* Top Nav Tabs (Librairie / Stats / Activité) - masqué sur Profil */}
       {activeTab !== "profile" && (
-        <nav className="fixed top-16 left-0 right-0 z-50 bg-background flex gap-2 px-4 py-2 max-w-[390px] mx-auto">
+        <nav
+          className="fixed left-0 right-0 z-50 bg-background flex gap-2 px-4 py-2 max-w-[390px] mx-auto"
+          style={{ top: "calc(4rem + env(safe-area-inset-top))" }}
+        >
           <Button
             variant="minimal"
             className={`flex-1 h-12 rounded-lg ${activeTab === "library" ? "bg-accent" : ""}`}
@@ -85,7 +91,14 @@ const Index = () => {
       )}
  
       {/* Content Area */}
-      <main className={`flex-1 overflow-y-auto ${activeTab !== "profile" ? "mt-32" : "mt-16"}`}>
+      <main
+        className="flex-1 overflow-y-auto"
+        style={{
+          marginTop: activeTab !== "profile"
+            ? "calc(8rem + env(safe-area-inset-top))"
+            : "calc(4rem + env(safe-area-inset-top))"
+        }}
+      >
         <div className={activeTab === "library" ? "" : "hidden"}>
           <Library />
         </div>
