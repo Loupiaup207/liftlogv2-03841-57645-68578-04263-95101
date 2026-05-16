@@ -13,14 +13,14 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useCachedWorkoutSets, useCachedExerciseDetails, useAddWorkoutSet, useDeleteWorkoutSet } from "@/hooks/useCache";
-
+ 
 interface ExerciseHistoryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   exerciseId: string;
   exerciseName: string;
 }
-
+ 
 interface WorkoutSet {
   id: string;
   reps: number;
@@ -30,7 +30,7 @@ interface WorkoutSet {
   workout_id: string;
   additional_weight?: number | null;
 }
-
+ 
 export const ExerciseHistoryDialog = ({
   open,
   onOpenChange,
@@ -48,38 +48,38 @@ export const ExerciseHistoryDialog = ({
   const [additionalWeight, setAdditionalWeight] = useState<string>("");
   const { toast } = useToast();
   const { preferences } = useUserPreferences();
-
+ 
   const { data: sets = [], isLoading: setsLoading } = useCachedWorkoutSets(exerciseId, open);
   const { data: exerciseDetails, isLoading: detailsLoading } = useCachedExerciseDetails(exerciseId, open);
   const addSetMutation = useAddWorkoutSet();
   const deleteSetMutation = useDeleteWorkoutSet();
-
+ 
   const isBodyweightExercise = exerciseDetails?.equipment === "bodyweight";
-
+ 
   useEffect(() => {
     if (open && exerciseDetails) {
       setEditedName(exerciseDetails.name);
       setEditedCategory(exerciseDetails.category || "");
       setEditedEquipment(exerciseDetails.equipment || "");
       setEditedNotes(exerciseDetails.notes || "");
-
+ 
       // Récupérer les dernières valeurs depuis localStorage (en strings)
       const lastWeight = localStorage.getItem(`exercise_${exerciseId}_weight`);
       const lastReps = localStorage.getItem(`exercise_${exerciseId}_reps`);
       const lastAdditionalWeight = localStorage.getItem(`exercise_${exerciseId}_additionalWeight`);
-
+ 
       // Pré-remplir les reps
       if (lastReps) {
         setNewReps(lastReps);
       }
-
+ 
       // Pré-remplir le poids
       if (lastWeight && !isBodyweightExercise) {
         setNewWeight(lastWeight);
       } else if (isBodyweightExercise && preferences) {
         setNewWeight(String(70)); // Valeur par défaut
       }
-
+ 
       // Pré-remplir le poids additionnel (lesté)
       if (isBodyweightExercise && lastAdditionalWeight) {
         setAdditionalWeight(lastAdditionalWeight);
@@ -87,14 +87,14 @@ export const ExerciseHistoryDialog = ({
       }
     }
   }, [open, exerciseDetails, isBodyweightExercise, preferences, exerciseId]);
-
-
+ 
+ 
   const addSet = async () => {
     try {
       const repsNum = parseInt(newReps || "0") || 0;
       const weightNum = parseFloat(newWeight || "0") || 0;
       const addWeightNum = isWeighted ? (parseFloat(additionalWeight || "0") || 0) : 0;
-
+ 
       await addSetMutation.mutateAsync({
         exerciseId,
         exerciseName,
@@ -120,7 +120,7 @@ export const ExerciseHistoryDialog = ({
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
     }
   };
-
+ 
   const deleteSet = async (setId: string) => {
     try {
       await deleteSetMutation.mutateAsync({ setId, exerciseId });
@@ -129,7 +129,7 @@ export const ExerciseHistoryDialog = ({
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
     }
   };
-
+ 
   const groupSetsByDate = () => {
     const grouped: { [key: string]: WorkoutSet[] } = {};
     
@@ -140,12 +140,12 @@ export const ExerciseHistoryDialog = ({
       }
       grouped[date].push(set);
     });
-
+ 
     return grouped;
   };
-
+ 
   const groupedSets = groupSetsByDate();
-
+ 
   const getProgressionData = () => {
     const dates = Object.keys(groupedSets).reverse().slice(-10);
     return dates.map(date => {
@@ -155,9 +155,9 @@ export const ExerciseHistoryDialog = ({
       return { date: format(new Date(dateSets[0].created_at), "dd/MM"), weight: maxWeight, reps: avgReps };
     });
   };
-
+ 
   const progressionData = getProgressionData();
-
+ 
   const updateExercise = async () => {
     const { error } = await supabase
       .from("exercises")
@@ -168,29 +168,29 @@ export const ExerciseHistoryDialog = ({
         notes: editedNotes,
       })
       .eq("id", exerciseId);
-
+ 
     if (error) {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
       return;
     }
-
+ 
     toast({ title: "Exercice modifié" });
     setIsEditing(false);
     window.location.reload();
   };
-
+ 
   const deleteExercise = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-
+ 
     // Récupérer tous les workouts de l'utilisateur
     const { data: userWorkouts } = await supabase
       .from("workouts")
       .select("id")
       .eq("user_id", user.id);
-
+ 
     const workoutIds = userWorkouts?.map(w => w.id) || [];
-
+ 
     // Supprimer tous les workout_sets de cet exercice
     if (workoutIds.length > 0) {
       const { error: setsError } = await supabase
@@ -198,29 +198,29 @@ export const ExerciseHistoryDialog = ({
         .delete()
         .eq("exercise_id", exerciseId)
         .in("workout_id", workoutIds);
-
+ 
       if (setsError) {
         toast({ title: "Erreur", description: setsError.message, variant: "destructive" });
         return;
       }
     }
-
+ 
     toast({ title: "Exercice supprimé", description: "L'exercice et son historique ont été supprimés." });
     onOpenChange(false);
     window.location.reload();
   };
-
+ 
   const getBarColor = (currentWeight: number, previousWeight: number | null) => {
     if (previousWeight === null) return "bg-yellow-500/60";
     if (currentWeight > previousWeight) return "bg-green-500/60";
     if (currentWeight < previousWeight) return "bg-red-500/60";
     return "bg-yellow-500/60";
   };
-
+ 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden">
-        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pt-12">
+      <DialogContent className="bg-card w-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden" style={{ height: '100dvh', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0" style={{ paddingTop: 'calc(3rem + env(safe-area-inset-top))' }}>
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -241,7 +241,7 @@ export const ExerciseHistoryDialog = ({
             <Edit2 className="h-4 w-4" />
           </Button>
         </DialogHeader>
-
+ 
         <div className="space-y-3 mt-2">
           {isEditing && (
             <Card className="p-4 rounded-2xl bg-accent/30 border-border/30 space-y-3">
@@ -265,7 +265,7 @@ export const ExerciseHistoryDialog = ({
                   className="text-sm"
                 />
               </div>
-
+ 
               <div className="space-y-2">
                 <Label htmlFor="equipment" className="text-xs">Équipement</Label>
                 <Input
@@ -276,7 +276,7 @@ export const ExerciseHistoryDialog = ({
                   className="text-sm"
                 />
               </div>
-
+ 
               <div className="space-y-2">
                 <Label htmlFor="notes" className="text-xs">Notes</Label>
                 <Textarea
@@ -287,7 +287,7 @@ export const ExerciseHistoryDialog = ({
                   className="text-sm min-h-[60px]"
                 />
               </div>
-
+ 
               <div className="flex gap-2 pt-2">
                 <Button
                   variant="default"
@@ -356,7 +356,7 @@ export const ExerciseHistoryDialog = ({
                 </Button>
                 <span className="text-xs text-muted-foreground">reps</span>
               </div>
-
+ 
               <div className="flex items-center gap-1">
                 <Button
                   variant="ghost"
@@ -396,7 +396,7 @@ export const ExerciseHistoryDialog = ({
                 <span className="text-xs text-muted-foreground">kg</span>
               </div>
             </div>
-
+ 
             {isBodyweightExercise && (
               <div className="flex items-center gap-2 pt-2 border-t border-border">
                 <Button
@@ -420,7 +420,7 @@ export const ExerciseHistoryDialog = ({
                 )}
               </div>
             )}
-
+ 
             <div className="flex gap-1 justify-end">
               <Button
                 variant="ghost"
@@ -443,7 +443,7 @@ export const ExerciseHistoryDialog = ({
               </Button>
             </div>
           </div>
-
+ 
           {progressionData.length > 0 && (
             <Card className="p-4 rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
               <h3 className="font-semibold text-sm text-foreground mb-4">📈 Progression du poids</h3>
@@ -483,7 +483,7 @@ export const ExerciseHistoryDialog = ({
               </ResponsiveContainer>
             </Card>
           )}
-
+ 
           <div className="space-y-2">
             <h3 className="font-medium text-xs text-muted-foreground">Historique</h3>
             {Object.keys(groupedSets).length === 0 ? (
@@ -523,7 +523,7 @@ export const ExerciseHistoryDialog = ({
               ))
             )}
           </div>
-
+ 
           <div className="flex gap-2 pt-4 border-t border-border">
             <Button
               variant="ghost"
