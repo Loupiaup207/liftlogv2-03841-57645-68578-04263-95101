@@ -120,12 +120,11 @@ const Index = () => {
           style={{
             position: "fixed",
             bottom: 0,
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "100%",
-            maxWidth: "390px",
+            left: 0,
+            right: 0,
             zIndex: 9999,
             paddingBottom: "env(safe-area-inset-bottom)",
+            marginRight: "0 !important",
           }}
           className="bg-card border-t border-border flex justify-around items-center py-3 px-4"
         >
