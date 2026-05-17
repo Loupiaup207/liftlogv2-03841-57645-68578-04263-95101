@@ -45,6 +45,26 @@ const Index = () => {
     toast({ title: "Déconnexion réussie" });
   };
  
+  // Neutralise le margin-right que Radix UI injecte en style inline sur le body
+  // quand un dialog s'ouvre — ce margin décale le bottom nav Portal
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      if (document.body.style.marginRight && document.body.style.marginRight !== "0px") {
+        document.body.style.marginRight = "0px";
+      }
+      if (document.body.style.paddingRight && document.body.style.paddingRight !== "0px") {
+        document.body.style.paddingRight = "0px";
+      }
+    });
+
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["style"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   if (!user) return null;
  
   return (
@@ -120,11 +140,12 @@ const Index = () => {
           style={{
             position: "fixed",
             bottom: 0,
-            left: 0,
-            right: 0,
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "100%",
+            maxWidth: "390px",
             zIndex: 9999,
             paddingBottom: "env(safe-area-inset-bottom)",
-            marginRight: "0 !important",
           }}
           className="bg-card border-t border-border flex justify-around items-center py-3 px-4"
         >
