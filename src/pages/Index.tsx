@@ -115,13 +115,13 @@ const Index = () => {
       </main>
  
       {/* Bottom Nav */}
-        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))" }}>
-          <div className="flex justify-around items-center py-0 px-2">
-            <Button variant="ghost" size="icon" className={`flex flex-col gap-0 h-auto py-0 ${activeTab !== "profile" ? "text-primary" : ""}`} onClick={() => setActiveTab("library")}>
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, height: "calc(2rem + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))" }}>
+          <div className="flex justify-around items-center h-full px-2">
+            <Button variant="ghost" size="icon" style={{ transform: "translateY(2px)" }} className={`flex flex-col items-center gap-0 h-auto py-0 ${activeTab !== "profile" ? "text-primary" : ""}`} onClick={() => setActiveTab("library")}>
               <Dumbbell className="h-2.5 w-2.5" />
               <span className="text-[7px]">Training</span>
             </Button>
-            <Button variant="ghost" size="icon" className={`flex flex-col gap-0 h-auto py-0 ${activeTab === "profile" ? "text-primary" : ""}`} onClick={() => setActiveTab("profile")}>
+            <Button variant="ghost" size="icon" style={{ transform: "translateY(2px)" }} className={`flex flex-col items-center gap-0 h-auto py-0 ${activeTab === "profile" ? "text-primary" : ""}`} onClick={() => setActiveTab("profile")}>
               <User className="h-2.5 w-2.5" />
               <span className="text-[7px]">Profil</span>
             </Button>
