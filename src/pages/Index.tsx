@@ -107,7 +107,7 @@ const Index = () => {
       )}
  
       {/* Main */}
-      <main style={{ flex: 1, overflowY: "auto", marginTop: topHeight, paddingBottom: "calc(2.5rem + env(safe-area-inset-bottom))", WebkitOverflowScrolling: "touch" }}>
+      <main style={{ flex: 1, overflowY: "auto", marginTop: topHeight, paddingBottom: "calc(1.2rem + env(safe-area-inset-bottom))", WebkitOverflowScrolling: "touch" }}>
         <div className={activeTab === "library" ? "" : "hidden"}><Library /></div>
         <div className={activeTab === "activity" ? "" : "hidden"}><Activity /></div>
         <div className={activeTab === "statistics" ? "" : "hidden"}><Statistics /></div>
@@ -116,12 +116,12 @@ const Index = () => {
  
       {/* Bottom Nav */}
         <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))" }}>
-          <div className="flex justify-around items-center py-1 px-3">
-            <Button variant="ghost" size="icon" className={`flex flex-col gap-0.5 h-auto py-0.5 ${activeTab !== "profile" ? "text-primary" : ""}`} onClick={() => setActiveTab("library")}>
+          <div className="flex justify-around items-center py-0.5 px-2">
+            <Button variant="ghost" size="icon" className={`flex flex-col gap-0 h-auto py-0 ${activeTab !== "profile" ? "text-primary" : ""}`} onClick={() => setActiveTab("library")}>
               <Dumbbell className="h-3 w-3" />
               <span className="text-[8px]">Training</span>
             </Button>
-            <Button variant="ghost" size="icon" className={`flex flex-col gap-0.5 h-auto py-0.5 ${activeTab === "profile" ? "text-primary" : ""}`} onClick={() => setActiveTab("profile")}>
+            <Button variant="ghost" size="icon" className={`flex flex-col gap-0 h-auto py-0 ${activeTab === "profile" ? "text-primary" : ""}`} onClick={() => setActiveTab("profile")}>
               <User className="h-3 w-3" />
               <span className="text-[8px]">Profil</span>
             </Button>
