@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Dumbbell, User } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Library from "./Library";
@@ -11,11 +11,38 @@ import { useToast } from "@/hooks/use-toast";
  
 type Tab = "library" | "activity" | "statistics" | "profile";
  
+// Hook qui retourne la vraie hauteur du viewport en temps réel
+const useViewportHeight = () => {
+  const [vh, setVh] = useState(window.innerHeight);
+ 
+  const update = useCallback(() => {
+    setVh(window.innerHeight);
+    // Met aussi à jour la variable CSS --vh utilisable partout
+    document.documentElement.style.setProperty("--vh", `${window.innerHeight * 0.01}px`);
+  }, []);
+ 
+  useEffect(() => {
+    update();
+    window.addEventListener("resize", update);
+    window.addEventListener("orientationchange", () => {
+      // Délai nécessaire sur iOS — le navigateur met ~300ms à recalculer
+      setTimeout(update, 300);
+    });
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("orientationchange", update);
+    };
+  }, [update]);
+ 
+  return vh;
+};
+ 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<Tab>("library");
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const vh = useViewportHeight();
  
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -46,24 +73,23 @@ const Index = () => {
  
   if (!user) return null;
  
-  // Hauteur du bottom nav + safe area bottom
-  const bottomNavHeight = "calc(4rem + env(safe-area-inset-bottom))";
-  // Hauteur du header + top nav
   const topHeight = activeTab !== "profile"
     ? "calc(8rem + env(safe-area-inset-top))"
     : "calc(4rem + env(safe-area-inset-top))";
+ 
+  const bottomNavHeight = "calc(3.5rem + env(safe-area-inset-bottom))";
  
   return (
     <div
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "100dvh",
+        height: `${vh}px`,
         overflow: "hidden",
         background: "hsl(var(--background))",
       }}
     >
-      {/* Header LIFTLOG - Fixed */}
+      {/* Header LIFTLOG */}
       <div
         style={{
           position: "fixed",
@@ -85,7 +111,7 @@ const Index = () => {
         </h1>
       </div>
  
-      {/* Top Nav Tabs - masqué sur Profil */}
+      {/* Top Nav Tabs */}
       {activeTab !== "profile" && (
         <div
           style={{
@@ -148,7 +174,7 @@ const Index = () => {
         </div>
       </main>
  
-      {/* Bottom Nav - ancré en bas avec safe area */}
+      {/* Bottom Nav */}
       <div
         style={{
           position: "fixed",
@@ -188,3 +214,4 @@ const Index = () => {
 };
  
 export default Index;
+ 
