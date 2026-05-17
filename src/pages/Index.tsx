@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { createPortal } from "react-dom";
-import { LogOut, Dumbbell, User } from "lucide-react";
+import { Dumbbell, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,58 +46,92 @@ const Index = () => {
  
   if (!user) return null;
  
+  // Hauteur du bottom nav + safe area bottom
+  const bottomNavHeight = "calc(4rem + env(safe-area-inset-bottom))";
+  // Hauteur du header + top nav
+  const topHeight = activeTab !== "profile"
+    ? "calc(8rem + env(safe-area-inset-top))"
+    : "calc(4rem + env(safe-area-inset-top))";
+ 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      {/* Header - Fixed */}
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100dvh",
+        overflow: "hidden",
+        background: "hsl(var(--background))",
+      }}
+    >
+      {/* Header LIFTLOG - Fixed */}
       <div
-        className="fixed top-0 left-0 right-0 z-40 bg-background px-4 h-16 flex items-center justify-center border-b border-border"
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 40,
+          height: "calc(4rem + env(safe-area-inset-top))",
+          paddingTop: "env(safe-area-inset-top)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          borderBottom: "1px solid hsl(var(--border))",
+          background: "hsl(var(--background))",
+        }}
       >
-        <h1 className="text-2xl font-light tracking-widest text-foreground text-center">
+        <h1 className="text-2xl font-light tracking-widest text-foreground">
           LIFTLOG
         </h1>
       </div>
  
-      {/* Top Nav Tabs (Librairie / Stats / Activité) - masqué sur Profil */}
+      {/* Top Nav Tabs - masqué sur Profil */}
       {activeTab !== "profile" && (
-        <nav
-          className="fixed left-0 right-0 z-50 bg-background flex gap-2 px-4 py-2 max-w-[390px] mx-auto"
-          style={{ top: "calc(4rem + env(safe-area-inset-top))" }}
+        <div
+          style={{
+            position: "fixed",
+            top: "calc(4rem + env(safe-area-inset-top))",
+            left: 0,
+            right: 0,
+            zIndex: 50,
+            background: "hsl(var(--background))",
+            padding: "0.5rem 1rem",
+          }}
         >
-          <Button
-            variant="minimal"
-            className={`flex-1 h-12 rounded-lg ${activeTab === "library" ? "bg-accent" : ""}`}
-            onClick={() => setActiveTab("library")}
-          >
-            <span className="text-xs font-light tracking-wider uppercase">Librairie</span>
-          </Button>
- 
-          <Button
-            variant="minimal"
-            className={`flex-1 h-12 rounded-lg ${activeTab === "statistics" ? "bg-accent" : ""}`}
-            onClick={() => setActiveTab("statistics")}
-          >
-            <span className="text-xs font-light tracking-wider uppercase">Stats</span>
-          </Button>
- 
-          <Button
-            variant="minimal"
-            className={`flex-1 h-12 rounded-lg ${activeTab === "activity" ? "bg-accent" : ""}`}
-            onClick={() => setActiveTab("activity")}
-          >
-            <span className="text-xs font-light tracking-wider uppercase">Activité</span>
-          </Button>
-        </nav>
+          <div className="flex gap-2">
+            <Button
+              variant="minimal"
+              className={`flex-1 h-12 rounded-lg ${activeTab === "library" ? "bg-accent" : ""}`}
+              onClick={() => setActiveTab("library")}
+            >
+              <span className="text-xs font-light tracking-wider uppercase">Librairie</span>
+            </Button>
+            <Button
+              variant="minimal"
+              className={`flex-1 h-12 rounded-lg ${activeTab === "statistics" ? "bg-accent" : ""}`}
+              onClick={() => setActiveTab("statistics")}
+            >
+              <span className="text-xs font-light tracking-wider uppercase">Stats</span>
+            </Button>
+            <Button
+              variant="minimal"
+              className={`flex-1 h-12 rounded-lg ${activeTab === "activity" ? "bg-accent" : ""}`}
+              onClick={() => setActiveTab("activity")}
+            >
+              <span className="text-xs font-light tracking-wider uppercase">Activité</span>
+            </Button>
+          </div>
+        </div>
       )}
  
-      {/* Content Area */}
+      {/* Contenu scrollable */}
       <main
-        className="flex-1 overflow-y-auto"
         style={{
-          marginTop: activeTab !== "profile"
-            ? "calc(8rem + env(safe-area-inset-top))"
-            : "calc(4rem + env(safe-area-inset-top))",
-          paddingBottom: "calc(5rem + env(safe-area-inset-bottom))",
+          flex: 1,
+          overflowY: "auto",
+          marginTop: topHeight,
+          marginBottom: bottomNavHeight,
+          WebkitOverflowScrolling: "touch",
         }}
       >
         <div className={activeTab === "library" ? "" : "hidden"}>
@@ -115,22 +148,20 @@ const Index = () => {
         </div>
       </main>
  
-      {/* Fixed Bottom Navigation - dans un Portal pour éviter tout décalage Radix */}
-      {createPortal(
-        <nav
-          style={{
-            position: "fixed",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: 9999,
-            paddingBottom: "env(safe-area-inset-bottom)",
-            // En PWA standalone iOS, on s'assure que le nav
-            // couvre bien la zone jusqu'à la barre home
-            backgroundColor: "hsl(var(--card))",
-          }}
-          className="border-t border-border flex justify-around items-center py-3 px-4"
-        >
+      {/* Bottom Nav - ancré en bas avec safe area */}
+      <div
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 9999,
+          paddingBottom: "env(safe-area-inset-bottom)",
+          background: "hsl(var(--card))",
+          borderTop: "1px solid hsl(var(--border))",
+        }}
+      >
+        <div className="flex justify-around items-center py-3 px-4">
           <Button
             variant="ghost"
             size="icon"
@@ -150,9 +181,8 @@ const Index = () => {
             <User className="h-5 w-5" />
             <span className="text-[10px]">Profil</span>
           </Button>
-        </nav>,
-        document.body
-      )}
+        </div>
+      </div>
     </div>
   );
 };

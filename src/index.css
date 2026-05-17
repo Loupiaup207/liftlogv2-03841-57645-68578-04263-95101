@@ -52,46 +52,47 @@
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
+  }
+ 
+  html {
+    /* Permet à env(safe-area-inset-*) de fonctionner en PWA */
+    height: 100%;
+    -webkit-text-size-adjust: 100%;
+    -webkit-user-select: none;
+    user-select: none;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+ 
+  html::-webkit-scrollbar {
+    display: none;
   }
  
   body {
     @apply bg-background text-foreground;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
     font-size: 14px;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    /* Neutralise les injections Radix UI (margin/padding inline) */
+    padding-right: 0 !important;
+    margin-right: 0 !important;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
   }
  
-  html, body {
-    height: 100%;
-    width: 100%;
+  body::-webkit-scrollbar {
+    display: none;
   }
  
   #root {
     height: 100%;
-    max-width: 390px;
-    margin: 0 auto;
-    position: relative;
-  }
- 
-  @media (min-width: 391px) {
-    #root {
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-    }
-  }
- 
-  /* Le Portal Radix (dialog) est rendu dans body, pas dans #root.
-     On force le portal à couvrir tout le viewport, pas juste 390px. */
-  body > [data-radix-portal] {
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100vw !important;
-    height: 100dvh !important;
-    max-width: none !important;
-    margin: 0 !important;
-    pointer-events: none;
-  }
- 
-  body > [data-radix-portal] > * {
-    pointer-events: auto;
+    /* En PWA standalone iOS, on utilise dvh pour la vraie hauteur visible */
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
   }
  
   button, [role="button"] {
@@ -104,72 +105,11 @@
     transition: transform 0.05s;
   }
  
-  html {
-    -webkit-appearance: none;
-    -webkit-user-select: none;
-    user-select: none;
-    overflow-y: scroll;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
- 
-  html::-webkit-scrollbar,
-  body::-webkit-scrollbar,
-  *::-webkit-scrollbar {
-    display: none;
-  }
- 
-  body, * {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
- 
-  html, body {
-    scrollbar-gutter: stable;
-  }
- 
-  /*
-   * Fix saut de layout à l'ouverture des dialogs Radix UI.
-   * Radix injecte padding-right ET margin-right sur body
-   * pour compenser la scrollbar — inutile sur mobile.
-   * On neutralise TOUT ce que Radix peut injecter.
-   */
-  html,
-  body,
-  body[data-scroll-locked] {
-    padding-right: 0 !important;
-    margin-right: 0 !important;
-    overflow-x: hidden !important;
-  }
- 
-  /* Radix UI injecte un style inline "margin-right: Xpx" sur le body.
-     On le neutralise aussi via l'attribut data-scroll-locked */
+  /* Neutralise les injections Radix UI à l'ouverture des dialogs */
+  body[data-scroll-locked],
   body[data-scroll-locked="1"] {
-    margin-right: 0 !important;
     padding-right: 0 !important;
-  }
- 
-  /* Le bottom nav fixed ne doit jamais bouger quand un dialog s'ouvre */
-  nav[class*="fixed bottom-0"] {
-    transform: none !important;
-    transition: none !important;
-  }
- 
-  /*
-   * Mode PWA (ajoutée à l'écran d'accueil iOS) :
-   * La barre Safari du bas disparaît mais iOS garde la barre home.
-   * Sans viewport-fit=cover + safe-area, le bas de l'app est vide.
-   */
-  @media all and (display-mode: standalone) {
-    html, body {
-      height: 100dvh;
-      overflow: hidden;
-    }
- 
-    #root {
-      height: 100dvh;
-      overflow: hidden;
-    }
+    margin-right: 0 !important;
   }
 }
  
