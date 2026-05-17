@@ -40,11 +40,11 @@ const DialogContent = React.forwardRef<
       ref={ref}
       className={cn(
         isFullscreen
-          ? "fixed top-0 left-0 right-0 z-50 flex flex-col bg-background data-[state=open]:animate-slide-from-right data-[state=closed]:animate-slide-to-left"
+          ? "fixed inset-0 z-[10000] flex flex-col bg-background data-[state=open]:animate-slide-from-right data-[state=closed]:animate-slide-to-left"
           : "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg data-[state=open]:animate-dialog-slide-from-right data-[state=closed]:animate-dialog-slide-to-left sm:rounded-lg",
         className,
       )}
-      style={isFullscreen ? { height: '100dvh', maxHeight: '100dvh' } : undefined}
+      style={isFullscreen ? { height: '100dvh', maxHeight: '100dvh', paddingBottom: 'env(safe-area-inset-bottom)' } : undefined}
       {...props}
     >
       {children}
