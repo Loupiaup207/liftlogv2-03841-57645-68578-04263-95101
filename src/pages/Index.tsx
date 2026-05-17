@@ -107,7 +107,7 @@ const Index = () => {
       )}
  
       {/* Main */}
-      <main style={{ flex: 1, overflowY: "auto", marginTop: topHeight, paddingBottom: "calc(0.6rem + env(safe-area-inset-bottom))", WebkitOverflowScrolling: "touch" }}>
+      <main style={{ flex: 1, overflowY: "auto", marginTop: topHeight, paddingBottom: "calc(2.4rem + env(safe-area-inset-bottom))", WebkitOverflowScrolling: "touch" }}>
         <div className={activeTab === "library" ? "" : "hidden"}><Library /></div>
         <div className={activeTab === "activity" ? "" : "hidden"}><Activity /></div>
         <div className={activeTab === "statistics" ? "" : "hidden"}><Statistics /></div>
