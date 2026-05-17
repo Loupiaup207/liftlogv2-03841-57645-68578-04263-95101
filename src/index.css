@@ -88,11 +88,11 @@
   }
  
   #root {
-    height: 100%;
-    /* En PWA standalone iOS, on utilise dvh pour la vraie hauteur visible */
-    min-height: 100dvh;
+    /* --app-height est mis à jour par JS à chaque resize/orientationchange */
+    height: var(--app-height, 100vh);
     display: flex;
     flex-direction: column;
+    overflow: hidden;
   }
  
   button, [role="button"] {
