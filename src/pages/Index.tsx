@@ -80,23 +80,23 @@ const Index = () => {
   if (!user) return null;
  
   const topHeight = activeTab !== "profile"
-    ? "calc(8rem + env(safe-area-inset-top))"
-    : "calc(4rem + env(safe-area-inset-top))";
+      ? "calc(7rem + env(safe-area-inset-top))"
+      : "calc(3.5rem + env(safe-area-inset-top))";
  
   return (
     <div style={{ height: "var(--app-height, 100vh)", display: "flex", flexDirection: "column", overflow: "hidden", background: "hsl(var(--background))" }}>
  
       {/* Header */}
-      <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 40, height: "calc(4rem + env(safe-area-inset-top))", paddingTop: "env(safe-area-inset-top)", display: "flex", alignItems: "center", justifyContent: "center", borderBottom: "1px solid hsl(var(--border))", background: "hsl(var(--background))" }}>
-        <h1 className="text-2xl font-light tracking-widest text-foreground">LIFTLOG</h1>
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 40, height: "calc(3.5rem + env(safe-area-inset-top))", paddingTop: "env(safe-area-inset-top)", display: "flex", alignItems: "center", justifyContent: "center", background: "hsl(var(--background))" }}>
+          <h1 className="text-xl font-light tracking-widest text-foreground">LIFTLOG</h1>
       </div>
  
       {/* Top Nav */}
       {activeTab !== "profile" && (
-        <div style={{ position: "fixed", top: "calc(4rem + env(safe-area-inset-top))", left: 0, right: 0, zIndex: 50, background: "hsl(var(--background))", padding: "0.5rem 1rem" }}>
+          <div style={{ position: "fixed", top: "calc(3.5rem + env(safe-area-inset-top))", left: 0, right: 0, zIndex: 50, background: "hsl(var(--background))", padding: "0.4rem 1rem" }}>
           <div className="flex gap-2">
-            {(["library", "statistics", "activity"] as Tab[]).map((tab) => (
-              <Button key={tab} variant="minimal" className={`flex-1 h-12 rounded-lg ${activeTab === tab ? "bg-accent" : ""}`} onClick={() => setActiveTab(tab)}>
+              {(["library", "statistics", "activity"] as Tab[]).map((tab) => (
+                <Button key={tab} variant="minimal" className={`flex-1 h-10 rounded-lg ${activeTab === tab ? "bg-accent" : ""}`} onClick={() => setActiveTab(tab)}>
                 <span className="text-xs font-light tracking-wider uppercase">
                   {tab === "library" ? "Librairie" : tab === "statistics" ? "Stats" : "Activité"}
                 </span>
@@ -115,18 +115,18 @@ const Index = () => {
       </main>
  
       {/* Bottom Nav */}
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border))" }}>
-        <div className="flex justify-around items-center py-3 px-4">
-          <Button variant="ghost" size="icon" className={`flex flex-col gap-0.5 h-auto py-1.5 ${activeTab !== "profile" ? "text-primary" : ""}`} onClick={() => setActiveTab("library")}>
-            <Dumbbell className="h-5 w-5" />
-            <span className="text-[10px]">Training</span>
-          </Button>
-          <Button variant="ghost" size="icon" className={`flex flex-col gap-0.5 h-auto py-1.5 ${activeTab === "profile" ? "text-primary" : ""}`} onClick={() => setActiveTab("profile")}>
-            <User className="h-5 w-5" />
-            <span className="text-[10px]">Profil</span>
-          </Button>
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))" }}>
+          <div className="flex justify-around items-center py-2 px-4">
+            <Button variant="ghost" size="icon" className={`flex flex-col gap-0.5 h-auto py-1 ${activeTab !== "profile" ? "text-primary" : ""}`} onClick={() => setActiveTab("library")}>
+              <Dumbbell className="h-4 w-4" />
+              <span className="text-[9px]">Training</span>
+            </Button>
+            <Button variant="ghost" size="icon" className={`flex flex-col gap-0.5 h-auto py-1 ${activeTab === "profile" ? "text-primary" : ""}`} onClick={() => setActiveTab("profile")}>
+              <User className="h-4 w-4" />
+              <span className="text-[9px]">Profil</span>
+            </Button>
+          </div>
         </div>
-      </div>
     </div>
   );
 };
