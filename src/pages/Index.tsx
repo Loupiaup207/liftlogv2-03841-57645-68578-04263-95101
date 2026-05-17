@@ -17,26 +17,49 @@ const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
  
-  // Fix iOS PWA viewport height
+  // Fix iOS PWA viewport height — use visualViewport when available and
+  // recalc on several events (resize/orientation/pageshow/focus/visibility).
   useEffect(() => {
-    const setAppHeight = () => {
-      const doc = document.documentElement;
-      doc.style.setProperty("--app-height", `${window.innerHeight}px`);
+    const doc = document.documentElement;
+
+    const computeHeight = () => {
+      const vh = window.visualViewport?.height ?? window.innerHeight;
+      doc.style.setProperty("--app-height", `${Math.round(vh)}px`);
     };
- 
-    setAppHeight();
- 
-    // iOS recalcule innerHeight après un délai lors du changement d'orientation
+
+    // Call immediately and a couple of times after to catch async layout shifts
+    computeHeight();
+    const t1 = window.setTimeout(computeHeight, 250);
+    const t2 = window.setTimeout(computeHeight, 750);
+
     const handleOrientationChange = () => {
-      setTimeout(setAppHeight, 500);
+      // iOS sometimes needs a small delay
+      setTimeout(computeHeight, 400);
     };
- 
-    window.addEventListener("resize", setAppHeight);
+
+    window.addEventListener("resize", computeHeight);
     window.addEventListener("orientationchange", handleOrientationChange);
- 
+    window.addEventListener("pageshow", computeHeight);
+    window.addEventListener("focus", computeHeight);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) computeHeight(); });
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", computeHeight);
+      window.visualViewport.addEventListener("scroll", computeHeight);
+    }
+
     return () => {
-      window.removeEventListener("resize", setAppHeight);
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+      window.removeEventListener("resize", computeHeight);
       window.removeEventListener("orientationchange", handleOrientationChange);
+      window.removeEventListener("pageshow", computeHeight);
+      window.removeEventListener("focus", computeHeight);
+      document.removeEventListener("visibilitychange", () => { if (!document.hidden) computeHeight(); });
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", computeHeight);
+        window.visualViewport.removeEventListener("scroll", computeHeight);
+      }
     };
   }, []);
  
