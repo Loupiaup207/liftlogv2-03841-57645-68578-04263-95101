@@ -30,8 +30,22 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => {
+>(({ className, children, onOpenAutoFocus, onCloseAutoFocus, ...props }, ref) => {
   const isFullscreen = typeof className === "string" && className.includes("w-screen");
+
+  const handleOpenAutoFocus = (event: Event) => {
+    onOpenAutoFocus?.(event);
+    if (!event.defaultPrevented) {
+      event.preventDefault();
+    }
+  };
+
+  const handleCloseAutoFocus = (event: Event) => {
+    onCloseAutoFocus?.(event);
+    if (!event.defaultPrevented) {
+      event.preventDefault();
+    }
+  };
  
   return (
   <DialogPortal>
@@ -45,6 +59,8 @@ const DialogContent = React.forwardRef<
         className,
       )}
       style={isFullscreen ? { height: '100dvh', maxHeight: '100dvh', paddingBottom: 'env(safe-area-inset-bottom)' } : undefined}
+      onOpenAutoFocus={handleOpenAutoFocus}
+      onCloseAutoFocus={handleCloseAutoFocus}
       {...props}
     >
       {children}
