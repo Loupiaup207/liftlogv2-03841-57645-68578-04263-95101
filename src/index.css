@@ -154,5 +154,22 @@
     transform: none !important;
     transition: none !important;
   }
+ 
+  /*
+   * Mode PWA (ajoutée à l'écran d'accueil iOS) :
+   * La barre Safari du bas disparaît mais iOS garde la barre home.
+   * Sans viewport-fit=cover + safe-area, le bas de l'app est vide.
+   */
+  @media all and (display-mode: standalone) {
+    html, body {
+      height: 100dvh;
+      overflow: hidden;
+    }
+ 
+    #root {
+      height: 100dvh;
+      overflow: hidden;
+    }
+  }
 }
  

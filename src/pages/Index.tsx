@@ -45,26 +45,6 @@ const Index = () => {
     toast({ title: "Déconnexion réussie" });
   };
  
-  // Neutralise le margin-right que Radix UI injecte en style inline sur le body
-  // quand un dialog s'ouvre — ce margin décale le bottom nav Portal
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      if (document.body.style.marginRight && document.body.style.marginRight !== "0px") {
-        document.body.style.marginRight = "0px";
-      }
-      if (document.body.style.paddingRight && document.body.style.paddingRight !== "0px") {
-        document.body.style.paddingRight = "0px";
-      }
-    });
-
-    observer.observe(document.body, {
-      attributes: true,
-      attributeFilter: ["style"],
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
   if (!user) return null;
  
   return (
@@ -113,11 +93,12 @@ const Index = () => {
  
       {/* Content Area */}
       <main
-        className="flex-1 overflow-y-auto pb-20"
+        className="flex-1 overflow-y-auto"
         style={{
           marginTop: activeTab !== "profile"
             ? "calc(8rem + env(safe-area-inset-top))"
-            : "calc(4rem + env(safe-area-inset-top))"
+            : "calc(4rem + env(safe-area-inset-top))",
+          paddingBottom: "calc(5rem + env(safe-area-inset-bottom))",
         }}
       >
         <div className={activeTab === "library" ? "" : "hidden"}>
@@ -140,14 +121,15 @@ const Index = () => {
           style={{
             position: "fixed",
             bottom: 0,
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "100%",
-            maxWidth: "390px",
+            left: 0,
+            right: 0,
             zIndex: 9999,
             paddingBottom: "env(safe-area-inset-bottom)",
+            // En PWA standalone iOS, on s'assure que le nav
+            // couvre bien la zone jusqu'à la barre home
+            backgroundColor: "hsl(var(--card))",
           }}
-          className="bg-card border-t border-border flex justify-around items-center py-3 px-4"
+          className="border-t border-border flex justify-around items-center py-3 px-4"
         >
           <Button
             variant="ghost"
