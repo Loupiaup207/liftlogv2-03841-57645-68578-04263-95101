@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { createPortal } from "react-dom";
 import { LogOut, Dumbbell, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -113,28 +114,43 @@ const Index = () => {
         </div>
       </main>
  
-      {/* Fixed Bottom Navigation - toujours présent */}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-[390px] mx-auto bg-card border-t border-border flex justify-around items-center py-3 px-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          className={`flex flex-col gap-0.5 h-auto py-1.5 ${activeTab !== "profile" ? "text-primary" : ""}`}
-          onClick={() => setActiveTab("library")}
+      {/* Fixed Bottom Navigation - dans un Portal pour éviter tout décalage Radix */}
+      {createPortal(
+        <nav
+          style={{
+            position: "fixed",
+            bottom: 0,
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "100%",
+            maxWidth: "390px",
+            zIndex: 9999,
+            paddingBottom: "env(safe-area-inset-bottom)",
+          }}
+          className="bg-card border-t border-border flex justify-around items-center py-3 px-4"
         >
-          <Dumbbell className="h-5 w-5" />
-          <span className="text-[10px]">Training</span>
-        </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`flex flex-col gap-0.5 h-auto py-1.5 ${activeTab !== "profile" ? "text-primary" : ""}`}
+            onClick={() => setActiveTab("library")}
+          >
+            <Dumbbell className="h-5 w-5" />
+            <span className="text-[10px]">Training</span>
+          </Button>
  
-        <Button
-          variant="ghost"
-          size="icon"
-          className={`flex flex-col gap-0.5 h-auto py-1.5 ${activeTab === "profile" ? "text-primary" : ""}`}
-          onClick={() => setActiveTab("profile")}
-        >
-          <User className="h-5 w-5" />
-          <span className="text-[10px]">Profil</span>
-        </Button>
-      </nav>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`flex flex-col gap-0.5 h-auto py-1.5 ${activeTab === "profile" ? "text-primary" : ""}`}
+            onClick={() => setActiveTab("profile")}
+          >
+            <User className="h-5 w-5" />
+            <span className="text-[10px]">Profil</span>
+          </Button>
+        </nav>,
+        document.body
+      )}
     </div>
   );
 };
