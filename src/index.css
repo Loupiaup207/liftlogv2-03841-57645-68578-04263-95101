@@ -112,8 +112,10 @@
     margin-right: 0 !important;
   }
 
-  /* Cacher la bottom nav quand une dialog/sheet est ouverte */
-  body[data-scroll-locked] .bottom-nav-bar {
+  /* Cacher la bottom nav quand une dialog/sheet/alert est ouverte */
+  body[data-scroll-locked] .bottom-nav-bar,
+  body:has([role="dialog"][data-state="open"]) .bottom-nav-bar,
+  body:has([role="alertdialog"][data-state="open"]) .bottom-nav-bar {
     display: none !important;
   }
 }
