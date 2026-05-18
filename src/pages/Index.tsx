@@ -107,7 +107,7 @@ const Index = () => {
       )}
  
       {/* Main */}
-      <main style={{ flex: 1, overflowY: "auto", marginTop: topHeight, paddingBottom: "calc(2.4rem + env(safe-area-inset-bottom))", WebkitOverflowScrolling: "touch" }}>
+      <main style={{ flex: 1, overflowY: "auto", marginTop: topHeight, paddingBottom: "calc(4rem + env(safe-area-inset-bottom))", WebkitOverflowScrolling: "touch" }}>
         <div className={activeTab === "library" ? "" : "hidden"}><Library /></div>
         <div className={activeTab === "activity" ? "" : "hidden"}><Activity /></div>
         <div className={activeTab === "statistics" ? "" : "hidden"}><Statistics /></div>
@@ -115,7 +115,7 @@ const Index = () => {
       </main>
  
       {/* Bottom Nav */}
-        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, height: "calc(3rem + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border))" }}>
+        <div className="bottom-nav-bar" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, height: "calc(3rem + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border))" }}>
           <div className="flex justify-center items-end h-full gap-16 pb-1">
             <Button
               variant="ghost"
