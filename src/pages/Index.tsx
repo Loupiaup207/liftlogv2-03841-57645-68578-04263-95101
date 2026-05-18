@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Library from "./Library";
+import Nutrition from "./Nutrition";
 import Activity from "./Activity";
 import Statistics from "./Statistics";
 import Profile from "./Profile";
 import { useToast } from "@/hooks/use-toast";
  
-type Tab = "library" | "activity" | "statistics" | "profile";
+type Tab = "library" | "activity" | "statistics" | "profile" | "nutrition";
  
 const Index = () => {
   const [activeTab, setActiveTab] = useState<Tab>("library");
@@ -95,10 +96,10 @@ const Index = () => {
       {activeTab !== "profile" && (
           <div style={{ position: "fixed", top: "calc(3.5rem + env(safe-area-inset-top))", left: 0, right: 0, zIndex: 50, background: "hsl(var(--background))", padding: "0.4rem 1rem" }}>
           <div className="flex gap-2">
-              {(["library", "statistics", "activity"] as Tab[]).map((tab) => (
+              {(["library", "statistics", "nutrition", "activity"] as Tab[]).map((tab) => (
                 <Button key={tab} variant="minimal" className={`flex-1 h-10 rounded-lg ${activeTab === tab ? "bg-accent" : ""}`} onClick={() => setActiveTab(tab)}>
                 <span className="text-xs font-light tracking-wider uppercase">
-                  {tab === "library" ? "Librairie" : tab === "statistics" ? "Stats" : "Activité"}
+                  {tab === "library" ? "Librairie" : tab === "statistics" ? "Stats" : tab === "nutrition" ? "Nutrition" : "Activité"}
                 </span>
               </Button>
             ))}
@@ -111,6 +112,7 @@ const Index = () => {
         <div className={activeTab === "library" ? "" : "hidden"}><Library /></div>
         <div className={activeTab === "activity" ? "" : "hidden"}><Activity /></div>
         <div className={activeTab === "statistics" ? "" : "hidden"}><Statistics /></div>
+        <div className={activeTab === "nutrition" ? "" : "hidden"}><Nutrition /></div>
         <div className={activeTab === "profile" ? "" : "hidden"}><Profile /></div>
       </main>
  
