@@ -115,7 +115,7 @@ const Index = () => {
       </main>
  
       {/* Bottom Nav */}
-        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, height: "calc(3.5rem + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border))" }}>
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, height: "calc(3rem + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border))" }}>
           <div className="flex justify-center items-center h-full gap-16">
             <Button
               variant="ghost"
