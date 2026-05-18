@@ -115,28 +115,24 @@ const Index = () => {
       </main>
  
       {/* Bottom Nav */}
-        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, height: "calc(2rem + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))" }}>
-          <div className="flex justify-around items-center h-full px-2">
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, height: "calc(3.5rem + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border))" }}>
+          <div className="flex justify-center items-center h-full gap-16">
             <Button
               variant="ghost"
-              size="icon"
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", padding: 0 }}
-              className={`${activeTab !== "profile" ? "text-primary" : ""}`}
+              className={`flex flex-col items-center justify-center h-full px-4 py-1 ${activeTab !== "profile" ? "text-primary" : ""}`}
               onClick={() => setActiveTab("library")}
             >
-              <Dumbbell className="h-2.5 w-2.5" />
-              <span className="text-[7px]">Training</span>
+              <Dumbbell className="h-5 w-5" />
+              <span className="text-[10px] mt-0.5">Training</span>
             </Button>
 
             <Button
               variant="ghost"
-              size="icon"
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", padding: 0 }}
-              className={`${activeTab === "profile" ? "text-primary" : ""}`}
+              className={`flex flex-col items-center justify-center h-full px-4 py-1 ${activeTab === "profile" ? "text-primary" : ""}`}
               onClick={() => setActiveTab("profile")}
             >
-              <User className="h-2.5 w-2.5" />
-              <span className="text-[7px]">Profil</span>
+              <User className="h-5 w-5" />
+              <span className="text-[10px] mt-0.5">Profil</span>
             </Button>
           </div>
         </div>
