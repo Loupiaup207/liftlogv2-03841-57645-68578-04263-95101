@@ -30,6 +30,8 @@ const Nutrition = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAddMode, setIsAddMode] = useState<"manual" | "food" | "ai">("manual");
   const [isGoalsDialogOpen, setIsGoalsDialogOpen] = useState(false);
+  const [isCaloriesDetailOpen, setIsCaloriesDetailOpen] = useState(false);
+  const [chartRange, setChartRange] = useState<7 | 14 | 30>(14);
   const [newMeal, setNewMeal] = useState({
     name: "",
     calories: "",
