@@ -30,6 +30,7 @@ const Nutrition = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAddMode, setIsAddMode] = useState<"manual" | "food" | "ai">("manual");
   const [isGoalsDialogOpen, setIsGoalsDialogOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isCaloriesDetailOpen, setIsCaloriesDetailOpen] = useState(false);
   const [chartRange, setChartRange] = useState<7 | 14 | 30>(14);
   const [newMeal, setNewMeal] = useState({
@@ -123,10 +124,12 @@ const Nutrition = () => {
     }
   };
 
-  const totalCalories = meals.reduce((sum, meal) => sum + meal.calories, 0);
-  const totalProtein = meals.reduce((sum, meal) => sum + meal.protein, 0);
-  const totalCarbs = meals.reduce((sum, meal) => sum + meal.carbs, 0);
-  const totalFat = meals.reduce((sum, meal) => sum + meal.fat, 0);
+  const today = new Date().toISOString().slice(0, 10);
+  const todayMeals = meals.filter(m => (m.date || today) === today);
+  const totalCalories = todayMeals.reduce((sum, meal) => sum + meal.calories, 0);
+  const totalProtein = todayMeals.reduce((sum, meal) => sum + meal.protein, 0);
+  const totalCarbs = todayMeals.reduce((sum, meal) => sum + meal.carbs, 0);
+  const totalFat = todayMeals.reduce((sum, meal) => sum + meal.fat, 0);
 
   const remainingCalories = goals.daily_calories - totalCalories;
 
@@ -703,12 +706,12 @@ const Nutrition = () => {
         </div>
 
         <div className="space-y-2 pb-4">
-          {meals.length === 0 ? (
+          {todayMeals.length === 0 ? (
             <Card className="p-6 text-center bg-card">
               <p className="text-sm text-muted-foreground">Aucun repas ajouté aujourd'hui</p>
             </Card>
           ) : (
-            meals.map((meal) => (
+            todayMeals.map((meal) => (
               <Card key={meal.id} className="p-3 bg-card">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -732,8 +735,75 @@ const Nutrition = () => {
               </Card>
             ))
           )}
+
+          <Button
+            variant="ghost"
+            className="w-full mt-3 border border-border"
+            onClick={() => setIsHistoryOpen(true)}
+          >
+            Voir l'historique
+          </Button>
         </div>
       </main>
+
+      {/* History Dialog */}
+      <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+        <DialogContent className="max-w-[95vw] max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Historique nutrition</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 mt-2">
+            {(() => {
+              const past = meals.filter(m => (m.date || today) !== today);
+              if (past.length === 0) {
+                return <p className="text-sm text-muted-foreground text-center py-6">Aucun historique pour le moment</p>;
+              }
+              const byDay = new Map<string, Meal[]>();
+              past.forEach(m => {
+                const d = m.date || today;
+                if (!byDay.has(d)) byDay.set(d, []);
+                byDay.get(d)!.push(m);
+              });
+              const days = Array.from(byDay.keys()).sort((a, b) => b.localeCompare(a));
+              const dayNames = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
+              return days.map(day => {
+                const dayMeals = byDay.get(day)!;
+                const cal = dayMeals.reduce((s, m) => s + m.calories, 0);
+                const p = dayMeals.reduce((s, m) => s + m.protein, 0);
+                const c = dayMeals.reduce((s, m) => s + m.carbs, 0);
+                const f = dayMeals.reduce((s, m) => s + m.fat, 0);
+                const date = new Date(day + "T00:00:00");
+                const label = `${dayNames[date.getDay()]} ${date.getDate()}/${date.getMonth() + 1}`;
+                return (
+                  <Card key={day} className="p-3 bg-card">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm font-medium">{label}</p>
+                      <p className="text-sm font-light">{cal} <span className="text-[10px] text-muted-foreground">kcal</span></p>
+                    </div>
+                    <div className="flex gap-3 text-[10px] text-muted-foreground mb-2">
+                      <span>P: {p}g</span>
+                      <span>G: {c}g</span>
+                      <span>L: {f}g</span>
+                      <span className="ml-auto">Obj. {goals.daily_calories}</span>
+                    </div>
+                    <div className="space-y-1">
+                      {dayMeals.map(m => (
+                        <div key={m.id} className="flex items-center justify-between text-xs">
+                          <span className="truncate flex-1">{m.name}</span>
+                          <span className="text-muted-foreground ml-2">{m.calories} kcal</span>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 ml-1" onClick={() => handleDeleteMeal(m.id)}>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                );
+              });
+            })()}
+          </div>
+        </DialogContent>
+      </Dialog>
       {/* floating add button */}
       <div className="fixed bottom-20 right-4 z-50">
         <Button size="icon" className="rounded-full h-12 w-12" onClick={() => setIsDialogOpen(true)}>
