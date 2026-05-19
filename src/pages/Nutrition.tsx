@@ -200,12 +200,12 @@ const Nutrition = () => {
   };
 
   const aggregateLastDays = (days = 14) => {
-    const map = new Map<string, {cal: number; protein: number; carbs: number}>();
+    const map = new Map<string, {cal: number; protein: number; carbs: number; fat: number}>();
     for (let i=days-1;i>=0;i--) {
       const d = new Date();
       d.setDate(d.getDate()-i);
       const key = d.toISOString().slice(0,10);
-      map.set(key, {cal:0, protein:0, carbs:0});
+      map.set(key, {cal:0, protein:0, carbs:0, fat:0});
     }
     meals.forEach(m => {
       const d = (m.date || new Date().toISOString().slice(0,10));
@@ -214,9 +214,10 @@ const Nutrition = () => {
         cur.cal += m.calories;
         cur.protein += m.protein;
         cur.carbs += m.carbs;
+        cur.fat += m.fat;
       }
     });
-    return Array.from(map.entries()).map(([day, v]) => ({day, ...v}));
+    return Array.from(map.entries()).map(([day, v]) => ({day: day.slice(5), ...v}));
   };
 
   const computeGoalsFromOnboard = () => {
