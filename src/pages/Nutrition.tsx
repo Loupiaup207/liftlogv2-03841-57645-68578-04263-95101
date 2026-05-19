@@ -8,6 +8,10 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RTooltip,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Legend,
+} from "recharts";
 
 interface Meal {
   id: string;
@@ -26,6 +30,8 @@ const Nutrition = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAddMode, setIsAddMode] = useState<"manual" | "food" | "ai">("manual");
   const [isGoalsDialogOpen, setIsGoalsDialogOpen] = useState(false);
+  const [isCaloriesDetailOpen, setIsCaloriesDetailOpen] = useState(false);
+  const [chartRange, setChartRange] = useState<7 | 14 | 30>(14);
   const [newMeal, setNewMeal] = useState({
     name: "",
     calories: "",
@@ -196,12 +202,12 @@ const Nutrition = () => {
   };
 
   const aggregateLastDays = (days = 14) => {
-    const map = new Map<string, {cal: number; protein: number; carbs: number}>();
+    const map = new Map<string, {cal: number; protein: number; carbs: number; fat: number}>();
     for (let i=days-1;i>=0;i--) {
       const d = new Date();
       d.setDate(d.getDate()-i);
       const key = d.toISOString().slice(0,10);
-      map.set(key, {cal:0, protein:0, carbs:0});
+      map.set(key, {cal:0, protein:0, carbs:0, fat:0});
     }
     meals.forEach(m => {
       const d = (m.date || new Date().toISOString().slice(0,10));
@@ -210,9 +216,10 @@ const Nutrition = () => {
         cur.cal += m.calories;
         cur.protein += m.protein;
         cur.carbs += m.carbs;
+        cur.fat += m.fat;
       }
     });
-    return Array.from(map.entries()).map(([day, v]) => ({day, ...v}));
+    return Array.from(map.entries()).map(([day, v]) => ({day: day.slice(5), ...v}));
   };
 
   const computeGoalsFromOnboard = () => {
@@ -367,58 +374,200 @@ const Nutrition = () => {
       </Dialog>
 
       {/* Widgets - Calories Overview */}
-      <div className="px-4 pb-4 space-y-2">
-        <Card 
-          className="p-4 bg-card cursor-pointer hover:bg-accent transition-colors"
-          onClick={() => setIsGoalsDialogOpen(true)}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground">Calories restantes</p>
-              <p className="text-3xl font-light tracking-wide mt-0.5">
-                {remainingCalories}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground">Objectif</p>
-              <p className="text-xl font-light">{goals.daily_calories}</p>
-              <Target className="h-3 w-3 ml-auto mt-0.5 text-muted-foreground" />
-            </div>
-          </div>
-        </Card>
+      <div className="px-4 pb-4 space-y-3">
+        {/* Calories Donut */}
+        {(() => {
+          const consumed = Math.min(totalCalories, goals.daily_calories);
+          const remaining = Math.max(0, goals.daily_calories - totalCalories);
+          const over = Math.max(0, totalCalories - goals.daily_calories);
+          const donutData = over > 0
+            ? [{ name: "Consommées", value: goals.daily_calories }, { name: "Dépassement", value: over }]
+            : [{ name: "Consommées", value: consumed }, { name: "Restantes", value: remaining }];
+          const COLORS = over > 0 ? ["hsl(var(--primary))", "#ef4444"] : ["hsl(var(--primary))", "hsl(var(--muted))"];
+          return (
+            <Card
+              className="p-4 bg-card cursor-pointer hover:bg-accent transition-colors"
+              onClick={() => setIsCaloriesDetailOpen(true)}
+            >
+              <div className="flex items-center gap-4">
+                <div className="relative h-32 w-32 shrink-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={donutData}
+                        dataKey="value"
+                        innerRadius={42}
+                        outerRadius={58}
+                        startAngle={90}
+                        endAngle={-270}
+                        stroke="none"
+                      >
+                        {donutData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <p className="text-2xl font-light leading-none">{remainingCalories}</p>
+                    <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">restantes</p>
+                  </div>
+                </div>
+                <div className="flex-1 space-y-1">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Calories</p>
+                  <p className="text-sm">
+                    <span className="font-medium">{totalCalories}</span>
+                    <span className="text-muted-foreground"> / {goals.daily_calories} kcal</span>
+                  </p>
+                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                    <Target className="h-3 w-3" />
+                    <span>Toucher pour détails</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          );
+        })()}
 
+        {/* Macro current totals */}
         <div className="grid grid-cols-3 gap-2">
-          <Card 
-            className="p-3 bg-card cursor-pointer hover:bg-accent transition-colors"
-            onClick={() => setIsGoalsDialogOpen(true)}
-          >
+          <Card className="p-3 bg-card cursor-pointer hover:bg-accent transition-colors" onClick={() => setIsGoalsDialogOpen(true)}>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Protéines</p>
             <p className="text-lg font-light mt-0.5">{totalProtein}g</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">/ {goals.daily_protein}g</p>
           </Card>
-          <Card 
-            className="p-3 bg-card cursor-pointer hover:bg-accent transition-colors"
-            onClick={() => setIsGoalsDialogOpen(true)}
-          >
+          <Card className="p-3 bg-card cursor-pointer hover:bg-accent transition-colors" onClick={() => setIsGoalsDialogOpen(true)}>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Glucides</p>
             <p className="text-lg font-light mt-0.5">{totalCarbs}g</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">/ {goals.daily_carbs}g</p>
           </Card>
-          <Card 
-            className="p-3 bg-card cursor-pointer hover:bg-accent transition-colors"
-            onClick={() => setIsGoalsDialogOpen(true)}
-          >
+          <Card className="p-3 bg-card cursor-pointer hover:bg-accent transition-colors" onClick={() => setIsGoalsDialogOpen(true)}>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Lipides</p>
             <p className="text-lg font-light mt-0.5">{totalFat}g</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">/ {goals.daily_fat}g</p>
           </Card>
         </div>
 
-        {/* Long-term chart */}
-        <div className="mt-2">
-          <ChartSpark days={14} />
+        {/* Range selector */}
+        <div className="flex gap-2">
+          {([7, 14, 30] as const).map(r => (
+            <Button key={r} variant={chartRange === r ? "default" : "ghost"} size="sm" className="flex-1 h-7 text-[11px]" onClick={() => setChartRange(r)}>
+              {r}j
+            </Button>
+          ))}
         </div>
+
+        {/* 3 macro evolution charts */}
+        {(() => {
+          const data = aggregateLastDays(chartRange);
+          const macros = [
+            { key: "protein", label: "Protéines", color: "#06b6d4", goal: goals.daily_protein },
+            { key: "carbs", label: "Glucides", color: "#f59e0b", goal: goals.daily_carbs },
+            { key: "fat", label: "Lipides", color: "#a855f7", goal: goals.daily_fat },
+          ];
+          return (
+            <div className="space-y-2">
+              {macros.map(m => (
+                <Card key={m.key} className="p-3 bg-card">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-[11px] uppercase tracking-wider" style={{ color: m.color }}>{m.label}</p>
+                    <p className="text-[10px] text-muted-foreground">Obj. {m.goal}g</p>
+                  </div>
+                  <div className="h-24">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -28 }}>
+                        <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="2 4" vertical={false} />
+                        <XAxis dataKey="day" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} interval="preserveStartEnd" />
+                        <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} width={28} />
+                        <RTooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }} />
+                        <Line type="monotone" dataKey={m.key} stroke={m.color} strokeWidth={2} dot={{ r: 2 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          );
+        })()}
       </div>
+
+      {/* Calories Detail Dialog */}
+      <Dialog open={isCaloriesDetailOpen} onOpenChange={setIsCaloriesDetailOpen}>
+        <DialogContent className="max-w-[95vw]">
+          <DialogHeader>
+            <DialogTitle>Détails caloriques</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            {/* Range selector */}
+            <div className="flex gap-2">
+              {([7, 14, 30] as const).map(r => (
+                <Button key={r} variant={chartRange === r ? "default" : "ghost"} size="sm" className="flex-1 h-7 text-[11px]" onClick={() => setChartRange(r)}>
+                  {r}j
+                </Button>
+              ))}
+            </div>
+
+            {/* Calories remaining per day */}
+            <Card className="p-3 bg-card">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Calories restantes / jour</p>
+              <div className="h-44">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={aggregateLastDays(chartRange).map(d => ({ ...d, remaining: goals.daily_calories - d.cal }))}
+                    margin={{ top: 4, right: 8, bottom: 0, left: -20 }}
+                  >
+                    <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="2 4" vertical={false} />
+                    <XAxis dataKey="day" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                    <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} width={32} />
+                    <RTooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }} />
+                    <Line type="monotone" dataKey="remaining" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 2 }} name="Restantes" />
+                    <Line type="monotone" dataKey="cal" stroke="#ef4444" strokeWidth={1} strokeDasharray="3 3" dot={false} name="Consommées" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+
+            {/* Macro distribution today */}
+            {(() => {
+              const pData = [
+                { name: "Protéines", value: totalProtein * 4, color: "#06b6d4" },
+                { name: "Glucides", value: totalCarbs * 4, color: "#f59e0b" },
+                { name: "Lipides", value: totalFat * 9, color: "#a855f7" },
+              ].filter(d => d.value > 0);
+              const totalKcal = pData.reduce((s, d) => s + d.value, 0) || 1;
+              return (
+                <Card className="p-3 bg-card">
+                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Répartition macros — aujourd'hui</p>
+                  {pData.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-6">Aucun repas aujourd'hui</p>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <div className="h-36 w-36 shrink-0">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie data={pData} dataKey="value" innerRadius={36} outerRadius={64} stroke="none">
+                              {pData.map((d, i) => <Cell key={i} fill={d.color} />)}
+                            </Pie>
+                            <RTooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }} formatter={(v: any) => `${v} kcal`} />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="flex-1 space-y-1.5">
+                        {pData.map(d => (
+                          <div key={d.name} className="flex items-center gap-2 text-xs">
+                            <span className="h-2 w-2 rounded-full" style={{ background: d.color }} />
+                            <span className="flex-1">{d.name}</span>
+                            <span className="text-muted-foreground">{Math.round((d.value / totalKcal) * 100)}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              );
+            })()}
+          </div>
+        </DialogContent>
+      </Dialog>
+
 
       {/* Goals Dialog */}
       <Dialog open={isGoalsDialogOpen} onOpenChange={setIsGoalsDialogOpen}>

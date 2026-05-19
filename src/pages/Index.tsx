@@ -96,7 +96,7 @@ const Index = () => {
       {activeTab !== "profile" && (
           <div style={{ position: "fixed", top: "calc(3.5rem + env(safe-area-inset-top))", left: 0, right: 0, zIndex: 50, background: "hsl(var(--background))", padding: "0.4rem 1rem" }}>
           <div className="flex gap-2">
-              {(["library", "statistics", "nutrition", "activity"] as Tab[]).map((tab) => (
+              {(["library", "statistics", "activity", "nutrition"] as Tab[]).map((tab) => (
                 <Button key={tab} variant="minimal" className={`flex-1 h-10 rounded-lg ${activeTab === tab ? "bg-accent" : ""}`} onClick={() => setActiveTab(tab)}>
                 <span className="text-xs font-light tracking-wider uppercase">
                   {tab === "library" ? "Librairie" : tab === "statistics" ? "Stats" : tab === "nutrition" ? "Nutrition" : "Activité"}
