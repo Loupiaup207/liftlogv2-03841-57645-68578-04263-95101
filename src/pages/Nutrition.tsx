@@ -123,10 +123,12 @@ const Nutrition = () => {
     }
   };
 
-  const totalCalories = meals.reduce((sum, meal) => sum + meal.calories, 0);
-  const totalProtein = meals.reduce((sum, meal) => sum + meal.protein, 0);
-  const totalCarbs = meals.reduce((sum, meal) => sum + meal.carbs, 0);
-  const totalFat = meals.reduce((sum, meal) => sum + meal.fat, 0);
+  const today = new Date().toISOString().slice(0, 10);
+  const todayMeals = meals.filter(m => (m.date || today) === today);
+  const totalCalories = todayMeals.reduce((sum, meal) => sum + meal.calories, 0);
+  const totalProtein = todayMeals.reduce((sum, meal) => sum + meal.protein, 0);
+  const totalCarbs = todayMeals.reduce((sum, meal) => sum + meal.carbs, 0);
+  const totalFat = todayMeals.reduce((sum, meal) => sum + meal.fat, 0);
 
   const remainingCalories = goals.daily_calories - totalCalories;
 
