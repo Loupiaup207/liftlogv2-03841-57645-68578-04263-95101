@@ -8,6 +8,10 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RTooltip,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Legend,
+} from "recharts";
 
 interface Meal {
   id: string;
