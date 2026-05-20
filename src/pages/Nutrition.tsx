@@ -314,27 +314,46 @@ const Nutrition = () => {
     );
   };
 
+  const MEAL_TYPES = [
+    { id: "petit-dej", label: "Petit-déj" },
+    { id: "dejeuner", label: "Déjeuner" },
+    { id: "diner", label: "Dîner" },
+    { id: "collation", label: "Collation" },
+    { id: "autre", label: "Autre" },
+  ];
+
   // Small inline component to create a custom food
-  const CreateFoodForm = ({ onSave }: { onSave: (f:any) => void }) => {
+  const CreateFoodForm = ({ onSave }: { onSave: (f: any) => void }) => {
     const [name, setName] = useState("");
     const [cal, setCal] = useState("");
     const [protein, setProtein] = useState("");
     const [carbs, setCarbs] = useState("");
     const [fat, setFat] = useState("");
+    const [mealType, setMealType] = useState("dejeuner");
     return (
       <div className="space-y-2">
-        <div><Label>Nom</Label><Input value={name} onChange={(e)=>setName(e.target.value)} /></div>
-        <div className="grid grid-cols-2 gap-2">
-          <Input placeholder="kcal /100g" value={cal} onChange={(e)=>setCal(e.target.value)} />
-          <Input placeholder="prot g /100g" value={protein} onChange={(e)=>setProtein(e.target.value)} />
+        <div><Label>Nom</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
+        <div>
+          <Label>Type de repas</Label>
+          <div className="flex flex-wrap gap-1 mt-1">
+            {MEAL_TYPES.map(t => (
+              <Button key={t.id} size="sm" variant={mealType === t.id ? "default" : "ghost"} onClick={() => setMealType(t.id)}>
+                {t.label}
+              </Button>
+            ))}
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <Input placeholder="carbs g /100g" value={carbs} onChange={(e)=>setCarbs(e.target.value)} />
-          <Input placeholder="fat g /100g" value={fat} onChange={(e)=>setFat(e.target.value)} />
+          <Input placeholder="kcal /100g" value={cal} onChange={(e) => setCal(e.target.value)} />
+          <Input placeholder="prot g /100g" value={protein} onChange={(e) => setProtein(e.target.value)} />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <Input placeholder="carbs g /100g" value={carbs} onChange={(e) => setCarbs(e.target.value)} />
+          <Input placeholder="fat g /100g" value={fat} onChange={(e) => setFat(e.target.value)} />
         </div>
         <Button onClick={() => {
           if (!name) return toast({ title: 'Nom requis', variant: 'destructive' });
-          onSave({ name, cal: Number(cal)||0, protein: Number(protein)||0, carbs: Number(carbs)||0, fat: Number(fat)||0 });
+          onSave({ name, cal: Number(cal) || 0, protein: Number(protein) || 0, carbs: Number(carbs) || 0, fat: Number(fat) || 0, mealType });
         }} className="w-full">Enregistrer l'aliment</Button>
       </div>
     );
@@ -342,6 +361,7 @@ const Nutrition = () => {
 
   const LibraryPicker = () => {
     const [grams, setGrams] = useState<Record<string, string>>({});
+    const [filter, setFilter] = useState<string>("all");
     if (customFoods.length === 0) {
       return (
         <div className="text-center py-6 space-y-3">
@@ -350,42 +370,61 @@ const Nutrition = () => {
         </div>
       );
     }
+    const grouped = MEAL_TYPES.map(t => ({
+      ...t,
+      items: customFoods.filter(f => (f.mealType || "autre") === t.id),
+    })).filter(g => g.items.length > 0);
+    const visibleGroups = filter === "all" ? grouped : grouped.filter(g => g.id === filter);
     return (
-      <div className="space-y-2 max-h-[55vh] overflow-y-auto">
-        {customFoods.map((f) => {
-          const g = grams[f.id] ?? "100";
-          return (
-            <Card key={f.id} className="p-3 bg-card">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{f.name}</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {f.cal} kcal · P {f.protein}g · G {f.carbs}g · L {f.fat}g / 100g
-                  </p>
-                </div>
-                <Input
-                  type="number"
-                  className="w-16 h-8 text-xs"
-                  value={g}
-                  onChange={(e) => setGrams({ ...grams, [f.id]: e.target.value })}
-                />
-                <span className="text-[10px] text-muted-foreground">g</span>
-                <Button size="sm" className="h-8" onClick={() => quickAddFromFood(f, Number(g) || 100)}>
-                  <Plus className="h-3 w-3" />
-                </Button>
-                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => deleteCustomFood(f.id)}>
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              </div>
-            </Card>
-          );
-        })}
+      <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+        <div className="flex flex-wrap gap-1 sticky top-0 bg-background pb-1 z-10">
+          <Button size="sm" variant={filter === "all" ? "default" : "ghost"} onClick={() => setFilter("all")}>Tous</Button>
+          {MEAL_TYPES.map(t => (
+            <Button key={t.id} size="sm" variant={filter === t.id ? "default" : "ghost"} onClick={() => setFilter(t.id)}>
+              {t.label}
+            </Button>
+          ))}
+        </div>
+        {visibleGroups.map(group => (
+          <div key={group.id} className="space-y-1.5">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground px-1">{group.label}</p>
+            {group.items.map((f) => {
+              const g = grams[f.id] ?? "100";
+              return (
+                <Card key={f.id} className="p-3 bg-card">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{f.name}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {f.cal} kcal · P {f.protein}g · G {f.carbs}g · L {f.fat}g / 100g
+                      </p>
+                    </div>
+                    <Input
+                      type="number"
+                      className="w-16 h-8 text-xs"
+                      value={g}
+                      onChange={(e) => setGrams({ ...grams, [f.id]: e.target.value })}
+                    />
+                    <span className="text-[10px] text-muted-foreground">g</span>
+                    <Button size="sm" className="h-8" onClick={() => quickAddFromFood(f, Number(g) || 100)}>
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => deleteCustomFood(f.id)}>
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        ))}
         <Button variant="outline" className="w-full" onClick={() => setIsAddMode("food")}>
           <Plus className="h-3 w-3 mr-1" /> Créer un nouvel aliment
         </Button>
       </div>
     );
   };
+
 
   const AIEstimator = ({ onEstimate }: { onEstimate: (e: any) => void }) => {
     const [text, setText] = useState("");
