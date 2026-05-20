@@ -386,8 +386,11 @@ const Nutrition = () => {
           <Plus className="h-3 w-3 mr-1" /> Créer un nouvel aliment
         </Button>
       </div>
-    );
   };
+
+  const AIEstimator2_unused = ({ onEstimate }: { onEstimate: (e: any) => void }) => {
+    const [text, setText] = useState("");
+    return (
 
 
       <div className="space-y-2">
