@@ -340,8 +340,6 @@ const Nutrition = () => {
     );
   };
 
-  const AIEstimator = ({ onEstimate }:{onEstimate:(e:any)=>void}) => {
-    const [text, setText] = useState("");
   const LibraryPicker = () => {
     const [grams, setGrams] = useState<Record<string, string>>({});
     if (customFoods.length === 0) {
@@ -386,16 +384,15 @@ const Nutrition = () => {
           <Plus className="h-3 w-3 mr-1" /> Créer un nouvel aliment
         </Button>
       </div>
+    );
   };
 
-  const AIEstimator2_unused = ({ onEstimate }: { onEstimate: (e: any) => void }) => {
+  const AIEstimator = ({ onEstimate }: { onEstimate: (e: any) => void }) => {
     const [text, setText] = useState("");
     return (
-
-
       <div className="space-y-2">
         <Label>Décrire l'aliment (ex: "100g chicken")</Label>
-        <Input value={text} onChange={(e)=>setText(e.target.value)} placeholder="ex: 150g chicken breast" />
+        <Input value={text} onChange={(e) => setText(e.target.value)} placeholder="ex: 150g chicken breast" />
         <div className="flex gap-2">
           <Button onClick={() => { const est = estimateFromText(text); onEstimate(est); }}>Estimer</Button>
           <Button variant="ghost" onClick={() => setText('')}>Effacer</Button>
