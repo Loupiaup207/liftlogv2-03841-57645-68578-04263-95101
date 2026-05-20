@@ -609,7 +609,7 @@ const Nutrition = () => {
           <DialogHeader>
             <DialogTitle>Détails caloriques</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 mt-2">
+          <div className="space-y-4 mt-2 max-h-[75vh] overflow-y-auto">
             {/* Range selector */}
             <div className="flex gap-2">
               {([7, 14, 30] as const).map(r => (
@@ -618,6 +618,55 @@ const Nutrition = () => {
                 </Button>
               ))}
             </div>
+
+            {/* Key stats grid */}
+            {(() => {
+              const data = aggregateLastDays(chartRange);
+              const totalKcal = data.reduce((s, d) => s + d.cal, 0);
+              const daysLogged = data.filter(d => d.cal > 0).length;
+              const avg = daysLogged ? Math.round(totalKcal / daysLogged) : 0;
+              const max = data.reduce((m, d) => d.cal > m.cal ? d : m, data[0]);
+              const min = data.filter(d => d.cal > 0).reduce((m, d) => !m || d.cal < m.cal ? d : m, null as any);
+              const overGoal = data.filter(d => d.cal > goals.daily_calories).length;
+              const underGoal = data.filter(d => d.cal > 0 && d.cal < goals.daily_calories).length;
+              const diff = avg - goals.daily_calories;
+              // Streak: consecutive days from end with logged meals
+              let streak = 0;
+              for (let i = data.length - 1; i >= 0; i--) {
+                if (data[i].cal > 0) streak++; else break;
+              }
+              // Weight projection: surplus/deficit kcal → kg (~7700 kcal = 1kg)
+              const totalDelta = data.reduce((s, d) => s + (d.cal > 0 ? d.cal - goals.daily_calories : 0), 0);
+              const weightDelta = (totalDelta / 7700).toFixed(2);
+
+              const Stat = ({ label, value, sub, color }: any) => (
+                <Card className="p-2.5 bg-card">
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground">{label}</p>
+                  <p className="text-base font-light mt-0.5" style={color ? { color } : undefined}>{value}</p>
+                  {sub && <p className="text-[9px] text-muted-foreground mt-0.5">{sub}</p>}
+                </Card>
+              );
+
+              return (
+                <div className="grid grid-cols-2 gap-2">
+                  <Stat label="Moyenne/jour" value={`${avg} kcal`} sub={`sur ${daysLogged} j`} />
+                  <Stat label="Écart objectif" value={`${diff > 0 ? '+' : ''}${diff} kcal`} color={diff > 0 ? '#ef4444' : '#10b981'} />
+                  <Stat label="Total période" value={`${totalKcal} kcal`} sub={`${chartRange} jours`} />
+                  <Stat label="Streak" value={`${streak} j`} sub="jours consécutifs" />
+                  <Stat label="Jours au-dessus" value={`${overGoal}`} sub="dépassements" color="#ef4444" />
+                  <Stat label="Jours en-dessous" value={`${underGoal}`} color="#10b981" />
+                  <Stat label="Jour max" value={max ? `${max.cal} kcal` : '—'} sub={max?.day} />
+                  <Stat label="Jour min" value={min ? `${min.cal} kcal` : '—'} sub={min?.day} />
+                  <Card className="p-2.5 bg-card col-span-2">
+                    <p className="text-[9px] uppercase tracking-wider text-muted-foreground">Évolution poids estimée</p>
+                    <p className="text-base font-light mt-0.5" style={{ color: Number(weightDelta) > 0 ? '#ef4444' : '#10b981' }}>
+                      {Number(weightDelta) > 0 ? '+' : ''}{weightDelta} kg
+                    </p>
+                    <p className="text-[9px] text-muted-foreground mt-0.5">Basé sur ±7700 kcal = 1 kg</p>
+                  </Card>
+                </div>
+              );
+            })()}
 
             {/* Calories remaining per day */}
             <Card className="p-3 bg-card">
@@ -638,6 +687,24 @@ const Nutrition = () => {
                 </ResponsiveContainer>
               </div>
             </Card>
+
+            {/* Calories consumed bar trend */}
+            <Card className="p-3 bg-card">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Tendance calorique vs objectif</p>
+              <div className="h-40">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={aggregateLastDays(chartRange)} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
+                    <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="2 4" vertical={false} />
+                    <XAxis dataKey="day" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                    <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} width={32} />
+                    <RTooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }} />
+                    <Line type="monotone" dataKey="cal" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 2 }} name="Consommées" />
+                    <Line type="monotone" dataKey={() => goals.daily_calories} stroke="#f59e0b" strokeWidth={1} strokeDasharray="4 4" dot={false} name="Objectif" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+
 
             {/* Macro distribution today */}
             {(() => {
