@@ -28,7 +28,7 @@ const Nutrition = () => {
   const { toast } = useToast();
   const [meals, setMeals] = useState<Meal[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isAddMode, setIsAddMode] = useState<"manual" | "food" | "ai">("manual");
+  const [isAddMode, setIsAddMode] = useState<"manual" | "library" | "food" | "ai">("library");
   const [isGoalsDialogOpen, setIsGoalsDialogOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isCaloriesDetailOpen, setIsCaloriesDetailOpen] = useState(false);
@@ -165,10 +165,35 @@ const Nutrition = () => {
   };
 
   const saveCustomFood = (food: any) => {
-    const updated = [...customFoods, food];
+    const updated = [...customFoods, { id: Date.now().toString(), ...food }];
     setCustomFoods(updated);
     localStorage.setItem("nutrition_customFoods", JSON.stringify(updated));
     toast({ title: "Aliment enregistré" });
+    setIsAddMode("library");
+  };
+
+  const deleteCustomFood = (id: string) => {
+    const updated = customFoods.filter(f => f.id !== id);
+    setCustomFoods(updated);
+    localStorage.setItem("nutrition_customFoods", JSON.stringify(updated));
+  };
+
+  const quickAddFromFood = (food: any, grams: number) => {
+    const factor = (Number(grams) || 100) / 100;
+    const meal: Meal = {
+      id: Date.now().toString(),
+      name: `${food.name} (${grams}g)`,
+      calories: Math.round((food.cal || 0) * factor),
+      protein: Math.round((food.protein || 0) * factor),
+      carbs: Math.round((food.carbs || 0) * factor),
+      fat: Math.round((food.fat || 0) * factor),
+      date: new Date().toISOString().slice(0, 10),
+    };
+    const updated = [...meals, meal];
+    setMeals(updated);
+    localStorage.setItem("nutrition_meals", JSON.stringify(updated));
+    setIsDialogOpen(false);
+    toast({ title: `${food.name} ajouté` });
   };
 
   const foodDb: Record<string, {cal: number; protein: number; carbs: number; fat: number}> = {
@@ -315,12 +340,59 @@ const Nutrition = () => {
     );
   };
 
-  const AIEstimator = ({ onEstimate }:{onEstimate:(e:any)=>void}) => {
+  const LibraryPicker = () => {
+    const [grams, setGrams] = useState<Record<string, string>>({});
+    if (customFoods.length === 0) {
+      return (
+        <div className="text-center py-6 space-y-3">
+          <p className="text-sm text-muted-foreground">Aucun aliment enregistré</p>
+          <Button variant="outline" onClick={() => setIsAddMode("food")}>Créer mon premier aliment</Button>
+        </div>
+      );
+    }
+    return (
+      <div className="space-y-2 max-h-[55vh] overflow-y-auto">
+        {customFoods.map((f) => {
+          const g = grams[f.id] ?? "100";
+          return (
+            <Card key={f.id} className="p-3 bg-card">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{f.name}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {f.cal} kcal · P {f.protein}g · G {f.carbs}g · L {f.fat}g / 100g
+                  </p>
+                </div>
+                <Input
+                  type="number"
+                  className="w-16 h-8 text-xs"
+                  value={g}
+                  onChange={(e) => setGrams({ ...grams, [f.id]: e.target.value })}
+                />
+                <span className="text-[10px] text-muted-foreground">g</span>
+                <Button size="sm" className="h-8" onClick={() => quickAddFromFood(f, Number(g) || 100)}>
+                  <Plus className="h-3 w-3" />
+                </Button>
+                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => deleteCustomFood(f.id)}>
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            </Card>
+          );
+        })}
+        <Button variant="outline" className="w-full" onClick={() => setIsAddMode("food")}>
+          <Plus className="h-3 w-3 mr-1" /> Créer un nouvel aliment
+        </Button>
+      </div>
+    );
+  };
+
+  const AIEstimator = ({ onEstimate }: { onEstimate: (e: any) => void }) => {
     const [text, setText] = useState("");
     return (
       <div className="space-y-2">
         <Label>Décrire l'aliment (ex: "100g chicken")</Label>
-        <Input value={text} onChange={(e)=>setText(e.target.value)} placeholder="ex: 150g chicken breast" />
+        <Input value={text} onChange={(e) => setText(e.target.value)} placeholder="ex: 150g chicken breast" />
         <div className="flex gap-2">
           <Button onClick={() => { const est = estimateFromText(text); onEstimate(est); }}>Estimer</Button>
           <Button variant="ghost" onClick={() => setText('')}>Effacer</Button>
@@ -652,11 +724,14 @@ const Nutrition = () => {
                   <DialogTitle>Ajouter un repas</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 mt-4">
-                  <div className="flex gap-2">
-                    <Button variant={isAddMode === 'manual' ? 'default' : 'ghost'} onClick={() => setIsAddMode('manual')}>Manuel</Button>
-                    <Button variant={isAddMode === 'food' ? 'default' : 'ghost'} onClick={() => setIsAddMode('food')}>Créer aliment</Button>
-                    <Button variant={isAddMode === 'ai' ? 'default' : 'ghost'} onClick={() => setIsAddMode('ai')}>Estimer (IA)</Button>
+                  <div className="flex gap-1 flex-wrap">
+                    <Button size="sm" variant={isAddMode === 'library' ? 'default' : 'ghost'} onClick={() => setIsAddMode('library')}>Bibliothèque</Button>
+                    <Button size="sm" variant={isAddMode === 'manual' ? 'default' : 'ghost'} onClick={() => setIsAddMode('manual')}>Manuel</Button>
+                    <Button size="sm" variant={isAddMode === 'food' ? 'default' : 'ghost'} onClick={() => setIsAddMode('food')}>Créer aliment</Button>
+                    <Button size="sm" variant={isAddMode === 'ai' ? 'default' : 'ghost'} onClick={() => setIsAddMode('ai')}>IA</Button>
                   </div>
+
+                  {isAddMode === 'library' && <LibraryPicker />}
 
                   {isAddMode === 'manual' && (
                     <>
