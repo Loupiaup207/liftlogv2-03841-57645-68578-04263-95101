@@ -28,7 +28,7 @@ const Nutrition = () => {
   const { toast } = useToast();
   const [meals, setMeals] = useState<Meal[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isAddMode, setIsAddMode] = useState<"manual" | "food" | "ai">("manual");
+  const [isAddMode, setIsAddMode] = useState<"manual" | "library" | "food" | "ai">("library");
   const [isGoalsDialogOpen, setIsGoalsDialogOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isCaloriesDetailOpen, setIsCaloriesDetailOpen] = useState(false);
