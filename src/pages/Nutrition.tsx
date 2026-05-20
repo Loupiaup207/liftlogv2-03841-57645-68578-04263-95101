@@ -724,11 +724,14 @@ const Nutrition = () => {
                   <DialogTitle>Ajouter un repas</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 mt-4">
-                  <div className="flex gap-2">
-                    <Button variant={isAddMode === 'manual' ? 'default' : 'ghost'} onClick={() => setIsAddMode('manual')}>Manuel</Button>
-                    <Button variant={isAddMode === 'food' ? 'default' : 'ghost'} onClick={() => setIsAddMode('food')}>Créer aliment</Button>
-                    <Button variant={isAddMode === 'ai' ? 'default' : 'ghost'} onClick={() => setIsAddMode('ai')}>Estimer (IA)</Button>
+                  <div className="flex gap-1 flex-wrap">
+                    <Button size="sm" variant={isAddMode === 'library' ? 'default' : 'ghost'} onClick={() => setIsAddMode('library')}>Bibliothèque</Button>
+                    <Button size="sm" variant={isAddMode === 'manual' ? 'default' : 'ghost'} onClick={() => setIsAddMode('manual')}>Manuel</Button>
+                    <Button size="sm" variant={isAddMode === 'food' ? 'default' : 'ghost'} onClick={() => setIsAddMode('food')}>Créer aliment</Button>
+                    <Button size="sm" variant={isAddMode === 'ai' ? 'default' : 'ghost'} onClick={() => setIsAddMode('ai')}>IA</Button>
                   </div>
+
+                  {isAddMode === 'library' && <LibraryPicker />}
 
                   {isAddMode === 'manual' && (
                     <>
