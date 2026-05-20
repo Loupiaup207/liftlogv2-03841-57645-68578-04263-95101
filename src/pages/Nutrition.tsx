@@ -165,10 +165,35 @@ const Nutrition = () => {
   };
 
   const saveCustomFood = (food: any) => {
-    const updated = [...customFoods, food];
+    const updated = [...customFoods, { id: Date.now().toString(), ...food }];
     setCustomFoods(updated);
     localStorage.setItem("nutrition_customFoods", JSON.stringify(updated));
     toast({ title: "Aliment enregistré" });
+    setIsAddMode("library");
+  };
+
+  const deleteCustomFood = (id: string) => {
+    const updated = customFoods.filter(f => f.id !== id);
+    setCustomFoods(updated);
+    localStorage.setItem("nutrition_customFoods", JSON.stringify(updated));
+  };
+
+  const quickAddFromFood = (food: any, grams: number) => {
+    const factor = (Number(grams) || 100) / 100;
+    const meal: Meal = {
+      id: Date.now().toString(),
+      name: `${food.name} (${grams}g)`,
+      calories: Math.round((food.cal || 0) * factor),
+      protein: Math.round((food.protein || 0) * factor),
+      carbs: Math.round((food.carbs || 0) * factor),
+      fat: Math.round((food.fat || 0) * factor),
+      date: new Date().toISOString().slice(0, 10),
+    };
+    const updated = [...meals, meal];
+    setMeals(updated);
+    localStorage.setItem("nutrition_meals", JSON.stringify(updated));
+    setIsDialogOpen(false);
+    toast({ title: `${food.name} ajouté` });
   };
 
   const foodDb: Record<string, {cal: number; protein: number; carbs: number; fat: number}> = {
