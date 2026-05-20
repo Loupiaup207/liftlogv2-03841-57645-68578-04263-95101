@@ -342,7 +342,54 @@ const Nutrition = () => {
 
   const AIEstimator = ({ onEstimate }:{onEstimate:(e:any)=>void}) => {
     const [text, setText] = useState("");
+  const LibraryPicker = () => {
+    const [grams, setGrams] = useState<Record<string, string>>({});
+    if (customFoods.length === 0) {
+      return (
+        <div className="text-center py-6 space-y-3">
+          <p className="text-sm text-muted-foreground">Aucun aliment enregistré</p>
+          <Button variant="outline" onClick={() => setIsAddMode("food")}>Créer mon premier aliment</Button>
+        </div>
+      );
+    }
     return (
+      <div className="space-y-2 max-h-[55vh] overflow-y-auto">
+        {customFoods.map((f) => {
+          const g = grams[f.id] ?? "100";
+          return (
+            <Card key={f.id} className="p-3 bg-card">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{f.name}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {f.cal} kcal · P {f.protein}g · G {f.carbs}g · L {f.fat}g / 100g
+                  </p>
+                </div>
+                <Input
+                  type="number"
+                  className="w-16 h-8 text-xs"
+                  value={g}
+                  onChange={(e) => setGrams({ ...grams, [f.id]: e.target.value })}
+                />
+                <span className="text-[10px] text-muted-foreground">g</span>
+                <Button size="sm" className="h-8" onClick={() => quickAddFromFood(f, Number(g) || 100)}>
+                  <Plus className="h-3 w-3" />
+                </Button>
+                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => deleteCustomFood(f.id)}>
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            </Card>
+          );
+        })}
+        <Button variant="outline" className="w-full" onClick={() => setIsAddMode("food")}>
+          <Plus className="h-3 w-3 mr-1" /> Créer un nouvel aliment
+        </Button>
+      </div>
+    );
+  };
+
+
       <div className="space-y-2">
         <Label>Décrire l'aliment (ex: "100g chicken")</Label>
         <Input value={text} onChange={(e)=>setText(e.target.value)} placeholder="ex: 150g chicken breast" />
