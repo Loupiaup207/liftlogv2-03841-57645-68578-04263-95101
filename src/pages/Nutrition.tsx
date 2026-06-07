@@ -1003,12 +1003,6 @@ const Nutrition = () => {
           </div>
         </DialogContent>
       </Dialog>
-      {/* floating add button */}
-      <div className="fixed bottom-20 right-4 z-50">
-        <Button size="icon" className="rounded-full h-12 w-12" onClick={() => setIsDialogOpen(true)}>
-          <Plus className="h-5 w-5" />
-        </Button>
-      </div>
 
       {/* Fixed Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 max-w-[390px] mx-auto bg-card border-t border-border flex justify-around items-center py-3 px-4">
