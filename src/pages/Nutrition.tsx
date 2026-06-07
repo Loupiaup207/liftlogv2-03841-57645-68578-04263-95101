@@ -331,29 +331,42 @@ const Nutrition = () => {
     const [fat, setFat] = useState("");
     const [mealType, setMealType] = useState("dejeuner");
     return (
-      <div className="space-y-2">
-        <div><Label>Nom</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
+      <div className="space-y-3">
+        <div><Label>Nom</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="ex: Salade poulet" /></div>
         <div>
           <Label>Type de repas</Label>
           <div className="flex flex-wrap gap-1 mt-1">
             {MEAL_TYPES.map(t => (
-              <Button key={t.id} size="sm" variant={mealType === t.id ? "default" : "ghost"} onClick={() => setMealType(t.id)}>
+              <Button key={t.id} type="button" size="sm" variant={mealType === t.id ? "default" : "ghost"} onClick={() => setMealType(t.id)}>
                 {t.label}
               </Button>
             ))}
           </div>
         </div>
+        <p className="text-[10px] text-muted-foreground -mb-1">Valeurs nutritionnelles pour 100g</p>
         <div className="grid grid-cols-2 gap-2">
-          <Input placeholder="kcal /100g" value={cal} onChange={(e) => setCal(e.target.value)} />
-          <Input placeholder="prot g /100g" value={protein} onChange={(e) => setProtein(e.target.value)} />
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <Input placeholder="carbs g /100g" value={carbs} onChange={(e) => setCarbs(e.target.value)} />
-          <Input placeholder="fat g /100g" value={fat} onChange={(e) => setFat(e.target.value)} />
+          <div>
+            <Label className="text-[10px]">Calories (kcal)</Label>
+            <Input type="number" inputMode="decimal" min="0" placeholder="0" value={cal} onChange={(e) => setCal(e.target.value)} />
+          </div>
+          <div>
+            <Label className="text-[10px]">Protéines (g)</Label>
+            <Input type="number" inputMode="decimal" min="0" placeholder="0" value={protein} onChange={(e) => setProtein(e.target.value)} />
+          </div>
+          <div>
+            <Label className="text-[10px]">Glucides (g)</Label>
+            <Input type="number" inputMode="decimal" min="0" placeholder="0" value={carbs} onChange={(e) => setCarbs(e.target.value)} />
+          </div>
+          <div>
+            <Label className="text-[10px]">Lipides (g)</Label>
+            <Input type="number" inputMode="decimal" min="0" placeholder="0" value={fat} onChange={(e) => setFat(e.target.value)} />
+          </div>
         </div>
         <Button onClick={() => {
-          if (!name) return toast({ title: 'Nom requis', variant: 'destructive' });
-          onSave({ name, cal: Number(cal) || 0, protein: Number(protein) || 0, carbs: Number(carbs) || 0, fat: Number(fat) || 0, mealType });
+          if (!name.trim()) return toast({ title: 'Nom requis', variant: 'destructive' });
+          if (!cal || Number(cal) <= 0) return toast({ title: 'Calories requises (> 0)', variant: 'destructive' });
+          onSave({ name: name.trim(), cal: Number(cal) || 0, protein: Number(protein) || 0, carbs: Number(carbs) || 0, fat: Number(fat) || 0, mealType });
+          setName(""); setCal(""); setProtein(""); setCarbs(""); setFat("");
         }} className="w-full">Enregistrer l'aliment</Button>
       </div>
     );
