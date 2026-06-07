@@ -179,21 +179,23 @@ const Nutrition = () => {
   };
 
   const quickAddFromFood = (food: any, grams: number) => {
-    const factor = (Number(grams) || 100) / 100;
+    const g = Number(grams) > 0 ? Number(grams) : 100;
+    const factor = g / 100;
+    const round1 = (n: number) => Math.round(n * 10) / 10;
     const meal: Meal = {
       id: Date.now().toString(),
-      name: `${food.name} (${grams}g)`,
+      name: `${food.name} (${g}g)`,
       calories: Math.round((food.cal || 0) * factor),
-      protein: Math.round((food.protein || 0) * factor),
-      carbs: Math.round((food.carbs || 0) * factor),
-      fat: Math.round((food.fat || 0) * factor),
+      protein: round1((food.protein || 0) * factor),
+      carbs: round1((food.carbs || 0) * factor),
+      fat: round1((food.fat || 0) * factor),
       date: new Date().toISOString().slice(0, 10),
     };
     const updated = [...meals, meal];
     setMeals(updated);
     localStorage.setItem("nutrition_meals", JSON.stringify(updated));
     setIsDialogOpen(false);
-    toast({ title: `${food.name} ajouté` });
+    toast({ title: `${food.name} ajouté`, description: `${meal.calories} kcal` });
   };
 
   const foodDb: Record<string, {cal: number; protein: number; carbs: number; fat: number}> = {
@@ -331,29 +333,42 @@ const Nutrition = () => {
     const [fat, setFat] = useState("");
     const [mealType, setMealType] = useState("dejeuner");
     return (
-      <div className="space-y-2">
-        <div><Label>Nom</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
+      <div className="space-y-3">
+        <div><Label>Nom</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="ex: Salade poulet" /></div>
         <div>
           <Label>Type de repas</Label>
           <div className="flex flex-wrap gap-1 mt-1">
             {MEAL_TYPES.map(t => (
-              <Button key={t.id} size="sm" variant={mealType === t.id ? "default" : "ghost"} onClick={() => setMealType(t.id)}>
+              <Button key={t.id} type="button" size="sm" variant={mealType === t.id ? "default" : "ghost"} onClick={() => setMealType(t.id)}>
                 {t.label}
               </Button>
             ))}
           </div>
         </div>
+        <p className="text-[10px] text-muted-foreground -mb-1">Valeurs nutritionnelles pour 100g</p>
         <div className="grid grid-cols-2 gap-2">
-          <Input placeholder="kcal /100g" value={cal} onChange={(e) => setCal(e.target.value)} />
-          <Input placeholder="prot g /100g" value={protein} onChange={(e) => setProtein(e.target.value)} />
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <Input placeholder="carbs g /100g" value={carbs} onChange={(e) => setCarbs(e.target.value)} />
-          <Input placeholder="fat g /100g" value={fat} onChange={(e) => setFat(e.target.value)} />
+          <div>
+            <Label className="text-[10px]">Calories (kcal)</Label>
+            <Input type="number" inputMode="decimal" min="0" placeholder="0" value={cal} onChange={(e) => setCal(e.target.value)} />
+          </div>
+          <div>
+            <Label className="text-[10px]">Protéines (g)</Label>
+            <Input type="number" inputMode="decimal" min="0" placeholder="0" value={protein} onChange={(e) => setProtein(e.target.value)} />
+          </div>
+          <div>
+            <Label className="text-[10px]">Glucides (g)</Label>
+            <Input type="number" inputMode="decimal" min="0" placeholder="0" value={carbs} onChange={(e) => setCarbs(e.target.value)} />
+          </div>
+          <div>
+            <Label className="text-[10px]">Lipides (g)</Label>
+            <Input type="number" inputMode="decimal" min="0" placeholder="0" value={fat} onChange={(e) => setFat(e.target.value)} />
+          </div>
         </div>
         <Button onClick={() => {
-          if (!name) return toast({ title: 'Nom requis', variant: 'destructive' });
-          onSave({ name, cal: Number(cal) || 0, protein: Number(protein) || 0, carbs: Number(carbs) || 0, fat: Number(fat) || 0, mealType });
+          if (!name.trim()) return toast({ title: 'Nom requis', variant: 'destructive' });
+          if (!cal || Number(cal) <= 0) return toast({ title: 'Calories requises (> 0)', variant: 'destructive' });
+          onSave({ name: name.trim(), cal: Number(cal) || 0, protein: Number(protein) || 0, carbs: Number(carbs) || 0, fat: Number(fat) || 0, mealType });
+          setName(""); setCal(""); setProtein(""); setCarbs(""); setFat("");
         }} className="w-full">Enregistrer l'aliment</Button>
       </div>
     );
@@ -401,6 +416,8 @@ const Nutrition = () => {
                     </div>
                     <Input
                       type="number"
+                      inputMode="decimal"
+                      min="1"
                       className="w-16 h-8 text-xs"
                       value={g}
                       onChange={(e) => setGrams({ ...grams, [f.id]: e.target.value })}
@@ -825,12 +842,12 @@ const Nutrition = () => {
                 <Plus className="h-4 w-4" />
               </Button>
             </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-h-[85vh] overflow-hidden flex flex-col">
                 <DialogHeader>
                   <DialogTitle>Ajouter un repas</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4 mt-4">
-                  <div className="flex gap-1 flex-wrap">
+                <div className="space-y-4 mt-2 overflow-y-auto flex-1 -mx-1 px-1">
+                  <div className="flex gap-1 flex-wrap sticky top-0 bg-background z-10 pb-1">
                     <Button size="sm" variant={isAddMode === 'library' ? 'default' : 'ghost'} onClick={() => setIsAddMode('library')}>Bibliothèque</Button>
                     <Button size="sm" variant={isAddMode === 'manual' ? 'default' : 'ghost'} onClick={() => setIsAddMode('manual')}>Manuel</Button>
                     <Button size="sm" variant={isAddMode === 'food' ? 'default' : 'ghost'} onClick={() => setIsAddMode('food')}>Créer aliment</Button>
@@ -847,20 +864,20 @@ const Nutrition = () => {
                       </div>
                       <div>
                         <Label htmlFor="calories">Calories</Label>
-                        <Input id="calories" type="number" value={newMeal.calories} onChange={(e) => setNewMeal({ ...newMeal, calories: e.target.value })} placeholder="500" />
+                        <Input id="calories" type="number" inputMode="decimal" min="0" value={newMeal.calories} onChange={(e) => setNewMeal({ ...newMeal, calories: e.target.value })} placeholder="500" />
                       </div>
                       <div className="grid grid-cols-3 gap-3">
                         <div>
                           <Label htmlFor="protein">Protéines (g)</Label>
-                          <Input id="protein" type="number" value={newMeal.protein} onChange={(e) => setNewMeal({ ...newMeal, protein: e.target.value })} placeholder="30" />
+                          <Input id="protein" type="number" inputMode="decimal" min="0" value={newMeal.protein} onChange={(e) => setNewMeal({ ...newMeal, protein: e.target.value })} placeholder="30" />
                         </div>
                         <div>
                           <Label htmlFor="carbs">Glucides (g)</Label>
-                          <Input id="carbs" type="number" value={newMeal.carbs} onChange={(e) => setNewMeal({ ...newMeal, carbs: e.target.value })} placeholder="50" />
+                          <Input id="carbs" type="number" inputMode="decimal" min="0" value={newMeal.carbs} onChange={(e) => setNewMeal({ ...newMeal, carbs: e.target.value })} placeholder="50" />
                         </div>
                         <div>
                           <Label htmlFor="fat">Lipides (g)</Label>
-                          <Input id="fat" type="number" value={newMeal.fat} onChange={(e) => setNewMeal({ ...newMeal, fat: e.target.value })} placeholder="15" />
+                          <Input id="fat" type="number" inputMode="decimal" min="0" value={newMeal.fat} onChange={(e) => setNewMeal({ ...newMeal, fat: e.target.value })} placeholder="15" />
                         </div>
                       </div>
                       <Button onClick={handleAddMeal} className="w-full">Ajouter</Button>
@@ -875,7 +892,8 @@ const Nutrition = () => {
                     <AIEstimator onEstimate={(est:any) => {
                       if (est) {
                         setNewMeal({ name: est.name, calories: String(est.calories), protein: String(est.protein), carbs: String(est.carbs), fat: String(est.fat) });
-                        toast({ title: 'Estimation chargée' });
+                        setIsAddMode('manual');
+                        toast({ title: 'Estimation chargée — vérifie et valide' });
                       } else {
                         toast({ title: 'Aucune estimation trouvée', variant: 'destructive' });
                       }
