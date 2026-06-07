@@ -416,6 +416,8 @@ const Nutrition = () => {
                     </div>
                     <Input
                       type="number"
+                      inputMode="decimal"
+                      min="1"
                       className="w-16 h-8 text-xs"
                       value={g}
                       onChange={(e) => setGrams({ ...grams, [f.id]: e.target.value })}
