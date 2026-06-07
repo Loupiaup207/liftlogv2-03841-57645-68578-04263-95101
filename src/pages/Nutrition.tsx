@@ -179,21 +179,23 @@ const Nutrition = () => {
   };
 
   const quickAddFromFood = (food: any, grams: number) => {
-    const factor = (Number(grams) || 100) / 100;
+    const g = Number(grams) > 0 ? Number(grams) : 100;
+    const factor = g / 100;
+    const round1 = (n: number) => Math.round(n * 10) / 10;
     const meal: Meal = {
       id: Date.now().toString(),
-      name: `${food.name} (${grams}g)`,
+      name: `${food.name} (${g}g)`,
       calories: Math.round((food.cal || 0) * factor),
-      protein: Math.round((food.protein || 0) * factor),
-      carbs: Math.round((food.carbs || 0) * factor),
-      fat: Math.round((food.fat || 0) * factor),
+      protein: round1((food.protein || 0) * factor),
+      carbs: round1((food.carbs || 0) * factor),
+      fat: round1((food.fat || 0) * factor),
       date: new Date().toISOString().slice(0, 10),
     };
     const updated = [...meals, meal];
     setMeals(updated);
     localStorage.setItem("nutrition_meals", JSON.stringify(updated));
     setIsDialogOpen(false);
-    toast({ title: `${food.name} ajouté` });
+    toast({ title: `${food.name} ajouté`, description: `${meal.calories} kcal` });
   };
 
   const foodDb: Record<string, {cal: number; protein: number; carbs: number; fat: number}> = {
