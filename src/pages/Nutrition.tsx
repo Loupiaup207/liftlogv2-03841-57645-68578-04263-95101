@@ -838,12 +838,12 @@ const Nutrition = () => {
                 <Plus className="h-4 w-4" />
               </Button>
             </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-h-[85vh] overflow-hidden flex flex-col">
                 <DialogHeader>
                   <DialogTitle>Ajouter un repas</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4 mt-4">
-                  <div className="flex gap-1 flex-wrap">
+                <div className="space-y-4 mt-2 overflow-y-auto flex-1 -mx-1 px-1">
+                  <div className="flex gap-1 flex-wrap sticky top-0 bg-background z-10 pb-1">
                     <Button size="sm" variant={isAddMode === 'library' ? 'default' : 'ghost'} onClick={() => setIsAddMode('library')}>Bibliothèque</Button>
                     <Button size="sm" variant={isAddMode === 'manual' ? 'default' : 'ghost'} onClick={() => setIsAddMode('manual')}>Manuel</Button>
                     <Button size="sm" variant={isAddMode === 'food' ? 'default' : 'ghost'} onClick={() => setIsAddMode('food')}>Créer aliment</Button>
@@ -860,20 +860,20 @@ const Nutrition = () => {
                       </div>
                       <div>
                         <Label htmlFor="calories">Calories</Label>
-                        <Input id="calories" type="number" value={newMeal.calories} onChange={(e) => setNewMeal({ ...newMeal, calories: e.target.value })} placeholder="500" />
+                        <Input id="calories" type="number" inputMode="decimal" min="0" value={newMeal.calories} onChange={(e) => setNewMeal({ ...newMeal, calories: e.target.value })} placeholder="500" />
                       </div>
                       <div className="grid grid-cols-3 gap-3">
                         <div>
                           <Label htmlFor="protein">Protéines (g)</Label>
-                          <Input id="protein" type="number" value={newMeal.protein} onChange={(e) => setNewMeal({ ...newMeal, protein: e.target.value })} placeholder="30" />
+                          <Input id="protein" type="number" inputMode="decimal" min="0" value={newMeal.protein} onChange={(e) => setNewMeal({ ...newMeal, protein: e.target.value })} placeholder="30" />
                         </div>
                         <div>
                           <Label htmlFor="carbs">Glucides (g)</Label>
-                          <Input id="carbs" type="number" value={newMeal.carbs} onChange={(e) => setNewMeal({ ...newMeal, carbs: e.target.value })} placeholder="50" />
+                          <Input id="carbs" type="number" inputMode="decimal" min="0" value={newMeal.carbs} onChange={(e) => setNewMeal({ ...newMeal, carbs: e.target.value })} placeholder="50" />
                         </div>
                         <div>
                           <Label htmlFor="fat">Lipides (g)</Label>
-                          <Input id="fat" type="number" value={newMeal.fat} onChange={(e) => setNewMeal({ ...newMeal, fat: e.target.value })} placeholder="15" />
+                          <Input id="fat" type="number" inputMode="decimal" min="0" value={newMeal.fat} onChange={(e) => setNewMeal({ ...newMeal, fat: e.target.value })} placeholder="15" />
                         </div>
                       </div>
                       <Button onClick={handleAddMeal} className="w-full">Ajouter</Button>
@@ -888,7 +888,8 @@ const Nutrition = () => {
                     <AIEstimator onEstimate={(est:any) => {
                       if (est) {
                         setNewMeal({ name: est.name, calories: String(est.calories), protein: String(est.protein), carbs: String(est.carbs), fat: String(est.fat) });
-                        toast({ title: 'Estimation chargée' });
+                        setIsAddMode('manual');
+                        toast({ title: 'Estimation chargée — vérifie et valide' });
                       } else {
                         toast({ title: 'Aucune estimation trouvée', variant: 'destructive' });
                       }
