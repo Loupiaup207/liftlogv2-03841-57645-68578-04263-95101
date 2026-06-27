@@ -56,6 +56,17 @@ const Nutrition = () => {
   const [onboard, setOnboard] = useState({ weight: "", height: "", age: "", sex: "male", activity: "moderate", goal: "maintenance" });
   const [customFoods, setCustomFoods] = useState<any[]>([]);
 
+  // Macro detail + transformation
+  const [macroDetail, setMacroDetail] = useState<null | "protein" | "carbs" | "fat">(null);
+  const [isTransformOpen, setIsTransformOpen] = useState(false);
+  const [weightLogs, setWeightLogs] = useState<{ date: string; value: number }[]>([]);
+  const [stepLogs, setStepLogs] = useState<{ date: string; value: number }[]>([]);
+  const [photos, setPhotos] = useState<{ id: string; date: string; data: string; note?: string }[]>([]);
+  const [newWeight, setNewWeight] = useState("");
+  const [newSteps, setNewSteps] = useState("");
+  const [photoNote, setPhotoNote] = useState("");
+  const [comparePhotos, setComparePhotos] = useState<[string | null, string | null]>([null, null]);
+
   useEffect(() => {
     loadNutritionGoals();
   }, []);
@@ -67,7 +78,62 @@ const Nutrition = () => {
     if (foods) setCustomFoods(JSON.parse(foods));
     const onboarded = localStorage.getItem("nutrition_onboarded");
     if (!onboarded) setShowOnboarding(true);
+    const ob = localStorage.getItem("nutrition_onboard_data");
+    if (ob) setOnboard(JSON.parse(ob));
+    const w = localStorage.getItem("transform_weight"); if (w) setWeightLogs(JSON.parse(w));
+    const s = localStorage.getItem("transform_steps"); if (s) setStepLogs(JSON.parse(s));
+    const p = localStorage.getItem("transform_photos"); if (p) setPhotos(JSON.parse(p));
   }, []);
+
+  const persistOnboard = (o: typeof onboard) => {
+    setOnboard(o);
+    localStorage.setItem("nutrition_onboard_data", JSON.stringify(o));
+  };
+
+  const addWeightLog = () => {
+    const v = Number(newWeight);
+    if (!v) return;
+    const date = new Date().toISOString().slice(0, 10);
+    const updated = [...weightLogs.filter(l => l.date !== date), { date, value: v }].sort((a, b) => a.date.localeCompare(b.date));
+    setWeightLogs(updated);
+    localStorage.setItem("transform_weight", JSON.stringify(updated));
+    setNewWeight("");
+    toast({ title: "Poids enregistré" });
+  };
+
+  const addStepLog = () => {
+    const v = Number(newSteps);
+    if (!v) return;
+    const date = new Date().toISOString().slice(0, 10);
+    const updated = [...stepLogs.filter(l => l.date !== date), { date, value: v }].sort((a, b) => a.date.localeCompare(b.date));
+    setStepLogs(updated);
+    localStorage.setItem("transform_steps", JSON.stringify(updated));
+    setNewSteps("");
+    toast({ title: "Pas enregistrés" });
+  };
+
+  const addPhoto = async (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const data = reader.result as string;
+      const entry = { id: Date.now().toString(), date: new Date().toISOString().slice(0, 10), data, note: photoNote };
+      const updated = [entry, ...photos];
+      setPhotos(updated);
+      try { localStorage.setItem("transform_photos", JSON.stringify(updated)); }
+      catch { toast({ title: "Stockage plein", variant: "destructive" }); }
+      setPhotoNote("");
+      toast({ title: "Photo ajoutée" });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const deletePhoto = (id: string) => {
+    const updated = photos.filter(p => p.id !== id);
+    setPhotos(updated);
+    localStorage.setItem("transform_photos", JSON.stringify(updated));
+    setComparePhotos(([a, b]) => [a === id ? null : a, b === id ? null : b]);
+  };
+
 
   const loadNutritionGoals = async () => {
     const { data: { user } } = await supabase.auth.getUser();
