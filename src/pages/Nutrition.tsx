@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RTooltip,
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Legend,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, BarChart, Bar,
 } from "recharts";
 
 interface Meal {
