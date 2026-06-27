@@ -3,14 +3,14 @@ import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Dumbbell, UtensilsCrossed, User, Trash2, Target } from "lucide-react";
+import { Plus, Dumbbell, UtensilsCrossed, User, Trash2, Target, Settings, Camera, TrendingUp, Footprints, Scale, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RTooltip,
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Legend,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, BarChart, Bar,
 } from "recharts";
 
 interface Meal {
@@ -56,6 +56,17 @@ const Nutrition = () => {
   const [onboard, setOnboard] = useState({ weight: "", height: "", age: "", sex: "male", activity: "moderate", goal: "maintenance" });
   const [customFoods, setCustomFoods] = useState<any[]>([]);
 
+  // Macro detail + transformation
+  const [macroDetail, setMacroDetail] = useState<null | "protein" | "carbs" | "fat">(null);
+  const [isTransformOpen, setIsTransformOpen] = useState(false);
+  const [weightLogs, setWeightLogs] = useState<{ date: string; value: number }[]>([]);
+  const [stepLogs, setStepLogs] = useState<{ date: string; value: number }[]>([]);
+  const [photos, setPhotos] = useState<{ id: string; date: string; data: string; note?: string }[]>([]);
+  const [newWeight, setNewWeight] = useState("");
+  const [newSteps, setNewSteps] = useState("");
+  const [photoNote, setPhotoNote] = useState("");
+  const [comparePhotos, setComparePhotos] = useState<[string | null, string | null]>([null, null]);
+
   useEffect(() => {
     loadNutritionGoals();
   }, []);
@@ -67,7 +78,62 @@ const Nutrition = () => {
     if (foods) setCustomFoods(JSON.parse(foods));
     const onboarded = localStorage.getItem("nutrition_onboarded");
     if (!onboarded) setShowOnboarding(true);
+    const ob = localStorage.getItem("nutrition_onboard_data");
+    if (ob) setOnboard(JSON.parse(ob));
+    const w = localStorage.getItem("transform_weight"); if (w) setWeightLogs(JSON.parse(w));
+    const s = localStorage.getItem("transform_steps"); if (s) setStepLogs(JSON.parse(s));
+    const p = localStorage.getItem("transform_photos"); if (p) setPhotos(JSON.parse(p));
   }, []);
+
+  const persistOnboard = (o: typeof onboard) => {
+    setOnboard(o);
+    localStorage.setItem("nutrition_onboard_data", JSON.stringify(o));
+  };
+
+  const addWeightLog = () => {
+    const v = Number(newWeight);
+    if (!v) return;
+    const date = new Date().toISOString().slice(0, 10);
+    const updated = [...weightLogs.filter(l => l.date !== date), { date, value: v }].sort((a, b) => a.date.localeCompare(b.date));
+    setWeightLogs(updated);
+    localStorage.setItem("transform_weight", JSON.stringify(updated));
+    setNewWeight("");
+    toast({ title: "Poids enregistré" });
+  };
+
+  const addStepLog = () => {
+    const v = Number(newSteps);
+    if (!v) return;
+    const date = new Date().toISOString().slice(0, 10);
+    const updated = [...stepLogs.filter(l => l.date !== date), { date, value: v }].sort((a, b) => a.date.localeCompare(b.date));
+    setStepLogs(updated);
+    localStorage.setItem("transform_steps", JSON.stringify(updated));
+    setNewSteps("");
+    toast({ title: "Pas enregistrés" });
+  };
+
+  const addPhoto = async (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const data = reader.result as string;
+      const entry = { id: Date.now().toString(), date: new Date().toISOString().slice(0, 10), data, note: photoNote };
+      const updated = [entry, ...photos];
+      setPhotos(updated);
+      try { localStorage.setItem("transform_photos", JSON.stringify(updated)); }
+      catch { toast({ title: "Stockage plein", variant: "destructive" }); }
+      setPhotoNote("");
+      toast({ title: "Photo ajoutée" });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const deletePhoto = (id: string) => {
+    const updated = photos.filter(p => p.id !== id);
+    setPhotos(updated);
+    localStorage.setItem("transform_photos", JSON.stringify(updated));
+    setComparePhotos(([a, b]) => [a === id ? null : a, b === id ? null : b]);
+  };
+
 
   const loadNutritionGoals = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -263,14 +329,16 @@ const Nutrition = () => {
     let bmr = 10 * weight + 6.25 * height - 5 * age + (sex === 'male' ? 5 : -161);
     const activityFactors: Record<string, number> = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725 };
     const tdee = Math.round(bmr * (activityFactors[activity] || 1.55));
-    // goal modifier
+    // goal modifier: cut -20%, maintenance, bulk +15%
     let kcal = tdee;
-    if (onboard.goal === 'bulk') kcal = Math.round(tdee * 1.12);
+    if (onboard.goal === 'cut') kcal = Math.round(tdee * 0.80);
+    if (onboard.goal === 'bulk') kcal = Math.round(tdee * 1.15);
     if (onboard.goal === 'dry_bulk') kcal = Math.round(tdee + 250);
-    // protein: 2g/kg
-    const proteinG = Math.round(2 * weight);
-    // fats: 25% kcal
-    const fatKcal = Math.round(kcal * 0.25);
+    // protein: 2g/kg (2.2 for cut)
+    const proteinG = Math.round((onboard.goal === 'cut' ? 2.2 : 2) * weight);
+    // fats: 25% kcal (30% for female)
+    const fatPct = sex === 'female' ? 0.30 : 0.25;
+    const fatKcal = Math.round(kcal * fatPct);
     const fatG = Math.round(fatKcal / 9);
     const proteinKcal = proteinG * 4;
     const carbsKcal = Math.max(0, kcal - proteinKcal - fatKcal);
@@ -284,10 +352,12 @@ const Nutrition = () => {
       target_weight: null as number | null,
     };
     setEditedGoals(newGoals);
+    localStorage.setItem("nutrition_onboard_data", JSON.stringify(onboard));
     // persist via existing save function
     setTimeout(() => saveNutritionGoals(), 200);
     setShowOnboarding(false);
   };
+
 
   const ChartSpark = ({ days = 14 }: { days?: number }) => {
     const data = aggregateLastDays(days);
@@ -460,39 +530,50 @@ const Nutrition = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background pb-20 animate-fade-in pt-12">
       {/* Header */}
-      <header className="p-4 pb-2">
+      <header className="p-4 pb-2 flex items-center justify-between">
         <h1 className="text-xl font-light tracking-widest text-foreground">
           NUTRITION
         </h1>
+        <div className="flex items-center gap-1">
+          <Button size="sm" variant="ghost" className="h-8 px-2 text-[11px]" onClick={() => setIsTransformOpen(true)}>
+            <TrendingUp className="h-3.5 w-3.5 mr-1" /> Transformation
+          </Button>
+          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setShowOnboarding(true)} aria-label="Modifier objectif">
+            <Settings className="h-4 w-4" />
+          </Button>
+        </div>
       </header>
 
-      {/* Onboarding (first-open) */}
+      {/* Onboarding / Edit goal */}
       <Dialog open={showOnboarding} onOpenChange={setShowOnboarding}>
-        <DialogContent>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Informations de base</DialogTitle>
+            <DialogTitle>Mon profil & objectif</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 mt-2">
             <div>
-              <Label>Poids (kg)</Label>
-              <Input value={onboard.weight} onChange={(e) => setOnboard({ ...onboard, weight: e.target.value })} />
-            </div>
-            <div>
-              <Label>Taille (cm)</Label>
-              <Input value={onboard.height} onChange={(e) => setOnboard({ ...onboard, height: e.target.value })} />
-            </div>
-            <div>
-              <Label>Âge</Label>
-              <Input value={onboard.age} onChange={(e) => setOnboard({ ...onboard, age: e.target.value })} />
+              <Label>Sexe</Label>
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                <Button variant={onboard.sex === 'male' ? 'default' : 'outline'} onClick={() => persistOnboard({ ...onboard, sex: 'male' })}>Homme</Button>
+                <Button variant={onboard.sex === 'female' ? 'default' : 'outline'} onClick={() => persistOnboard({ ...onboard, sex: 'female' })}>Femme</Button>
+              </div>
             </div>
             <div className="grid grid-cols-3 gap-2">
-              <Button variant={onboard.sex === 'male' ? 'default' : 'ghost'} onClick={() => setOnboard({ ...onboard, sex: 'male' })}>Homme</Button>
-              <Button variant={onboard.sex === 'female' ? 'default' : 'ghost'} onClick={() => setOnboard({ ...onboard, sex: 'female' })}>Femme</Button>
-              <Button variant={onboard.goal === 'bulk' ? 'default' : 'ghost'} onClick={() => setOnboard({ ...onboard, goal: 'bulk' })}>Prise de masse</Button>
+              <div><Label>Poids (kg)</Label><Input type="number" inputMode="decimal" value={onboard.weight} onChange={(e) => persistOnboard({ ...onboard, weight: e.target.value })} /></div>
+              <div><Label>Taille (cm)</Label><Input type="number" inputMode="decimal" value={onboard.height} onChange={(e) => persistOnboard({ ...onboard, height: e.target.value })} /></div>
+              <div><Label>Âge</Label><Input type="number" inputMode="numeric" value={onboard.age} onChange={(e) => persistOnboard({ ...onboard, age: e.target.value })} /></div>
+            </div>
+            <div>
+              <Label>Objectif</Label>
+              <div className="grid grid-cols-3 gap-2 mt-1">
+                <Button variant={onboard.goal === 'cut' ? 'default' : 'outline'} onClick={() => persistOnboard({ ...onboard, goal: 'cut' })}>Déficit</Button>
+                <Button variant={onboard.goal === 'maintenance' ? 'default' : 'outline'} onClick={() => persistOnboard({ ...onboard, goal: 'maintenance' })}>Maintien</Button>
+                <Button variant={onboard.goal === 'bulk' ? 'default' : 'outline'} onClick={() => persistOnboard({ ...onboard, goal: 'bulk' })}>Prise de masse</Button>
+              </div>
             </div>
             <div>
               <Label>Activité</Label>
-              <select className="w-full p-2 bg-input rounded" value={onboard.activity} onChange={(e) => setOnboard({ ...onboard, activity: e.target.value })}>
+              <select className="w-full p-2 bg-input rounded mt-1" value={onboard.activity} onChange={(e) => persistOnboard({ ...onboard, activity: e.target.value })}>
                 <option value="sedentary">Sédentaire</option>
                 <option value="light">Légère</option>
                 <option value="moderate">Modérée</option>
@@ -503,6 +584,7 @@ const Nutrition = () => {
           </div>
         </DialogContent>
       </Dialog>
+
 
       {/* Widgets - Calories Overview */}
       <div className="px-4 pb-4 space-y-3">
@@ -560,21 +642,22 @@ const Nutrition = () => {
 
         {/* Macro current totals */}
         <div className="grid grid-cols-3 gap-2">
-          <Card className="p-3 bg-card cursor-pointer hover:bg-accent transition-colors" onClick={() => setIsGoalsDialogOpen(true)}>
+          <Card className="p-3 bg-card cursor-pointer hover:bg-accent transition-colors" onClick={() => setMacroDetail("protein")}>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Protéines</p>
             <p className="text-lg font-light mt-0.5">{totalProtein}g</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">/ {goals.daily_protein}g</p>
           </Card>
-          <Card className="p-3 bg-card cursor-pointer hover:bg-accent transition-colors" onClick={() => setIsGoalsDialogOpen(true)}>
+          <Card className="p-3 bg-card cursor-pointer hover:bg-accent transition-colors" onClick={() => setMacroDetail("carbs")}>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Glucides</p>
             <p className="text-lg font-light mt-0.5">{totalCarbs}g</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">/ {goals.daily_carbs}g</p>
           </Card>
-          <Card className="p-3 bg-card cursor-pointer hover:bg-accent transition-colors" onClick={() => setIsGoalsDialogOpen(true)}>
+          <Card className="p-3 bg-card cursor-pointer hover:bg-accent transition-colors" onClick={() => setMacroDetail("fat")}>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Lipides</p>
             <p className="text-lg font-light mt-0.5">{totalFat}g</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">/ {goals.daily_fat}g</p>
           </Card>
+
         </div>
 
         {/* Range selector */}
@@ -1003,7 +1086,301 @@ const Nutrition = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Macro Detail Dialog */}
+      <Dialog open={!!macroDetail} onOpenChange={(o) => !o && setMacroDetail(null)}>
+        <DialogContent className="max-w-[95vw] max-h-[85vh] overflow-y-auto">
+          {macroDetail && (() => {
+            const meta = {
+              protein: { label: "Protéines", color: "#06b6d4", goal: goals.daily_protein, kcalPerG: 4 },
+              carbs: { label: "Glucides", color: "#f59e0b", goal: goals.daily_carbs, kcalPerG: 4 },
+              fat: { label: "Lipides", color: "#a855f7", goal: goals.daily_fat, kcalPerG: 9 },
+            }[macroDetail];
+            const data30 = aggregateLastDays(30);
+            const series = data30.map(d => ({ day: d.day, value: (d as any)[macroDetail], goal: meta.goal }));
+            const logged = series.filter(s => s.value > 0);
+            const avg = logged.length ? Math.round(logged.reduce((s, x) => s + x.value, 0) / logged.length) : 0;
+            const maxD = series.reduce((m, d) => d.value > (m?.value ?? -1) ? d : m, null as any);
+            const minD = logged.reduce((m, d) => !m || d.value < m.value ? d : m, null as any);
+            const overGoal = series.filter(s => s.value > meta.goal).length;
+            // Share of total kcal per day
+            const shareData = data30.map(d => {
+              const totalKcal = d.protein * 4 + d.carbs * 4 + d.fat * 9;
+              const macroKcal = (d as any)[macroDetail] * meta.kcalPerG;
+              return { day: d.day, pct: totalKcal > 0 ? Math.round((macroKcal / totalKcal) * 100) : 0 };
+            });
+            // Today distribution
+            const distToday = [
+              { name: "Protéines", value: totalProtein * 4, color: "#06b6d4" },
+              { name: "Glucides", value: totalCarbs * 4, color: "#f59e0b" },
+              { name: "Lipides", value: totalFat * 9, color: "#a855f7" },
+            ].filter(d => d.value > 0);
+            return (
+              <>
+                <DialogHeader>
+                  <DialogTitle style={{ color: meta.color }}>{meta.label} — 30 jours</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3 mt-2">
+                  <div className="grid grid-cols-4 gap-2">
+                    <Card className="p-2.5 bg-card"><p className="text-[9px] uppercase text-muted-foreground">Moyenne</p><p className="text-base font-light">{avg}g</p></Card>
+                    <Card className="p-2.5 bg-card"><p className="text-[9px] uppercase text-muted-foreground">Objectif</p><p className="text-base font-light">{meta.goal}g</p></Card>
+                    <Card className="p-2.5 bg-card"><p className="text-[9px] uppercase text-muted-foreground">Max</p><p className="text-base font-light">{maxD?.value || 0}g</p></Card>
+                    <Card className="p-2.5 bg-card"><p className="text-[9px] uppercase text-muted-foreground">Jours ≥ obj.</p><p className="text-base font-light">{overGoal}</p></Card>
+                  </div>
+
+                  <Card className="p-3 bg-card">
+                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Évolution (30j)</p>
+                    <div className="h-44">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={series} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
+                          <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="2 4" vertical={false} />
+                          <XAxis dataKey="day" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} interval="preserveStartEnd" />
+                          <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} width={28} />
+                          <RTooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }} />
+                          <Line type="monotone" dataKey="value" stroke={meta.color} strokeWidth={2} dot={{ r: 2 }} name={meta.label} />
+                          <Line type="monotone" dataKey="goal" stroke="#888" strokeWidth={1} strokeDasharray="4 4" dot={false} name="Objectif" />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </Card>
+
+                  <Card className="p-3 bg-card">
+                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">% des calories quotidiennes</p>
+                    <div className="h-36">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={shareData} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
+                          <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="2 4" vertical={false} />
+                          <XAxis dataKey="day" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} interval="preserveStartEnd" />
+                          <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} width={28} unit="%" />
+                          <RTooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }} formatter={(v: any) => `${v}%`} />
+                          <Bar dataKey="pct" fill={meta.color} radius={[2, 2, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </Card>
+
+                  <Card className="p-3 bg-card">
+                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Répartition des macros — aujourd'hui</p>
+                    {distToday.length === 0 ? (
+                      <p className="text-xs text-muted-foreground text-center py-4">Aucun repas aujourd'hui</p>
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        <div className="h-32 w-32 shrink-0">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie data={distToday} dataKey="value" innerRadius={32} outerRadius={58} stroke="none">
+                                {distToday.map((d, i) => <Cell key={i} fill={d.color} />)}
+                              </Pie>
+                              <RTooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }} formatter={(v: any) => `${v} kcal`} />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+                        <div className="flex-1 space-y-1.5">
+                          {distToday.map(d => {
+                            const total = distToday.reduce((s, x) => s + x.value, 0);
+                            return (
+                              <div key={d.name} className="flex items-center gap-2 text-xs">
+                                <span className="h-2 w-2 rounded-full" style={{ background: d.color }} />
+                                <span className="flex-1">{d.name}</span>
+                                <span className="text-muted-foreground">{Math.round((d.value / total) * 100)}%</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+                </div>
+              </>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
+
+      {/* Transformation Dialog */}
+      <Dialog open={isTransformOpen} onOpenChange={setIsTransformOpen}>
+        <DialogContent className="max-w-[95vw] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Ma transformation</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            {/* Weight */}
+            <Card className="p-3 bg-card">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Scale className="h-3 w-3" /> Poids</p>
+                {weightLogs.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {weightLogs[weightLogs.length - 1].value} kg
+                    {weightLogs.length > 1 && (
+                      <span className={`ml-2 ${weightLogs[weightLogs.length - 1].value - weightLogs[0].value > 0 ? 'text-red-500' : 'text-emerald-500'}`}>
+                        {(weightLogs[weightLogs.length - 1].value - weightLogs[0].value).toFixed(1)} kg
+                      </span>
+                    )}
+                  </p>
+                )}
+              </div>
+              <div className="flex gap-2 mb-2">
+                <Input type="number" inputMode="decimal" placeholder="Poids du jour (kg)" value={newWeight} onChange={(e) => setNewWeight(e.target.value)} />
+                <Button onClick={addWeightLog}><Plus className="h-3 w-3" /></Button>
+              </div>
+              {weightLogs.length > 0 ? (
+                <div className="h-40">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={weightLogs.map(l => ({ day: l.date.slice(5), value: l.value }))} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
+                      <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="2 4" vertical={false} />
+                      <XAxis dataKey="day" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} />
+                      <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} width={28} domain={['auto', 'auto']} />
+                      <RTooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }} />
+                      <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 2 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground text-center py-4">Aucun poids enregistré</p>
+              )}
+            </Card>
+
+            {/* Steps */}
+            <Card className="p-3 bg-card">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Footprints className="h-3 w-3" /> Pas quotidiens</p>
+                {stepLogs.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Moy. {Math.round(stepLogs.reduce((s, l) => s + l.value, 0) / stepLogs.length)} /j
+                  </p>
+                )}
+              </div>
+              <div className="flex gap-2 mb-2">
+                <Input type="number" inputMode="numeric" placeholder="Pas du jour" value={newSteps} onChange={(e) => setNewSteps(e.target.value)} />
+                <Button onClick={addStepLog}><Plus className="h-3 w-3" /></Button>
+              </div>
+              {stepLogs.length > 0 ? (
+                <div className="h-40">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={stepLogs.map(l => ({ day: l.date.slice(5), value: l.value }))} margin={{ top: 4, right: 8, bottom: 0, left: -10 }}>
+                      <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="2 4" vertical={false} />
+                      <XAxis dataKey="day" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} />
+                      <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} width={36} />
+                      <RTooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }} />
+                      <Bar dataKey="value" fill="#10b981" radius={[2, 2, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground text-center py-4">Aucun pas enregistré</p>
+              )}
+            </Card>
+
+            {/* Photos */}
+            <Card className="p-3 bg-card">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Camera className="h-3 w-3" /> Évolution physique</p>
+                <p className="text-[10px] text-muted-foreground">{photos.length} photo{photos.length > 1 ? 's' : ''}</p>
+              </div>
+              <div className="flex gap-2 mb-2">
+                <Input placeholder="Note (optionnel)" value={photoNote} onChange={(e) => setPhotoNote(e.target.value)} />
+                <label className="inline-flex">
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) addPhoto(f); e.target.value = ""; }} />
+                  <Button asChild><span><Camera className="h-3 w-3" /></span></Button>
+                </label>
+              </div>
+
+              {photos.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-4">Ajoute des photos pour suivre ton évolution</p>
+              ) : (
+                <>
+                  <div className="grid grid-cols-3 gap-2 mb-3">
+                    {photos.map(p => {
+                      const selected = comparePhotos.includes(p.id);
+                      return (
+                        <div key={p.id} className="relative">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setComparePhotos(([a, b]) => {
+                                if (a === p.id) return [b, null];
+                                if (b === p.id) return [a, null];
+                                if (!a) return [p.id, b];
+                                if (!b) return [a, p.id];
+                                return [b, p.id];
+                              });
+                            }}
+                            className={`w-full aspect-square rounded-md overflow-hidden border-2 ${selected ? 'border-primary' : 'border-transparent'}`}
+                          >
+                            <img src={p.data} alt={p.note || p.date} className="w-full h-full object-cover" />
+                          </button>
+                          <p className="text-[9px] text-muted-foreground mt-0.5 truncate">{p.date}</p>
+                          <button type="button" onClick={() => deletePhoto(p.id)} className="absolute top-0.5 right-0.5 bg-background/80 rounded-full p-0.5">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {(comparePhotos[0] || comparePhotos[1]) && (
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Comparaison</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {[0, 1].map(i => {
+                          const id = comparePhotos[i];
+                          const photo = photos.find(p => p.id === id);
+                          return (
+                            <div key={i} className="aspect-[3/4] bg-muted rounded-md overflow-hidden flex items-center justify-center">
+                              {photo ? (
+                                <div className="w-full h-full relative">
+                                  <img src={photo.data} alt="" className="w-full h-full object-cover" />
+                                  <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[10px] p-1">
+                                    {photo.date}{photo.note ? ` · ${photo.note}` : ''}
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className="text-[10px] text-muted-foreground p-2 text-center">Sélectionne une photo</p>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </Card>
+
+            {/* Combined: weight vs avg steps overlay */}
+            {weightLogs.length > 1 && stepLogs.length > 0 && (
+              <Card className="p-3 bg-card">
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Poids vs Pas (corrélation)</p>
+                <div className="h-40">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={(() => {
+                        const dates = Array.from(new Set([...weightLogs.map(l => l.date), ...stepLogs.map(l => l.date)])).sort();
+                        return dates.map(d => ({
+                          day: d.slice(5),
+                          weight: weightLogs.find(l => l.date === d)?.value ?? null,
+                          steps: stepLogs.find(l => l.date === d)?.value ?? null,
+                        }));
+                      })()}
+                      margin={{ top: 4, right: 30, bottom: 0, left: -20 }}
+                    >
+                      <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="2 4" vertical={false} />
+                      <XAxis dataKey="day" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} />
+                      <YAxis yAxisId="w" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} width={28} domain={['auto', 'auto']} />
+                      <YAxis yAxisId="s" orientation="right" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} width={36} />
+                      <RTooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }} />
+                      <Line yAxisId="w" type="monotone" dataKey="weight" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 2 }} connectNulls name="Poids (kg)" />
+                      <Line yAxisId="s" type="monotone" dataKey="steps" stroke="#10b981" strokeWidth={1} strokeDasharray="3 3" dot={false} connectNulls name="Pas" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
+
   );
 };
 
