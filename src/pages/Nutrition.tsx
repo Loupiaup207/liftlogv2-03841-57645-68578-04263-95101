@@ -329,14 +329,16 @@ const Nutrition = () => {
     let bmr = 10 * weight + 6.25 * height - 5 * age + (sex === 'male' ? 5 : -161);
     const activityFactors: Record<string, number> = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725 };
     const tdee = Math.round(bmr * (activityFactors[activity] || 1.55));
-    // goal modifier
+    // goal modifier: cut -20%, maintenance, bulk +15%
     let kcal = tdee;
-    if (onboard.goal === 'bulk') kcal = Math.round(tdee * 1.12);
+    if (onboard.goal === 'cut') kcal = Math.round(tdee * 0.80);
+    if (onboard.goal === 'bulk') kcal = Math.round(tdee * 1.15);
     if (onboard.goal === 'dry_bulk') kcal = Math.round(tdee + 250);
-    // protein: 2g/kg
-    const proteinG = Math.round(2 * weight);
-    // fats: 25% kcal
-    const fatKcal = Math.round(kcal * 0.25);
+    // protein: 2g/kg (2.2 for cut)
+    const proteinG = Math.round((onboard.goal === 'cut' ? 2.2 : 2) * weight);
+    // fats: 25% kcal (30% for female)
+    const fatPct = sex === 'female' ? 0.30 : 0.25;
+    const fatKcal = Math.round(kcal * fatPct);
     const fatG = Math.round(fatKcal / 9);
     const proteinKcal = proteinG * 4;
     const carbsKcal = Math.max(0, kcal - proteinKcal - fatKcal);
@@ -350,10 +352,12 @@ const Nutrition = () => {
       target_weight: null as number | null,
     };
     setEditedGoals(newGoals);
+    localStorage.setItem("nutrition_onboard_data", JSON.stringify(onboard));
     // persist via existing save function
     setTimeout(() => saveNutritionGoals(), 200);
     setShowOnboarding(false);
   };
+
 
   const ChartSpark = ({ days = 14 }: { days?: number }) => {
     const data = aggregateLastDays(days);
