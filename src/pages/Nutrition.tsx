@@ -642,21 +642,22 @@ const Nutrition = () => {
 
         {/* Macro current totals */}
         <div className="grid grid-cols-3 gap-2">
-          <Card className="p-3 bg-card cursor-pointer hover:bg-accent transition-colors" onClick={() => setIsGoalsDialogOpen(true)}>
+          <Card className="p-3 bg-card cursor-pointer hover:bg-accent transition-colors" onClick={() => setMacroDetail("protein")}>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Protéines</p>
             <p className="text-lg font-light mt-0.5">{totalProtein}g</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">/ {goals.daily_protein}g</p>
           </Card>
-          <Card className="p-3 bg-card cursor-pointer hover:bg-accent transition-colors" onClick={() => setIsGoalsDialogOpen(true)}>
+          <Card className="p-3 bg-card cursor-pointer hover:bg-accent transition-colors" onClick={() => setMacroDetail("carbs")}>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Glucides</p>
             <p className="text-lg font-light mt-0.5">{totalCarbs}g</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">/ {goals.daily_carbs}g</p>
           </Card>
-          <Card className="p-3 bg-card cursor-pointer hover:bg-accent transition-colors" onClick={() => setIsGoalsDialogOpen(true)}>
+          <Card className="p-3 bg-card cursor-pointer hover:bg-accent transition-colors" onClick={() => setMacroDetail("fat")}>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Lipides</p>
             <p className="text-lg font-light mt-0.5">{totalFat}g</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">/ {goals.daily_fat}g</p>
           </Card>
+
         </div>
 
         {/* Range selector */}
