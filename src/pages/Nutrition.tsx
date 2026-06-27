@@ -530,39 +530,50 @@ const Nutrition = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background pb-20 animate-fade-in pt-12">
       {/* Header */}
-      <header className="p-4 pb-2">
+      <header className="p-4 pb-2 flex items-center justify-between">
         <h1 className="text-xl font-light tracking-widest text-foreground">
           NUTRITION
         </h1>
+        <div className="flex items-center gap-1">
+          <Button size="sm" variant="ghost" className="h-8 px-2 text-[11px]" onClick={() => setIsTransformOpen(true)}>
+            <TrendingUp className="h-3.5 w-3.5 mr-1" /> Transformation
+          </Button>
+          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setShowOnboarding(true)} aria-label="Modifier objectif">
+            <Settings className="h-4 w-4" />
+          </Button>
+        </div>
       </header>
 
-      {/* Onboarding (first-open) */}
+      {/* Onboarding / Edit goal */}
       <Dialog open={showOnboarding} onOpenChange={setShowOnboarding}>
-        <DialogContent>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Informations de base</DialogTitle>
+            <DialogTitle>Mon profil & objectif</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 mt-2">
             <div>
-              <Label>Poids (kg)</Label>
-              <Input value={onboard.weight} onChange={(e) => setOnboard({ ...onboard, weight: e.target.value })} />
-            </div>
-            <div>
-              <Label>Taille (cm)</Label>
-              <Input value={onboard.height} onChange={(e) => setOnboard({ ...onboard, height: e.target.value })} />
-            </div>
-            <div>
-              <Label>Âge</Label>
-              <Input value={onboard.age} onChange={(e) => setOnboard({ ...onboard, age: e.target.value })} />
+              <Label>Sexe</Label>
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                <Button variant={onboard.sex === 'male' ? 'default' : 'outline'} onClick={() => persistOnboard({ ...onboard, sex: 'male' })}>Homme</Button>
+                <Button variant={onboard.sex === 'female' ? 'default' : 'outline'} onClick={() => persistOnboard({ ...onboard, sex: 'female' })}>Femme</Button>
+              </div>
             </div>
             <div className="grid grid-cols-3 gap-2">
-              <Button variant={onboard.sex === 'male' ? 'default' : 'ghost'} onClick={() => setOnboard({ ...onboard, sex: 'male' })}>Homme</Button>
-              <Button variant={onboard.sex === 'female' ? 'default' : 'ghost'} onClick={() => setOnboard({ ...onboard, sex: 'female' })}>Femme</Button>
-              <Button variant={onboard.goal === 'bulk' ? 'default' : 'ghost'} onClick={() => setOnboard({ ...onboard, goal: 'bulk' })}>Prise de masse</Button>
+              <div><Label>Poids (kg)</Label><Input type="number" inputMode="decimal" value={onboard.weight} onChange={(e) => persistOnboard({ ...onboard, weight: e.target.value })} /></div>
+              <div><Label>Taille (cm)</Label><Input type="number" inputMode="decimal" value={onboard.height} onChange={(e) => persistOnboard({ ...onboard, height: e.target.value })} /></div>
+              <div><Label>Âge</Label><Input type="number" inputMode="numeric" value={onboard.age} onChange={(e) => persistOnboard({ ...onboard, age: e.target.value })} /></div>
+            </div>
+            <div>
+              <Label>Objectif</Label>
+              <div className="grid grid-cols-3 gap-2 mt-1">
+                <Button variant={onboard.goal === 'cut' ? 'default' : 'outline'} onClick={() => persistOnboard({ ...onboard, goal: 'cut' })}>Déficit</Button>
+                <Button variant={onboard.goal === 'maintenance' ? 'default' : 'outline'} onClick={() => persistOnboard({ ...onboard, goal: 'maintenance' })}>Maintien</Button>
+                <Button variant={onboard.goal === 'bulk' ? 'default' : 'outline'} onClick={() => persistOnboard({ ...onboard, goal: 'bulk' })}>Prise de masse</Button>
+              </div>
             </div>
             <div>
               <Label>Activité</Label>
-              <select className="w-full p-2 bg-input rounded" value={onboard.activity} onChange={(e) => setOnboard({ ...onboard, activity: e.target.value })}>
+              <select className="w-full p-2 bg-input rounded mt-1" value={onboard.activity} onChange={(e) => persistOnboard({ ...onboard, activity: e.target.value })}>
                 <option value="sedentary">Sédentaire</option>
                 <option value="light">Légère</option>
                 <option value="moderate">Modérée</option>
@@ -573,6 +584,7 @@ const Nutrition = () => {
           </div>
         </DialogContent>
       </Dialog>
+
 
       {/* Widgets - Calories Overview */}
       <div className="px-4 pb-4 space-y-3">
