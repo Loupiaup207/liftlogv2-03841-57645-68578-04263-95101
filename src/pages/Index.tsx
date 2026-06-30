@@ -146,21 +146,23 @@ const Index = () => {
       )}
  
       {/* Main */}
-      <main style={{ flex: 1, overflowY: "auto", marginTop: topHeight, paddingBottom: "calc(4rem + env(safe-area-inset-bottom))", WebkitOverflowScrolling: "touch" }}>
-        <div className={activeTab === "library" ? "" : "hidden"}><Library /></div>
-        <div className={activeTab === "activity" ? "" : "hidden"}><Activity /></div>
-        <div className={activeTab === "statistics" ? "" : "hidden"}><Statistics /></div>
-        <div className={activeTab === "nutrition" ? "" : "hidden"}><Nutrition /></div>
-        <div className={activeTab === "profile" ? "" : "hidden"}><Profile /></div>
+      <main onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ flex: 1, overflowY: "auto", marginTop: topHeight, paddingBottom: "calc(4rem + env(safe-area-inset-bottom))", WebkitOverflowScrolling: "touch" }}>
+        <div key={activeTab} className={swipeAnim}>
+          <div className={activeTab === "library" ? "" : "hidden"}><Library /></div>
+          <div className={activeTab === "activity" ? "" : "hidden"}><Activity /></div>
+          <div className={activeTab === "statistics" ? "" : "hidden"}><Statistics /></div>
+          <div className={activeTab === "nutrition" ? "" : "hidden"}><Nutrition /></div>
+          <div className={activeTab === "profile" ? "" : "hidden"}><Profile /></div>
+        </div>
       </main>
- 
+
       {/* Bottom Nav */}
         <div className="bottom-nav-bar" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, height: "calc(3rem + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border))" }}>
-          <div className="flex justify-center items-end h-full gap-16 pb-1">
+          <div className="flex justify-between items-end h-full px-10 pb-1">
             <Button
               variant="ghost"
-              className={`flex flex-col items-center justify-center h-full px-4 py-1 ${activeTab !== "profile" ? "text-primary" : ""}`}
-              onClick={() => setActiveTab("library")}
+              className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab !== "profile" ? "text-primary" : "text-muted-foreground"}`}
+              onClick={() => goToTab(activeTab === "profile" ? "library" : activeTab, "right")}
             >
               <Dumbbell className="h-5 w-5" />
               <span className="text-[10px] mt-0.5">Training</span>
@@ -168,13 +170,15 @@ const Index = () => {
 
             <Button
               variant="ghost"
-              className={`flex flex-col items-center justify-center h-full px-4 py-1 ${activeTab === "profile" ? "text-primary" : ""}`}
-              onClick={() => setActiveTab("profile")}
+              className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab === "profile" ? "text-primary" : "text-muted-foreground"}`}
+              onClick={() => goToTab("profile", "left")}
             >
               <User className="h-5 w-5" />
               <span className="text-[10px] mt-0.5">Profil</span>
             </Button>
           </div>
+        </div>
+
         </div>
     </div>
   );
