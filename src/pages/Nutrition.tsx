@@ -705,7 +705,7 @@ const Nutrition = () => {
 
       {/* Calories Detail Dialog */}
       <Dialog open={isCaloriesDetailOpen} onOpenChange={setIsCaloriesDetailOpen}>
-        <DialogContent className="max-w-[95vw]">
+        <DialogContent className="bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden">
           <DialogHeader>
             <DialogTitle>Détails caloriques</DialogTitle>
           </DialogHeader>
@@ -852,7 +852,7 @@ const Nutrition = () => {
 
       {/* Goals Dialog */}
       <Dialog open={isGoalsDialogOpen} onOpenChange={setIsGoalsDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden">
           <DialogHeader>
             <DialogTitle>Modifier mes objectifs</DialogTitle>
           </DialogHeader>
@@ -925,7 +925,7 @@ const Nutrition = () => {
                 <Plus className="h-4 w-4" />
               </Button>
             </DialogTrigger>
-              <DialogContent className="max-h-[85vh] overflow-hidden flex flex-col">
+              <DialogContent className="bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden">
                 <DialogHeader>
                   <DialogTitle>Ajouter un repas</DialogTitle>
                 </DialogHeader>
@@ -1030,7 +1030,7 @@ const Nutrition = () => {
 
       {/* History Dialog */}
       <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
-        <DialogContent className="max-w-[95vw] max-h-[85vh] overflow-y-auto">
+        <DialogContent className="bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden">
           <DialogHeader>
             <DialogTitle>Historique nutrition</DialogTitle>
           </DialogHeader>
@@ -1089,7 +1089,7 @@ const Nutrition = () => {
 
       {/* Macro Detail Dialog */}
       <Dialog open={!!macroDetail} onOpenChange={(o) => !o && setMacroDetail(null)}>
-        <DialogContent className="max-w-[95vw] max-h-[85vh] overflow-y-auto">
+        <DialogContent className="bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden">
           {macroDetail && (() => {
             const meta = {
               protein: { label: "Protéines", color: "#06b6d4", goal: goals.daily_protein, kcalPerG: 4 },
@@ -1199,7 +1199,7 @@ const Nutrition = () => {
 
       {/* Transformation Dialog */}
       <Dialog open={isTransformOpen} onOpenChange={setIsTransformOpen}>
-        <DialogContent className="max-w-[95vw] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden">
           <DialogHeader>
             <DialogTitle>Ma transformation</DialogTitle>
           </DialogHeader>
