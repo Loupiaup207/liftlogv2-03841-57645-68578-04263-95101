@@ -546,7 +546,7 @@ const Nutrition = () => {
 
       {/* Onboarding / Edit goal */}
       <Dialog open={showOnboarding} onOpenChange={setShowOnboarding}>
-        <DialogContent className="max-h-[85vh] overflow-y-auto">
+        <DialogContent className="bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden">
           <DialogHeader>
             <DialogTitle>Mon profil & objectif</DialogTitle>
           </DialogHeader>
