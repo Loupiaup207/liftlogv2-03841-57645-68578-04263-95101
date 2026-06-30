@@ -84,10 +84,15 @@ export default {
           from: { transform: "translate3d(100%, 0, 0)", opacity: "0" },
           to: { transform: "translate3d(0, 0, 0)", opacity: "1" },
         },
+        "slide-from-left": {
+          from: { transform: "translate3d(-100%, 0, 0)", opacity: "0" },
+          to: { transform: "translate3d(0, 0, 0)", opacity: "1" },
+        },
         "slide-to-left": {
           from: { transform: "translate3d(0, 0, 0)", opacity: "1" },
           to: { transform: "translate3d(-100%, 0, 0)", opacity: "0" },
         },
+
         "dialog-slide-from-right": {
           from: { transform: "translate(100vw, -50%)", opacity: "0" },
           to: { transform: "translate(-50%, -50%)", opacity: "1" },
@@ -101,6 +106,8 @@ export default {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "slide-from-right": "slide-from-right 0.3s cubic-bezier(0.32, 0.72, 0, 1)",
+        "slide-from-left": "slide-from-left 0.3s cubic-bezier(0.32, 0.72, 0, 1)",
+
         "slide-to-left": "slide-to-left 0.3s cubic-bezier(0.32, 0.72, 0, 1)",
         "dialog-slide-from-right": "dialog-slide-from-right 0.3s cubic-bezier(0.32, 0.72, 0, 1)",
         "dialog-slide-to-left": "dialog-slide-to-left 0.3s cubic-bezier(0.32, 0.72, 0, 1)",
