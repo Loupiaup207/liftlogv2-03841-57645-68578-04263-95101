@@ -11,12 +11,45 @@ import Profile from "./Profile";
 import { useToast } from "@/hooks/use-toast";
  
 type Tab = "library" | "activity" | "statistics" | "profile" | "nutrition";
- 
+
+const SWIPE_TABS: Tab[] = ["library", "statistics", "activity", "nutrition"];
+
 const Index = () => {
   const [activeTab, setActiveTab] = useState<Tab>("library");
+  const [swipeAnim, setSwipeAnim] = useState<string>("");
+  const touchRef = (typeof window !== "undefined") ? ((window as any).__touchRef ||= { current: null as null | { x: number; y: number; t: number } }) : { current: null };
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const goToTab = (target: Tab, dir?: "left" | "right") => {
+    if (target === activeTab) return;
+    if (dir) {
+      setSwipeAnim(dir === "left" ? "animate-slide-from-right" : "animate-slide-from-left");
+      window.setTimeout(() => setSwipeAnim(""), 300);
+    }
+    setActiveTab(target);
+  };
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    touchRef.current = { x: t.clientX, y: t.clientY, t: Date.now() };
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const start = touchRef.current;
+    if (!start) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    touchRef.current = null;
+    if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx)) return;
+    if (activeTab === "profile") return;
+    const idx = SWIPE_TABS.indexOf(activeTab);
+    if (idx === -1) return;
+    if (dx < 0 && idx < SWIPE_TABS.length - 1) goToTab(SWIPE_TABS[idx + 1], "left");
+    else if (dx > 0 && idx > 0) goToTab(SWIPE_TABS[idx - 1], "right");
+  };
+
  
   // Fix iOS PWA viewport height — use visualViewport when available and
   // recalc on several events (resize/orientation/pageshow/focus/visibility).
