@@ -127,16 +127,15 @@ const Index = () => {
  
       {/* Top Nav */}
       {activeTab !== "profile" && (
-          <div style={{ position: "fixed", top: "calc(3.5rem + env(safe-area-inset-top))", left: 0, right: 0, zIndex: 50, background: "hsl(var(--background))", padding: "0.4rem 1rem" }}>
-          <div className="flex gap-2">
+          <div style={{ position: "fixed", top: "calc(3.5rem + env(safe-area-inset-top))", left: 0, right: 0, zIndex: 50, background: "hsl(var(--background))", padding: "0.4rem 0.5rem" }}>
+          <div className="flex gap-1">
               {(["library", "statistics", "activity", "nutrition"] as Tab[]).map((tab) => (
-                <Button key={tab} variant="minimal" className={`flex-1 h-10 rounded-lg ${activeTab === tab ? "bg-accent" : ""}`} onClick={() => {
+                <Button key={tab} variant="minimal" className={`flex-1 h-10 rounded-lg min-w-0 px-1 ${activeTab === tab ? "bg-accent" : ""}`} onClick={() => {
                   const curIdx = SWIPE_TABS.indexOf(activeTab);
                   const nextIdx = SWIPE_TABS.indexOf(tab);
                   goToTab(tab, curIdx === -1 || nextIdx === -1 ? undefined : nextIdx > curIdx ? "left" : "right");
                 }}>
-
-                <span className="text-xs font-light tracking-wider uppercase">
+                <span className="text-xs font-light tracking-wide uppercase truncate">
                   {tab === "library" ? "Librairie" : tab === "statistics" ? "Stats" : tab === "nutrition" ? "Nutrition" : "Activité"}
                 </span>
               </Button>
@@ -184,4 +183,3 @@ const Index = () => {
 };
  
 export default Index;
- 

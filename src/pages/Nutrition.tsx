@@ -46,6 +46,7 @@ const Nutrition = () => {
     daily_protein: 150,
     daily_carbs: 250,
     daily_fat: 70,
+    daily_steps: 10000,
     target_weight: null as number | null,
   });
 
@@ -135,6 +136,12 @@ const Nutrition = () => {
   };
 
 
+  const estimateCaloriesWithSteps = (baseCalories: number, steps: number) => {
+    const normalizedSteps = Number(steps) || 0;
+    const extraCalories = Math.max(0, normalizedSteps - 8000) * 0.04;
+    return Math.round(baseCalories + extraCalories);
+  };
+
   const loadNutritionGoals = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -151,6 +158,7 @@ const Nutrition = () => {
         daily_protein: data.daily_protein,
         daily_carbs: data.daily_carbs,
         daily_fat: data.daily_fat,
+        daily_steps: data.daily_steps ?? 10000,
         target_weight: data.target_weight,
       });
       setEditedGoals({
@@ -158,6 +166,7 @@ const Nutrition = () => {
         daily_protein: data.daily_protein,
         daily_carbs: data.daily_carbs,
         daily_fat: data.daily_fat,
+        daily_steps: data.daily_steps ?? 10000,
         target_weight: data.target_weight,
       });
     }
@@ -167,15 +176,24 @@ const Nutrition = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    const finalSteps = editedGoals.daily_steps ?? 10000;
+    const finalCalories = estimateCaloriesWithSteps(editedGoals.daily_calories, finalSteps);
+    const finalGoals = {
+      ...editedGoals,
+      daily_calories: finalCalories,
+      daily_steps: finalSteps,
+    };
+
     const { error } = await supabase
       .from('nutrition_goals')
       .upsert({
         user_id: user.id,
-        daily_calories: editedGoals.daily_calories,
-        daily_protein: editedGoals.daily_protein,
-        daily_carbs: editedGoals.daily_carbs,
-        daily_fat: editedGoals.daily_fat,
-        target_weight: editedGoals.target_weight,
+        daily_calories: finalGoals.daily_calories,
+        daily_protein: finalGoals.daily_protein,
+        daily_carbs: finalGoals.daily_carbs,
+        daily_fat: finalGoals.daily_fat,
+        daily_steps: finalGoals.daily_steps,
+        target_weight: finalGoals.target_weight,
       }, {
         onConflict: 'user_id'
       });
@@ -184,7 +202,8 @@ const Nutrition = () => {
       toast({ title: "Erreur lors de la sauvegarde", variant: "destructive" });
     } else {
       localStorage.setItem("nutrition_onboarded", "1");
-      setGoals(editedGoals);
+      setGoals(finalGoals);
+      setEditedGoals(finalGoals);
       setIsGoalsDialogOpen(false);
       toast({ title: "Objectifs enregistrés avec succès" });
     }
@@ -349,6 +368,7 @@ const Nutrition = () => {
       daily_protein: proteinG,
       daily_carbs: carbsG,
       daily_fat: fatG,
+      daily_steps: 10000,
       target_weight: null as number | null,
     };
     setEditedGoals(newGoals);
@@ -863,9 +883,27 @@ const Nutrition = () => {
                 id="goal-calories"
                 type="number"
                 value={editedGoals.daily_calories}
-                onChange={(e) => setEditedGoals({ ...editedGoals, daily_calories: Number(e.target.value) })}
+                onChange={(e) => setEditedGoals({ ...editedGoals, daily_calories: Number(e.target.value) || 0 })}
                 placeholder="2500"
               />
+            </div>
+            <div>
+              <Label htmlFor="goal-steps">Dépense de pas / jour</Label>
+              <Input
+                id="goal-steps"
+                type="number"
+                min="0"
+                step="1000"
+                value={editedGoals.daily_steps ?? ""}
+                onChange={(e) => setEditedGoals({ ...editedGoals, daily_steps: Number(e.target.value) || 0 })}
+                placeholder="10000"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Chaque 1 000 pas au-dessus de 8 000 ajoute environ 40 kcal à l’objectif.
+              </p>
+              <p className="text-sm font-medium mt-2">
+                Calories estimées avec ce niveau de pas : {estimateCaloriesWithSteps(editedGoals.daily_calories, editedGoals.daily_steps ?? 10000)} kcal
+              </p>
             </div>
             <div>
               <Label htmlFor="goal-protein">Objectif protéines (g)</Label>
