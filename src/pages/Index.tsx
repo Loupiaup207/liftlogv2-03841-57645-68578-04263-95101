@@ -157,11 +157,11 @@ const Index = () => {
       </main>
 
       {/* Bottom Nav */}
-        <div className="bottom-nav-bar" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, height: "calc(3rem + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border))" }}>
-          <div className="flex justify-between items-end h-full px-10 pb-1">
+        <div className="bottom-nav-bar" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, height: "calc(3.5rem + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border))" }}>
+          <div className="flex justify-between items-center h-full px-8">
             <Button
               variant="ghost"
-              className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab !== "profile" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
+              className={`flex flex-col items-center justify-center h-full px-4 py-1 transition-colors duration-200 ${activeTab !== "profile" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
               onClick={() => goToTab(activeTab === "profile" ? "library" : activeTab, "right")}
             >
               <Dumbbell className="h-5 w-5" />
@@ -170,7 +170,7 @@ const Index = () => {
 
             <Button
               variant="ghost"
-              className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab === "profile" ? "text-primary" : "text-muted-foreground"}`}
+              className={`flex flex-col items-center justify-center h-full px-4 py-1 transition-colors duration-200 ${activeTab === "profile" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
               onClick={() => goToTab("profile", "left")}
             >
               <User className="h-5 w-5" />
