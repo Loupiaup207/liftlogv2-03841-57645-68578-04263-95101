@@ -161,7 +161,7 @@ const Index = () => {
           <div className="flex justify-between items-end h-full px-10 pb-1">
             <Button
               variant="ghost"
-              className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab !== "profile" ? "text-primary" : "text-muted-foreground"}`}
+              className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab !== "profile" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
               onClick={() => goToTab(activeTab === "profile" ? "library" : activeTab, "right")}
             >
               <Dumbbell className="h-5 w-5" />
