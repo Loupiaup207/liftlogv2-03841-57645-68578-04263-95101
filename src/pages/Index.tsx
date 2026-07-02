@@ -157,7 +157,7 @@ const Index = () => {
 
       {/* Bottom Nav */}
         <div className="bottom-nav-bar" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, height: "calc(3.5rem + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border))" }}>
-          <div className="flex justify-between items-center h-full px-8">
+          <div className="flex justify-between items-center h-[3.5rem] px-8 pt-1">
             <Button
               variant="ghost"
               className={`flex flex-col items-center justify-center h-full px-4 py-1 transition-colors duration-200 ${activeTab !== "profile" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
