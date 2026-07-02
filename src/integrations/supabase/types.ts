@@ -119,6 +119,7 @@ export type Database = {
           daily_carbs: number
           daily_fat: number
           daily_protein: number
+          daily_steps: number
           id: string
           target_weight: number | null
           updated_at: string
@@ -130,6 +131,7 @@ export type Database = {
           daily_carbs?: number
           daily_fat?: number
           daily_protein?: number
+          daily_steps?: number
           id?: string
           target_weight?: number | null
           updated_at?: string
@@ -141,6 +143,7 @@ export type Database = {
           daily_carbs?: number
           daily_fat?: number
           daily_protein?: number
+          daily_steps?: number
           id?: string
           target_weight?: number | null
           updated_at?: string
