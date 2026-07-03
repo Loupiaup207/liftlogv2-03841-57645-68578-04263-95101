@@ -9,13 +9,13 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/icon-512.png",
+      "src": "/__l5e/assets-v1/98bd9a05-60d8-40d0-81ca-a642cffa3f10/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/apple-touch-icon.png",
+      "src": "/__l5e/assets-v1/d3ef2c94-9651-4588-9d0e-e852f33ea7fa/apple-touch-icon.png",
       "sizes": "512x512",
       "type": "image/png"
     }
