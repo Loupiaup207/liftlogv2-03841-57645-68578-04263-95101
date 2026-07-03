@@ -53,7 +53,9 @@ const Nutrition = () => {
 
   // Onboarding + custom foods
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [onboard, setOnboard] = useState({ weight: "", height: "", age: "", sex: "male", activity: "moderate", goal: "maintenance" });
+  const [onboard, setOnboard] = useState({ weight: "", height: "", age: "", sex: "male", activity: "moderate", goal: "maintenance", steps: "" });
+  const [dailySteps, setDailySteps] = useState<number>(0);
+  const KCAL_PER_STEP = 0.04;
   const [customFoods, setCustomFoods] = useState<any[]>([]);
 
   // Macro detail + transformation
@@ -79,7 +81,9 @@ const Nutrition = () => {
     const onboarded = localStorage.getItem("nutrition_onboarded");
     if (!onboarded) setShowOnboarding(true);
     const ob = localStorage.getItem("nutrition_onboard_data");
-    if (ob) setOnboard(JSON.parse(ob));
+    if (ob) setOnboard({ steps: "", ...JSON.parse(ob) });
+    const ds = localStorage.getItem("nutrition_daily_steps");
+    if (ds) setDailySteps(Number(ds) || 0);
     const w = localStorage.getItem("transform_weight"); if (w) setWeightLogs(JSON.parse(w));
     const s = localStorage.getItem("transform_steps"); if (s) setStepLogs(JSON.parse(s));
     const p = localStorage.getItem("transform_photos"); if (p) setPhotos(JSON.parse(p));
@@ -334,6 +338,11 @@ const Nutrition = () => {
     if (onboard.goal === 'cut') kcal = Math.round(tdee * 0.80);
     if (onboard.goal === 'bulk') kcal = Math.round(tdee * 1.15);
     if (onboard.goal === 'dry_bulk') kcal = Math.round(tdee + 250);
+    // bonus calories from daily steps
+    const steps = Number(onboard.steps) || 0;
+    kcal += Math.round(steps * KCAL_PER_STEP);
+    setDailySteps(steps);
+    localStorage.setItem("nutrition_daily_steps", String(steps));
     // protein: 2g/kg (2.2 for cut)
     const proteinG = Math.round((onboard.goal === 'cut' ? 2.2 : 2) * weight);
     // fats: 25% kcal (30% for female)
@@ -579,6 +588,11 @@ const Nutrition = () => {
                 <option value="moderate">Modérée</option>
                 <option value="active">Active</option>
               </select>
+            </div>
+            <div>
+              <Label>Pas quotidiens moyens</Label>
+              <Input type="number" inputMode="numeric" placeholder="ex : 8000" value={onboard.steps} onChange={(e) => persistOnboard({ ...onboard, steps: e.target.value })} />
+              <p className="text-[10px] text-muted-foreground mt-1">Ajoute ~{Math.round((Number(onboard.steps) || 0) * KCAL_PER_STEP)} kcal à ton objectif quotidien</p>
             </div>
             <Button onClick={computeGoalsFromOnboard} className="w-full">Calculer et enregistrer</Button>
           </div>
@@ -907,6 +921,25 @@ const Nutrition = () => {
                 onChange={(e) => setEditedGoals({ ...editedGoals, target_weight: e.target.value ? Number(e.target.value) : null })}
                 placeholder="75.0"
               />
+            </div>
+            <div>
+              <Label htmlFor="goal-steps">Pas quotidiens</Label>
+              <Input
+                id="goal-steps"
+                type="number"
+                inputMode="numeric"
+                value={dailySteps || ""}
+                placeholder="ex : 8000"
+                onChange={(e) => {
+                  const newSteps = Number(e.target.value) || 0;
+                  const prevBonus = Math.round(dailySteps * KCAL_PER_STEP);
+                  const newBonus = Math.round(newSteps * KCAL_PER_STEP);
+                  setEditedGoals({ ...editedGoals, daily_calories: Math.max(0, editedGoals.daily_calories - prevBonus + newBonus) });
+                  setDailySteps(newSteps);
+                  localStorage.setItem("nutrition_daily_steps", String(newSteps));
+                }}
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">+{Math.round(dailySteps * KCAL_PER_STEP)} kcal ajoutées à ton objectif</p>
             </div>
             <Button onClick={saveNutritionGoals} className="w-full">
               Enregistrer
