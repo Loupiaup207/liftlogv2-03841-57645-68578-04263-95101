@@ -338,6 +338,11 @@ const Nutrition = () => {
     if (onboard.goal === 'cut') kcal = Math.round(tdee * 0.80);
     if (onboard.goal === 'bulk') kcal = Math.round(tdee * 1.15);
     if (onboard.goal === 'dry_bulk') kcal = Math.round(tdee + 250);
+    // bonus calories from daily steps
+    const steps = Number(onboard.steps) || 0;
+    kcal += Math.round(steps * KCAL_PER_STEP);
+    setDailySteps(steps);
+    localStorage.setItem("nutrition_daily_steps", String(steps));
     // protein: 2g/kg (2.2 for cut)
     const proteinG = Math.round((onboard.goal === 'cut' ? 2.2 : 2) * weight);
     // fats: 25% kcal (30% for female)
