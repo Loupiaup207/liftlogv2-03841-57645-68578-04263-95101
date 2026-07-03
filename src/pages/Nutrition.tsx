@@ -922,6 +922,25 @@ const Nutrition = () => {
                 placeholder="75.0"
               />
             </div>
+            <div>
+              <Label htmlFor="goal-steps">Pas quotidiens</Label>
+              <Input
+                id="goal-steps"
+                type="number"
+                inputMode="numeric"
+                value={dailySteps || ""}
+                placeholder="ex : 8000"
+                onChange={(e) => {
+                  const newSteps = Number(e.target.value) || 0;
+                  const prevBonus = Math.round(dailySteps * KCAL_PER_STEP);
+                  const newBonus = Math.round(newSteps * KCAL_PER_STEP);
+                  setEditedGoals({ ...editedGoals, daily_calories: Math.max(0, editedGoals.daily_calories - prevBonus + newBonus) });
+                  setDailySteps(newSteps);
+                  localStorage.setItem("nutrition_daily_steps", String(newSteps));
+                }}
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">+{Math.round(dailySteps * KCAL_PER_STEP)} kcal ajoutées à ton objectif</p>
+            </div>
             <Button onClick={saveNutritionGoals} className="w-full">
               Enregistrer
             </Button>
