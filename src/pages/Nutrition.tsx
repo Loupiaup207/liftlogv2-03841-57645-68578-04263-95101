@@ -81,7 +81,9 @@ const Nutrition = () => {
     const onboarded = localStorage.getItem("nutrition_onboarded");
     if (!onboarded) setShowOnboarding(true);
     const ob = localStorage.getItem("nutrition_onboard_data");
-    if (ob) setOnboard(JSON.parse(ob));
+    if (ob) setOnboard({ steps: "", ...JSON.parse(ob) });
+    const ds = localStorage.getItem("nutrition_daily_steps");
+    if (ds) setDailySteps(Number(ds) || 0);
     const w = localStorage.getItem("transform_weight"); if (w) setWeightLogs(JSON.parse(w));
     const s = localStorage.getItem("transform_steps"); if (s) setStepLogs(JSON.parse(s));
     const p = localStorage.getItem("transform_photos"); if (p) setPhotos(JSON.parse(p));
