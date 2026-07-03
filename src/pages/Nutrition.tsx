@@ -53,7 +53,9 @@ const Nutrition = () => {
 
   // Onboarding + custom foods
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [onboard, setOnboard] = useState({ weight: "", height: "", age: "", sex: "male", activity: "moderate", goal: "maintenance" });
+  const [onboard, setOnboard] = useState({ weight: "", height: "", age: "", sex: "male", activity: "moderate", goal: "maintenance", steps: "" });
+  const [dailySteps, setDailySteps] = useState<number>(0);
+  const KCAL_PER_STEP = 0.04;
   const [customFoods, setCustomFoods] = useState<any[]>([]);
 
   // Macro detail + transformation
