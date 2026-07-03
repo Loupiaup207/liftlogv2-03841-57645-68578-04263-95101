@@ -589,6 +589,11 @@ const Nutrition = () => {
                 <option value="active">Active</option>
               </select>
             </div>
+            <div>
+              <Label>Pas quotidiens moyens</Label>
+              <Input type="number" inputMode="numeric" placeholder="ex : 8000" value={onboard.steps} onChange={(e) => persistOnboard({ ...onboard, steps: e.target.value })} />
+              <p className="text-[10px] text-muted-foreground mt-1">Ajoute ~{Math.round((Number(onboard.steps) || 0) * KCAL_PER_STEP)} kcal à ton objectif quotidien</p>
+            </div>
             <Button onClick={computeGoalsFromOnboard} className="w-full">Calculer et enregistrer</Button>
           </div>
         </DialogContent>
