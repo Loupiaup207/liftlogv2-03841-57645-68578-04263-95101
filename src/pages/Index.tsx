@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Dumbbell, User } from "lucide-react";
+import { Dumbbell, User, Wrench } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,9 +8,10 @@ import Nutrition from "./Nutrition";
 import Activity from "./Activity";
 import Statistics from "./Statistics";
 import Profile from "./Profile";
+import Utilitaire from "./Utilitaire";
 import { useToast } from "@/hooks/use-toast";
  
-type Tab = "library" | "activity" | "statistics" | "profile" | "nutrition";
+type Tab = "library" | "activity" | "statistics" | "profile" | "nutrition" | "utilitaire";
 
 const SWIPE_TABS: Tab[] = ["library", "statistics", "activity", "nutrition"];
 
