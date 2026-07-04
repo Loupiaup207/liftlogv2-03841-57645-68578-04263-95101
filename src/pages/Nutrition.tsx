@@ -547,9 +547,9 @@ const Nutrition = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background pb-20 animate-fade-in">
+    <div className="px-4 sm:px-6 space-y-4 sm:space-y-6">
       {/* Header */}
-      <header className="p-4 pb-2 flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <h1 className="text-xl font-light tracking-widest text-foreground">
           NUTRITION
         </h1>
@@ -561,7 +561,7 @@ const Nutrition = () => {
             <Settings className="h-4 w-4" />
           </Button>
         </div>
-      </header>
+      </div>
 
       {/* Onboarding / Edit goal */}
       <Dialog open={showOnboarding} onOpenChange={setShowOnboarding}>
