@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Dumbbell, User, Wrench } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Library from "./Library";
@@ -22,6 +22,7 @@ const Index = () => {
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const bottomNavRef = useRef<HTMLDivElement>(null);
 
   const goToTab = (target: Tab, dir?: "left" | "right") => {
     if (target === activeTab) return;
@@ -98,6 +99,39 @@ const Index = () => {
     };
   }, []);
  
+  // Override: garder la bottom nav toujours visible (meme quand un dialog est ouvert)
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.id = 'bottom-nav-override';
+    style.textContent = [
+      'body[data-scroll-locked] .bottom-nav-bar { display: block !important; }',
+      'body:has([role="dialog"][data-state="open"]) .bottom-nav-bar { display: block !important; opacity: 0.5; filter: brightness(0.7); }',
+      'body:has([role="alertdialog"][data-state="open"]) .bottom-nav-bar { display: block !important; opacity: 0.5; filter: brightness(0.7); }',
+    ].join('\n');
+    document.head.appendChild(style);
+    return () => document.getElementById('bottom-nav-override')?.remove();
+  }, []);
+
+  // Garder la bottom nav figée quand le clavier mobile s'ouvre
+  useEffect(() => {
+    const nav = bottomNavRef.current;
+    if (!nav || !window.visualViewport) return;
+
+    const adjustNav = () => {
+      const vv = window.visualViewport;
+      const offset = window.innerHeight - vv.height - vv.offsetTop;
+      nav.style.bottom = Math.max(0, offset) + "px";
+    };
+
+    window.visualViewport.addEventListener("resize", adjustNav);
+    window.visualViewport.addEventListener("scroll", adjustNav);
+
+    return () => {
+      window.visualViewport.removeEventListener("resize", adjustNav);
+      window.visualViewport.removeEventListener("scroll", adjustNav);
+    };
+  }, []);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) navigate("/auth");
@@ -164,7 +198,7 @@ const Index = () => {
       </main>
 
       {/* Bottom Nav */}
-        <div className="bottom-nav-bar" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, height: "calc(3.5rem + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border))" }}>
+        <div ref={bottomNavRef} className="bottom-nav-bar" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, height: "calc(3.5rem + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border))" }}>
           <div className="flex justify-between items-center h-full px-6">
             <Button
               variant="ghost"
