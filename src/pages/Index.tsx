@@ -111,10 +111,16 @@ const Index = () => {
  
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  // Dispatch tab-open event so pages can re-animate charts each time they become visible
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("liftlog:tab-open", { detail: activeTab }));
+  }, [activeTab]);
  
   if (!user) return null;
  
-  const topHeight = activeTab !== "profile"
+  const hideTopNav = activeTab === "profile" || activeTab === "utilitaire";
+  const topHeight = !hideTopNav
       ? "calc(7rem + env(safe-area-inset-top))"
       : "calc(3.5rem + env(safe-area-inset-top))";
  
