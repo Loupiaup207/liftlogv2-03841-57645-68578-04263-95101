@@ -713,13 +713,13 @@ const Nutrition = () => {
                     <p className="text-[10px] text-muted-foreground">Obj. {m.goal}g</p>
                   </div>
                   <div className="h-24">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer key={`macro-${m.key}-${chartAnimKey}`} width="100%" height="100%">
                       <LineChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -28 }}>
                         <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="2 4" vertical={false} />
                         <XAxis dataKey="day" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} interval="preserveStartEnd" />
                         <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} width={28} />
                         <RTooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }} />
-                        <Line type="monotone" dataKey={m.key} stroke={m.color} strokeWidth={2} dot={{ r: 2 }} />
+                        <Line type="monotone" dataKey={m.key} stroke={m.color} strokeWidth={2} dot={{ r: 2 }} isAnimationActive animationDuration={900} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
