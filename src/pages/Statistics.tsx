@@ -412,7 +412,7 @@ const Statistics = () => {
         ) : (
           <>
             <Card className="p-4">
-              <ResponsiveContainer width="100%" height={200}>
+              <ResponsiveContainer key={chartAnimKey} width="100%" height={200}>
                 <PieChart>
                   <Pie
                     data={muscleStats}
@@ -421,6 +421,9 @@ const Statistics = () => {
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
+                    isAnimationActive
+                    animationBegin={0}
+                    animationDuration={900}
                     label={(entry) => `${getMuscleLabel(entry.category)} ${entry.percentage}%`}
                   >
                     {muscleStats.map((entry, index) => (
