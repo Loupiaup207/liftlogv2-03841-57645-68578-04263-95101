@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Dumbbell, User } from "lucide-react";
+import { Dumbbell, User, Wrench } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,9 +8,10 @@ import Nutrition from "./Nutrition";
 import Activity from "./Activity";
 import Statistics from "./Statistics";
 import Profile from "./Profile";
+import Utilitaire from "./Utilitaire";
 import { useToast } from "@/hooks/use-toast";
  
-type Tab = "library" | "activity" | "statistics" | "profile" | "nutrition";
+type Tab = "library" | "activity" | "statistics" | "profile" | "nutrition" | "utilitaire";
 
 const SWIPE_TABS: Tab[] = ["library", "statistics", "activity", "nutrition"];
 
@@ -43,7 +44,7 @@ const Index = () => {
     const dy = t.clientY - start.y;
     touchRef.current = null;
     if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx)) return;
-    if (activeTab === "profile") return;
+    if (activeTab === "profile" || activeTab === "utilitaire") return;
     const idx = SWIPE_TABS.indexOf(activeTab);
     if (idx === -1) return;
     if (dx < 0 && idx < SWIPE_TABS.length - 1) goToTab(SWIPE_TABS[idx + 1], "left");
@@ -110,10 +111,16 @@ const Index = () => {
  
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  // Dispatch tab-open event so pages can re-animate charts each time they become visible
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("liftlog:tab-open", { detail: activeTab }));
+  }, [activeTab]);
  
   if (!user) return null;
  
-  const topHeight = activeTab !== "profile"
+  const hideTopNav = activeTab === "profile" || activeTab === "utilitaire";
+  const topHeight = !hideTopNav
       ? "calc(7rem + env(safe-area-inset-top))"
       : "calc(3.5rem + env(safe-area-inset-top))";
  
@@ -126,7 +133,7 @@ const Index = () => {
       </div>
  
       {/* Top Nav */}
-      {activeTab !== "profile" && (
+      {!hideTopNav && (
           <div style={{ position: "fixed", top: "calc(3.5rem + env(safe-area-inset-top))", left: 0, right: 0, zIndex: 50, background: "hsl(var(--background))", padding: "0.4rem 0.5rem" }}>
           <div className="flex gap-1">
               {(["library", "statistics", "activity", "nutrition"] as Tab[]).map((tab) => (
@@ -151,17 +158,18 @@ const Index = () => {
           <div className={activeTab === "activity" ? swipeAnim : "hidden"}><Activity /></div>
           <div className={activeTab === "statistics" ? swipeAnim : "hidden"}><Statistics /></div>
           <div className={activeTab === "nutrition" ? swipeAnim : "hidden"}><Nutrition /></div>
+          <div className={activeTab === "utilitaire" ? swipeAnim : "hidden"}><Utilitaire /></div>
           <div className={activeTab === "profile" ? swipeAnim : "hidden"}><Profile /></div>
         </div>
       </main>
 
       {/* Bottom Nav */}
         <div className="bottom-nav-bar" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, height: "calc(3.5rem + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border))" }}>
-          <div className="flex justify-between items-center h-full px-8">
+          <div className="flex justify-between items-center h-full px-6">
             <Button
               variant="ghost"
-              className={`flex flex-col items-center justify-center h-full px-4 py-1 transition-colors duration-200 ${activeTab !== "profile" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
-              onClick={() => goToTab(activeTab === "profile" ? "library" : activeTab, "right")}
+              className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab !== "profile" && activeTab !== "utilitaire" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
+              onClick={() => goToTab(activeTab === "profile" || activeTab === "utilitaire" ? "library" : activeTab, "right")}
             >
               <Dumbbell className="h-5 w-5" />
               <span className="text-[10px] mt-0.5">Training</span>
@@ -169,7 +177,16 @@ const Index = () => {
 
             <Button
               variant="ghost"
-              className={`flex flex-col items-center justify-center h-full px-4 py-1 transition-colors duration-200 ${activeTab === "profile" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
+              className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab === "utilitaire" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
+              onClick={() => goToTab("utilitaire")}
+            >
+              <Wrench className="h-5 w-5" />
+              <span className="text-[10px] mt-0.5">Utilitaire</span>
+            </Button>
+
+            <Button
+              variant="ghost"
+              className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab === "profile" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
               onClick={() => goToTab("profile", "left")}
             >
               <User className="h-5 w-5" />

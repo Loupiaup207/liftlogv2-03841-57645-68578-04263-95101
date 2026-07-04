@@ -78,11 +78,22 @@ const Statistics = () => {
   const [userBodyweight, setUserBodyweight] = useState<number | null>(null);
   const [isDetailedStatsOpen, setIsDetailedStatsOpen] = useState(false);
   const [totalWorkouts, setTotalWorkouts] = useState(0);
+  const [chartAnimKey, setChartAnimKey] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
     loadStatistics();
     loadUserBodyweight();
+  }, []);
+
+  // Re-animate charts each time the Statistics tab becomes visible
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail === "statistics") setChartAnimKey((k) => k + 1);
+    };
+    window.addEventListener("liftlog:tab-open", handler);
+    return () => window.removeEventListener("liftlog:tab-open", handler);
   }, []);
 
   // Auto-refresh toutes les 3 secondes
@@ -401,7 +412,7 @@ const Statistics = () => {
         ) : (
           <>
             <Card className="p-4">
-              <ResponsiveContainer width="100%" height={200}>
+              <ResponsiveContainer key={chartAnimKey} width="100%" height={200}>
                 <PieChart>
                   <Pie
                     data={muscleStats}
@@ -410,6 +421,9 @@ const Statistics = () => {
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
+                    isAnimationActive
+                    animationBegin={0}
+                    animationDuration={900}
                     label={(entry) => `${getMuscleLabel(entry.category)} ${entry.percentage}%`}
                   >
                     {muscleStats.map((entry, index) => (

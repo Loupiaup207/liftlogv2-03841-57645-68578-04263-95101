@@ -48,6 +48,16 @@ const Nutrition = () => {
     daily_fat: 70,
     target_weight: null as number | null,
   });
+  const [chartAnimKey, setChartAnimKey] = useState(0);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail === "nutrition") setChartAnimKey((k) => k + 1);
+    };
+    window.addEventListener("liftlog:tab-open", handler);
+    return () => window.removeEventListener("liftlog:tab-open", handler);
+  }, []);
 
   const [editedGoals, setEditedGoals] = useState(goals);
 
@@ -618,7 +628,7 @@ const Nutrition = () => {
             >
               <div className="flex items-center gap-4">
                 <div className="relative h-32 w-32 shrink-0">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer key={`donut-${chartAnimKey}`} width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={donutData}
@@ -628,6 +638,9 @@ const Nutrition = () => {
                         startAngle={90}
                         endAngle={-270}
                         stroke="none"
+                        isAnimationActive
+                        animationBegin={0}
+                        animationDuration={900}
                       >
                         {donutData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
                       </Pie>
@@ -700,13 +713,13 @@ const Nutrition = () => {
                     <p className="text-[10px] text-muted-foreground">Obj. {m.goal}g</p>
                   </div>
                   <div className="h-24">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer key={`macro-${m.key}-${chartAnimKey}`} width="100%" height="100%">
                       <LineChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -28 }}>
                         <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="2 4" vertical={false} />
                         <XAxis dataKey="day" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} interval="preserveStartEnd" />
                         <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} width={28} />
                         <RTooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }} />
-                        <Line type="monotone" dataKey={m.key} stroke={m.color} strokeWidth={2} dot={{ r: 2 }} />
+                        <Line type="monotone" dataKey={m.key} stroke={m.color} strokeWidth={2} dot={{ r: 2 }} isAnimationActive animationDuration={900} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
