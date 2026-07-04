@@ -146,12 +146,12 @@ const Index = () => {
  
       {/* Main */}
       <main onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ flex: 1, overflowY: "auto", marginTop: topHeight, paddingBottom: "calc(4rem + env(safe-area-inset-bottom))", WebkitOverflowScrolling: "touch" }}>
-        <div key={activeTab} className={swipeAnim}>
-          <div className={activeTab === "library" ? "" : "hidden"}><Library /></div>
-          <div className={activeTab === "activity" ? "" : "hidden"}><Activity /></div>
-          <div className={activeTab === "statistics" ? "" : "hidden"}><Statistics /></div>
-          <div className={activeTab === "nutrition" ? "" : "hidden"}><Nutrition /></div>
-          <div className={activeTab === "profile" ? "" : "hidden"}><Profile /></div>
+        <div>
+          <div className={activeTab === "library" ? swipeAnim : "hidden"}><Library /></div>
+          <div className={activeTab === "activity" ? swipeAnim : "hidden"}><Activity /></div>
+          <div className={activeTab === "statistics" ? swipeAnim : "hidden"}><Statistics /></div>
+          <div className={activeTab === "nutrition" ? swipeAnim : "hidden"}><Nutrition /></div>
+          <div className={activeTab === "profile" ? swipeAnim : "hidden"}><Profile /></div>
         </div>
       </main>
 
