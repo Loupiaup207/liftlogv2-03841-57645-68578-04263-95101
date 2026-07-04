@@ -44,7 +44,7 @@ const Index = () => {
     const dy = t.clientY - start.y;
     touchRef.current = null;
     if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx)) return;
-    if (activeTab === "profile") return;
+    if (activeTab === "profile" || activeTab === "utilitaire") return;
     const idx = SWIPE_TABS.indexOf(activeTab);
     if (idx === -1) return;
     if (dx < 0 && idx < SWIPE_TABS.length - 1) goToTab(SWIPE_TABS[idx + 1], "left");
