@@ -628,7 +628,7 @@ const Nutrition = () => {
             >
               <div className="flex items-center gap-4">
                 <div className="relative h-32 w-32 shrink-0">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer key={`donut-${chartAnimKey}`} width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={donutData}
@@ -638,6 +638,9 @@ const Nutrition = () => {
                         startAngle={90}
                         endAngle={-270}
                         stroke="none"
+                        isAnimationActive
+                        animationBegin={0}
+                        animationDuration={900}
                       >
                         {donutData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
                       </Pie>
