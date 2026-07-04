@@ -48,6 +48,16 @@ const Nutrition = () => {
     daily_fat: 70,
     target_weight: null as number | null,
   });
+  const [chartAnimKey, setChartAnimKey] = useState(0);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail === "nutrition") setChartAnimKey((k) => k + 1);
+    };
+    window.addEventListener("liftlog:tab-open", handler);
+    return () => window.removeEventListener("liftlog:tab-open", handler);
+  }, []);
 
   const [editedGoals, setEditedGoals] = useState(goals);
 
