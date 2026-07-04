@@ -105,8 +105,8 @@ const Index = () => {
     style.id = 'bottom-nav-override';
     style.textContent = [
       'body[data-scroll-locked] .bottom-nav-bar { display: block !important; }',
-      'body:has([role="dialog"][data-state="open"]) .bottom-nav-bar { display: block !important; opacity: 0.5; filter: brightness(0.7); }',
-      'body:has([role="alertdialog"][data-state="open"]) .bottom-nav-bar { display: block !important; opacity: 0.5; filter: brightness(0.7); }',
+      'body:has([role="dialog"][data-state="open"]) .bottom-nav-bar { display: block !important; filter: brightness(0.7); }',
+      'body:has([role="alertdialog"][data-state="open"]) .bottom-nav-bar { display: block !important; filter: brightness(0.7); }',
     ].join('\n');
     document.head.appendChild(style);
     return () => document.getElementById('bottom-nav-override')?.remove();
