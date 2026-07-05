@@ -10,6 +10,7 @@ import Statistics from "./Statistics";
 import Profile from "./Profile";
 import Utilitaire from "./Utilitaire";
 import { useToast } from "@/hooks/use-toast";
+import { FloatingTimer } from "@/components/FloatingTimer";
  
 type Tab = "library" | "activity" | "statistics" | "profile" | "nutrition" | "utilitaire";
 
