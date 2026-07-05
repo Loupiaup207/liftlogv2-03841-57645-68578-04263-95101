@@ -30,19 +30,21 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
-            <PageTransition>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/workout/:id" element={<Workout />} />
-                <Route path="/nutrition" element={<Nutrition />} />
-                <Route path="/profile" element={<Profile />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </PageTransition>
-          </BrowserRouter>
+          <TimerProvider>
+            <BrowserRouter>
+              <PageTransition>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/workout/:id" element={<Workout />} />
+                  <Route path="/nutrition" element={<Nutrition />} />
+                  <Route path="/profile" element={<Profile />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </PageTransition>
+            </BrowserRouter>
+          </TimerProvider>
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
