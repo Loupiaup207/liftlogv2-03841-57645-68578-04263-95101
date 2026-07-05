@@ -177,8 +177,11 @@ const Index = () => {
         </div>
       </main>
 
-      {/* Bottom Nav */}
-        <div ref={bottomNavRef} className="bottom-nav-bar" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, height: "calc(3.5rem + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border))" }}>
+      {/* Floating mini timer (visible sur tous les onglets sauf Utilitaire) */}
+      {activeTab !== "utilitaire" && <FloatingTimer onOpen={() => goToTab("utilitaire")} />}
+
+      {/* Bottom Nav — z-30 pour rester sous les overlays de dialogue (z-50) */}
+        <div ref={bottomNavRef} className="bottom-nav-bar" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 30, height: "calc(3.5rem + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border))" }}>
           <div className="flex justify-between items-center h-full px-6">
             <Button
               variant="ghost"
