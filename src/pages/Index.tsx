@@ -10,6 +10,7 @@ import Statistics from "./Statistics";
 import Profile from "./Profile";
 import Utilitaire from "./Utilitaire";
 import { useToast } from "@/hooks/use-toast";
+import { FloatingTimer } from "@/components/FloatingTimer";
  
 type Tab = "library" | "activity" | "statistics" | "profile" | "nutrition" | "utilitaire";
 
@@ -99,37 +100,16 @@ const Index = () => {
     };
   }, []);
  
-  // Override: garder la bottom nav toujours visible (meme quand un dialog est ouvert)
+  // Bottom nav: assurer qu'il est en dessous des dialogues (overlay Radix = z-50).
+  // Pas de compensation clavier iOS: on garde la barre fixe au bas de la fenêtre.
   useEffect(() => {
     const style = document.createElement('style');
     style.id = 'bottom-nav-override';
-    style.textContent = [
-      'body[data-scroll-locked] .bottom-nav-bar { display: block !important; }',
-      'body:has([role="dialog"][data-state="open"]) .bottom-nav-bar { display: block !important; filter: brightness(0.7); }',
-      'body:has([role="alertdialog"][data-state="open"]) .bottom-nav-bar { display: block !important; filter: brightness(0.7); }',
-    ].join('\n');
+    // Rien à forcer: la barre est en z-30, l'overlay Radix (z-50) la couvre naturellement
+    // ce qui l'assombrit et empêche l'interaction pendant qu'un dialogue est ouvert.
+    style.textContent = '';
     document.head.appendChild(style);
     return () => document.getElementById('bottom-nav-override')?.remove();
-  }, []);
-
-  // Garder la bottom nav figée quand le clavier mobile s'ouvre
-  useEffect(() => {
-    const nav = bottomNavRef.current;
-    if (!nav || !window.visualViewport) return;
-
-    const adjustNav = () => {
-      const vv = window.visualViewport;
-      const offset = window.innerHeight - vv.height - vv.offsetTop;
-      nav.style.bottom = Math.max(0, offset) + "px";
-    };
-
-    window.visualViewport.addEventListener("resize", adjustNav);
-    window.visualViewport.addEventListener("scroll", adjustNav);
-
-    return () => {
-      window.visualViewport.removeEventListener("resize", adjustNav);
-      window.visualViewport.removeEventListener("scroll", adjustNav);
-    };
   }, []);
 
   useEffect(() => {
@@ -197,8 +177,11 @@ const Index = () => {
         </div>
       </main>
 
-      {/* Bottom Nav */}
-        <div ref={bottomNavRef} className="bottom-nav-bar" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, height: "calc(3.5rem + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border))" }}>
+      {/* Floating mini timer (visible sur tous les onglets sauf Utilitaire) */}
+      {activeTab !== "utilitaire" && <FloatingTimer onOpen={() => goToTab("utilitaire")} />}
+
+      {/* Bottom Nav — z-30 pour rester sous les overlays de dialogue (z-50) */}
+        <div ref={bottomNavRef} className="bottom-nav-bar" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 30, height: "calc(3.5rem + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border))" }}>
           <div className="flex justify-between items-center h-full px-6">
             <Button
               variant="ghost"

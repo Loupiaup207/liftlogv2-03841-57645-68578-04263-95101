@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, RotateCcw, Trash2, Timer, Calculator } from "lucide-react";
+import { Play, Pause, RotateCcw, Trash2, Timer, Calculator, Plus, X } from "lucide-react";
+import { useTimer, fmtTime, fmtPreset } from "@/contexts/TimerContext";
+import { WheelColumn } from "@/components/WheelColumn";
 
 type SubTab = "chrono" | "calc";
 
@@ -10,7 +12,6 @@ const Utilitaire = () => {
 
   return (
     <div className="px-4 sm:px-6 pb-8">
-      {/* Top sub-nav — same style as training top nav */}
       <div className="flex gap-1 mb-6">
         {(["chrono", "calc"] as SubTab[]).map((s) => (
           <Button
@@ -34,176 +35,71 @@ const Utilitaire = () => {
 /* -------------------- Chronomètre -------------------- */
 
 const Chrono = () => {
-  const [total, setTotal] = useState(0); // seconds total set
-  const [remaining, setRemaining] = useState(0);
-  const [running, setRunning] = useState(false);
-  const [editing, setEditing] = useState(true);
-  const [hh, setHh] = useState("00");
-  const [mm, setMm] = useState("00");
-  const [ss, setSs] = useState("00");
-  const intervalRef = useRef<number | null>(null);
+  const { total, remaining, running, finished, start, pause, resume, reset, dismissFinished, presets, addPreset, removePreset } = useTimer();
+  const editing = total === 0 && !finished;
 
-  useEffect(() => {
-    if (!running) {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      return;
-    }
-    intervalRef.current = window.setInterval(() => {
-      setRemaining((r) => {
-        if (r <= 1) {
-          setRunning(false);
-          if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-            try { navigator.vibrate([300, 120, 300, 120, 500]); } catch {}
-          }
-          try {
-            const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
-            if (AC) {
-              const ctx = new AC();
-              const o = ctx.createOscillator();
-              const g = ctx.createGain();
-              o.type = "sine";
-              o.frequency.value = 880;
-              o.connect(g); g.connect(ctx.destination);
-              g.gain.setValueAtTime(0.001, ctx.currentTime);
-              g.gain.exponentialRampToValueAtTime(0.4, ctx.currentTime + 0.02);
-              g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.2);
-              o.start();
-              o.stop(ctx.currentTime + 1.3);
-            }
-          } catch {}
-          return 0;
-        }
-        return r - 1;
-      });
-    }, 1000);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [running]);
+  const [h, setH] = useState(0);
+  const [m, setM] = useState(0);
+  const [s, setS] = useState(0);
+  const [manageMode, setManageMode] = useState(false);
 
-  const clampNum = (v: string, max: number) => {
-    const n = parseInt(v.replace(/\D/g, "").slice(0, 2)) || 0;
-    return String(Math.min(n, max)).padStart(2, "0");
-  };
-
-  const commitAndStart = () => {
-    const t = (parseInt(hh) || 0) * 3600 + (parseInt(mm) || 0) * 60 + (parseInt(ss) || 0);
-    if (t <= 0) return;
-    setTotal(t);
-    setRemaining(t);
-    setEditing(false);
-    setRunning(true);
-  };
-
-  const resume = () => setRunning(true);
-  const pause = () => setRunning(false);
-  const reset = () => {
-    setRunning(false);
-    setRemaining(0);
-    setTotal(0);
-    setEditing(true);
-  };
+  const secondsFromWheel = h * 3600 + m * 60 + s;
 
   const R = 118;
   const C = 2 * Math.PI * R;
   const pct = total > 0 ? remaining / total : 1;
 
-  const fmt = (s: number) => {
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const sec = s % 60;
-    const two = (n: number) => String(n).padStart(2, "0");
-    return h > 0 ? `${two(h)}:${two(m)}:${two(sec)}` : `${two(m)}:${two(sec)}`;
-  };
-
-  const presets = [
-    { l: "30 s", s: 30 },
-    { l: "1 min", s: 60 },
-    { l: "2 min", s: 120 },
-    { l: "3 min", s: 180 },
-    { l: "5 min", s: 300 },
-    { l: "10 min", s: 600 },
-  ];
-
   const applyPreset = (secs: number) => {
-    const h = Math.floor(secs / 3600);
-    const m = Math.floor((secs % 3600) / 60);
-    const se = secs % 60;
-    setHh(String(h).padStart(2, "0"));
-    setMm(String(m).padStart(2, "0"));
-    setSs(String(se).padStart(2, "0"));
+    setH(Math.floor(secs / 3600));
+    setM(Math.floor((secs % 3600) / 60));
+    setS(secs % 60);
   };
 
   return (
     <div className="flex flex-col items-center gap-6">
-      <div className="relative" style={{ width: 280, height: 280 }}>
-        <svg width="280" height="280" viewBox="0 0 280 280" className="animate-fade-in">
-          <circle cx="140" cy="140" r={R} fill="none" stroke="hsl(var(--border))" strokeWidth="3" />
-          <circle
-            cx="140"
-            cy="140"
-            r={R}
-            fill="none"
-            stroke="hsl(var(--primary))"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeDasharray={C}
-            strokeDashoffset={C * (1 - pct)}
-            transform="rotate(-90 140 140)"
-            style={{ transition: running ? "stroke-dashoffset 0.95s linear" : "stroke-dashoffset 0.3s ease" }}
-          />
-        </svg>
-
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          {editing ? (
-            <div className="flex items-center gap-1 tabular-nums">
-              <input
-                type="text"
-                inputMode="numeric"
-                value={hh}
-                onFocus={(e) => e.target.select()}
-                onChange={(e) => setHh(clampNum(e.target.value, 23))}
-                className="w-14 h-14 text-3xl font-extralight text-center bg-transparent border-none outline-none focus:bg-accent/30 rounded-md"
-              />
-              <span className="text-3xl font-extralight text-muted-foreground">:</span>
-              <input
-                type="text"
-                inputMode="numeric"
-                value={mm}
-                onFocus={(e) => e.target.select()}
-                onChange={(e) => setMm(clampNum(e.target.value, 59))}
-                className="w-14 h-14 text-3xl font-extralight text-center bg-transparent border-none outline-none focus:bg-accent/30 rounded-md"
-              />
-              <span className="text-3xl font-extralight text-muted-foreground">:</span>
-              <input
-                type="text"
-                inputMode="numeric"
-                value={ss}
-                onFocus={(e) => e.target.select()}
-                onChange={(e) => setSs(clampNum(e.target.value, 59))}
-                className="w-14 h-14 text-3xl font-extralight text-center bg-transparent border-none outline-none focus:bg-accent/30 rounded-md"
-              />
-            </div>
-          ) : (
-            <div className="text-5xl font-extralight tracking-wider tabular-nums">{fmt(remaining)}</div>
-          )}
-          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2">
-            {editing ? "hh : mm : ss" : running ? "En cours" : remaining === 0 ? "Terminé" : "En pause"}
-          </p>
+      {editing ? (
+        <div className="flex items-center justify-center gap-2 py-4">
+          <WheelColumn value={h} max={23} onChange={setH} label="h" />
+          <WheelColumn value={m} max={59} onChange={setM} label="min" />
+          <WheelColumn value={s} max={59} onChange={setS} label="s" />
         </div>
-      </div>
+      ) : (
+        <div className="relative" style={{ width: 280, height: 280 }}>
+          <svg width="280" height="280" viewBox="0 0 280 280" className="animate-fade-in">
+            <circle cx="140" cy="140" r={R} fill="none" stroke="hsl(var(--border))" strokeWidth="3" />
+            <circle
+              cx="140" cy="140" r={R} fill="none"
+              stroke={finished ? "hsl(var(--destructive))" : "hsl(var(--primary))"}
+              strokeWidth="3" strokeLinecap="round"
+              strokeDasharray={C}
+              strokeDashoffset={C * (1 - pct)}
+              transform="rotate(-90 140 140)"
+              style={{ transition: running ? "stroke-dashoffset 0.95s linear" : "stroke-dashoffset 0.3s ease" }}
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className={`text-5xl font-extralight tracking-wider tabular-nums ${finished ? "animate-pulse" : ""}`}>
+              {fmtTime(remaining)}
+            </div>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2">
+              {finished ? "Terminé" : running ? "En cours" : "En pause"}
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="flex gap-3">
-        {editing || remaining === 0 ? (
+        {editing ? (
           <Button
-            size="lg"
-            className="rounded-full h-14 w-14 p-0"
-            onClick={editing ? commitAndStart : reset}
+            size="lg" className="rounded-full h-14 w-14 p-0"
+            disabled={secondsFromWheel === 0}
+            onClick={() => start(secondsFromWheel)}
           >
-            {editing ? <Play className="h-5 w-5" /> : <RotateCcw className="h-5 w-5" />}
+            <Play className="h-5 w-5" />
+          </Button>
+        ) : finished ? (
+          <Button size="lg" className="rounded-full h-14 w-14 p-0" onClick={dismissFinished}>
+            <X className="h-5 w-5" />
           </Button>
         ) : (
           <>
@@ -224,12 +120,52 @@ const Chrono = () => {
       </div>
 
       {editing && (
-        <div className="flex flex-wrap gap-2 justify-center max-w-xs">
-          {presets.map((p) => (
-            <Button key={p.l} variant="minimal" size="sm" className="h-8 text-[11px]" onClick={() => applyPreset(p.s)}>
-              {p.l}
-            </Button>
-          ))}
+        <div className="w-full max-w-sm">
+          <div className="flex items-center justify-between mb-2 px-1">
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Préréglages</p>
+            <div className="flex gap-1">
+              <Button
+                variant="ghost" size="sm"
+                className="h-7 px-2 text-[11px]"
+                onClick={() => setManageMode((v) => !v)}
+              >
+                {manageMode ? "OK" : "Modifier"}
+              </Button>
+              <Button
+                variant="ghost" size="sm"
+                className="h-7 px-2 text-[11px]"
+                disabled={secondsFromWheel === 0}
+                onClick={() => addPreset(secondsFromWheel)}
+              >
+                <Plus className="h-3 w-3 mr-1" /> Ajouter
+              </Button>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 justify-center">
+            {presets.length === 0 && (
+              <p className="text-xs text-muted-foreground py-2">Aucun préréglage — règle un temps et appuie sur Ajouter</p>
+            )}
+            {presets.map((p) => (
+              <div key={p} className="relative">
+                <Button
+                  variant="minimal" size="sm"
+                  className="h-8 text-[11px] pr-6"
+                  onClick={() => applyPreset(p)}
+                >
+                  {fmtPreset(p)}
+                </Button>
+                {manageMode && (
+                  <button
+                    onClick={() => removePreset(p)}
+                    className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+                    aria-label="Supprimer"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -275,7 +211,6 @@ const Calc = () => {
     }
     const isOp = ["+", "-", "×", "÷", "%", "."].includes(k);
     const last = expr.slice(-1);
-    // avoid two operators in a row (except minus)
     if (isOp && k !== "-" && k !== "." && ["+", "-", "×", "÷"].includes(last)) {
       const n = expr.slice(0, -1) + k;
       setExpr(n); setDisplay(n);
