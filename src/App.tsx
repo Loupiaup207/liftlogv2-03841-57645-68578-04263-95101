@@ -15,6 +15,7 @@ import { PageTransition } from "./components/PageTransition";
 import { initializeWebNotifications } from "./lib/notifications";
 
 import { queryClient } from "./lib/queryClient";
+import { TimerProvider } from "./contexts/TimerContext";
 
 const App = () => {
 
