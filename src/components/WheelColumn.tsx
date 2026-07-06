@@ -77,7 +77,7 @@ export const WheelColumn = ({ value, max, onChange, label }: Props) => {
       </div>
       {/* label */}
       <div
-        className="pointer-events-none absolute left-[62px] top-1/2 -translate-y-1/2 text-sm text-foreground/80"
+        className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-1 text-sm text-foreground/80"
         style={{ height: ITEM_H, display: "flex", alignItems: "center" }}
       >
         {label}
