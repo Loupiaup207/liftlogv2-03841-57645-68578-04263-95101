@@ -99,6 +99,21 @@ const Nutrition = () => {
     const p = localStorage.getItem("transform_photos"); if (p) setPhotos(JSON.parse(p));
   }, []);
 
+  useEffect(() => {
+    if (isGoalsDialogOpen) {
+      setEditedGoals(goals);
+      const ds = Number(localStorage.getItem("nutrition_daily_steps")) || 0;
+      setDailySteps(ds);
+    }
+  }, [isGoalsDialogOpen, goals]);
+
+  useEffect(() => {
+    if (showOnboarding) {
+      const ds = Number(localStorage.getItem("nutrition_daily_steps")) || 0;
+      if (ds > 0) setOnboard((o) => ({ ...o, steps: String(ds) }));
+    }
+  }, [showOnboarding]);
+
   const persistOnboard = (o: typeof onboard) => {
     setOnboard(o);
     localStorage.setItem("nutrition_onboard_data", JSON.stringify(o));
