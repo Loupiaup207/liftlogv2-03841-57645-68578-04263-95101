@@ -60,6 +60,7 @@ const Nutrition = () => {
   }, []);
 
   const [editedGoals, setEditedGoals] = useState(goals);
+  const [stepBonus, setStepBonus] = useState(0);
 
   // Onboarding + custom foods
   const [showOnboarding, setShowOnboarding] = useState(false);
