@@ -569,6 +569,22 @@ export const ExerciseHistoryDialog = ({
                   />
                 </LineChart>
               </ResponsiveContainer>
+
+              {analysis && (
+                <div className="mt-4 p-3 rounded-xl bg-accent/30 border border-border/30">
+                  <p className={`text-xs font-semibold mb-1.5 ${analysis.status === "up" ? "text-green-500" : analysis.status === "down" ? "text-red-500" : "text-yellow-500"}`}>
+                    {analysis.message}
+                  </p>
+                  <ul className="space-y-1">
+                    {analysis.tips.map((tip, i) => (
+                      <li key={i} className="text-[11px] text-muted-foreground flex gap-1.5">
+                        <span className="text-primary">•</span>
+                        <span>{tip}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </Card>
           )}
  
