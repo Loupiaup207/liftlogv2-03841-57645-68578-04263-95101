@@ -157,6 +157,68 @@ export const ExerciseHistoryDialog = ({
   };
  
   const progressionData = getProgressionData();
+
+  // Analyse de la progression entre les deux dernières séances
+  const getProgressionAnalysis = () => {
+    const sessionKeys = Object.keys(groupedSets);
+    if (sessionKeys.length === 0) return null;
+
+    // Trier les séances par date réelle (created_at du premier set)
+    const sessions = sessionKeys
+      .map((key) => ({ key, date: new Date(groupedSets[key][0].created_at), sets: groupedSets[key] }))
+      .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    const last = sessions[sessions.length - 1];
+    const prev = sessions.length > 1 ? sessions[sessions.length - 2] : null;
+
+    const lastMaxWeight = Math.max(...last.sets.map((s) => (s.weight || 0) + (s.additional_weight || 0)));
+    const lastMaxReps = Math.max(...last.sets.map((s) => s.reps));
+    const prevMaxWeight = prev ? Math.max(...prev.sets.map((s) => (s.weight || 0) + (s.additional_weight || 0))) : null;
+    const prevMaxReps = prev ? Math.max(...prev.sets.map((s) => s.reps)) : null;
+
+    const deltaWeight = prevMaxWeight !== null ? lastMaxWeight - prevMaxWeight : null;
+    const deltaReps = prevMaxReps !== null ? lastMaxReps - prevMaxReps : null;
+
+    // Séances des 7 derniers jours (récupération)
+    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const sessionsThisWeek = sessions.filter((s) => s.date.getTime() >= weekAgo).length;
+
+    // Tendance globale sur les 4 dernières séances
+    const recent = sessions.slice(-4);
+    const weightsTrend = recent.map((s) => Math.max(...s.sets.map((x) => (x.weight || 0) + (x.additional_weight || 0))));
+    const trendUp = weightsTrend.length > 1 && weightsTrend[weightsTrend.length - 1] > weightsTrend[0];
+    const trendDown = weightsTrend.length > 1 && weightsTrend[weightsTrend.length - 1] < weightsTrend[0];
+
+    let status: "up" | "flat" | "down" = "flat";
+    if ((deltaWeight !== null && deltaWeight > 0) || (deltaReps !== null && deltaReps > 0)) status = "up";
+    if ((deltaWeight !== null && deltaWeight < 0) || (deltaReps !== null && deltaReps < 0)) status = "down";
+    if (trendDown && status === "flat") status = "down";
+
+    const message =
+      status === "up"
+        ? "Tu progresses bien 💪"
+        : status === "down"
+        ? "Tes performances baissent"
+        : "Tu sembles stagner";
+
+    const tips: string[] = [];
+    if (status === "up") {
+      tips.push("Continue d'augmenter progressivement le poids (+2,5 kg max par séance).");
+      if (sessionsThisWeek >= 3) tips.push(`C'est ta ${sessionsThisWeek}e séance en 7 jours : pense à bien récupérer.`);
+    } else if (status === "down") {
+      if (sessionsThisWeek >= 3) tips.push(`Déjà ${sessionsThisWeek} séances cette semaine : privilégie le sommeil et la récupération.`);
+      else tips.push("Vérifie ton alimentation et ton sommeil, ils impactent directement ta force.");
+      tips.push("Réduis légèrement la charge et travaille la technique avant de remonter.");
+    } else {
+      tips.push("Essaie d'ajouter 1 rep ou +2,5 kg à ta prochaine séance pour casser la stagnation.");
+      if (sessionsThisWeek >= 3) tips.push("Avec ce rythme d'entraînement, soigne bien ta récupération et tes protéines.");
+      else tips.push("Varie les fourchettes de reps (ex. séries plus lourdes de 5-6 reps) pour relancer la progression.");
+    }
+
+    return { deltaWeight, deltaReps, status, message, tips: tips.slice(0, 2) };
+  };
+
+  const analysis = getProgressionAnalysis();
  
   const updateExercise = async () => {
     const { error } = await supabase
