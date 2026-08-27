@@ -515,7 +515,26 @@ export const ExerciseHistoryDialog = ({
  
           {progressionData.length > 0 && (
             <Card className="p-4 rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-              <h3 className="font-semibold text-sm text-foreground mb-4">📈 Progression du poids</h3>
+              <h3 className="font-semibold text-sm text-foreground mb-2">📈 Progression du poids</h3>
+
+              {analysis && (
+                <div className="flex items-center gap-3 mb-3">
+                  {analysis.deltaWeight !== null ? (
+                    <>
+                      <span className={`text-sm font-bold ${analysis.deltaWeight > 0 ? "text-green-500" : analysis.deltaWeight < 0 ? "text-red-500" : "text-muted-foreground"}`}>
+                        {analysis.deltaWeight > 0 ? "+" : ""}{Number(analysis.deltaWeight.toFixed(1))} kg
+                      </span>
+                      <span className={`text-sm font-bold ${analysis.deltaReps! > 0 ? "text-green-500" : analysis.deltaReps! < 0 ? "text-red-500" : "text-muted-foreground"}`}>
+                        {analysis.deltaReps! > 0 ? "+" : ""}{analysis.deltaReps} reps
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">Première séance enregistrée</span>
+                  )}
+                  <span className="text-[10px] text-muted-foreground ml-auto">vs dernière séance</span>
+                </div>
+              )}
+
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={progressionData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
