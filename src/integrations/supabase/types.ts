@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -252,6 +252,87 @@ export type Database = {
         }
         Relationships: []
       }
+      session_template_exercises: {
+        Row: {
+          created_at: string
+          exercise_id: string
+          id: string
+          notes: string | null
+          order_index: number
+          rest_seconds: number
+          target_reps: number
+          target_sets: number
+          target_weight: number | null
+          template_id: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_id: string
+          id?: string
+          notes?: string | null
+          order_index?: number
+          rest_seconds?: number
+          target_reps?: number
+          target_sets?: number
+          target_weight?: number | null
+          template_id: string
+        }
+        Update: {
+          created_at?: string
+          exercise_id?: string
+          id?: string
+          notes?: string | null
+          order_index?: number
+          rest_seconds?: number
+          target_reps?: number
+          target_sets?: number
+          target_weight?: number | null
+          template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_template_exercises_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_template_exercises_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "session_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_templates: {
+        Row: {
+          created_at: string
+          days_of_week: number[]
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          days_of_week?: number[]
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          days_of_week?: number[]
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_hidden_exercises: {
         Row: {
           created_at: string
@@ -350,7 +431,11 @@ export type Database = {
           id: string
           is_bodyweight: boolean | null
           notes: string | null
+          planned_reps: number | null
+          planned_weight: number | null
           reps: number
+          rest_seconds: number | null
+          rpe: number | null
           set_number: number
           weight: number | null
           workout_id: string
@@ -363,7 +448,11 @@ export type Database = {
           id?: string
           is_bodyweight?: boolean | null
           notes?: string | null
+          planned_reps?: number | null
+          planned_weight?: number | null
           reps: number
+          rest_seconds?: number | null
+          rpe?: number | null
           set_number: number
           weight?: number | null
           workout_id: string
@@ -376,7 +465,11 @@ export type Database = {
           id?: string
           is_bodyweight?: boolean | null
           notes?: string | null
+          planned_reps?: number | null
+          planned_weight?: number | null
           reps?: number
+          rest_seconds?: number | null
+          rpe?: number | null
           set_number?: number
           weight?: number | null
           workout_id?: string
@@ -402,30 +495,36 @@ export type Database = {
         Row: {
           completed_at: string | null
           created_at: string | null
+          duration_seconds: number | null
           id: string
           name: string
           notes: string | null
           routine_id: string | null
+          session_template_id: string | null
           started_at: string | null
           user_id: string
         }
         Insert: {
           completed_at?: string | null
           created_at?: string | null
+          duration_seconds?: number | null
           id?: string
           name: string
           notes?: string | null
           routine_id?: string | null
+          session_template_id?: string | null
           started_at?: string | null
           user_id: string
         }
         Update: {
           completed_at?: string | null
           created_at?: string | null
+          duration_seconds?: number | null
           id?: string
           name?: string
           notes?: string | null
           routine_id?: string | null
+          session_template_id?: string | null
           started_at?: string | null
           user_id?: string
         }
@@ -435,6 +534,13 @@ export type Database = {
             columns: ["routine_id"]
             isOneToOne: false
             referencedRelation: "routines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workouts_session_template_id_fkey"
+            columns: ["session_template_id"]
+            isOneToOne: false
+            referencedRelation: "session_templates"
             referencedColumns: ["id"]
           },
         ]
