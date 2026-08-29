@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase-helpers";
 import { useToast } from "@/hooks/use-toast";
 import { SessionTemplateDialog } from "@/components/SessionTemplateDialog";
 import { SessionRunner, RunnerExercise } from "@/components/SessionRunner";
+import { ProgressionDialog } from "@/components/ProgressionDialog";
 
 interface Template {
   id: string;
@@ -23,6 +24,7 @@ const Sessions = () => {
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [runner, setRunner] = useState<Template | null>(null);
+  const [pending, setPending] = useState<Template | null>(null);
 
   const load = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -125,7 +127,7 @@ const Sessions = () => {
                   </div>
                 ))}
               </div>
-              <Button className="w-full h-10" onClick={() => setRunner(t)} disabled={t.exercises.length === 0}>
+              <Button className="w-full h-10" onClick={() => setPending(t)} disabled={t.exercises.length === 0}>
                 <Play className="h-4 w-4 mr-2" />
                 Démarrer / Reprendre
               </Button>
@@ -175,6 +177,20 @@ const Sessions = () => {
           </Card>
         ))}
       </div>
+
+      {pending && (
+        <ProgressionDialog
+          open={!!pending}
+          onOpenChange={(v) => !v && setPending(null)}
+          templateName={pending.name}
+          exercises={pending.exercises}
+          onConfirm={(adjusted) => {
+            const t = pending;
+            setPending(null);
+            if (t) setRunner({ ...t, exercises: adjusted });
+          }}
+        />
+      )}
 
       <SessionTemplateDialog open={editorOpen} onOpenChange={setEditorOpen} templateId={editingId} onSaved={load} />
 
