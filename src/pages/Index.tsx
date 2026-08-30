@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Dumbbell, User, Wrench } from "lucide-react";
+import { Dumbbell, Home as HomeIcon, User, Wrench } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,15 +10,24 @@ import Statistics from "./Statistics";
 import Profile from "./Profile";
 import Utilitaire from "./Utilitaire";
 import Sessions from "./Sessions";
+import Home from "./Home";
 import { useToast } from "@/hooks/use-toast";
 import { FloatingTimer } from "@/components/FloatingTimer";
  
-type Tab = "library" | "activity" | "statistics" | "profile" | "nutrition" | "utilitaire" | "sessions";
+type Tab = "home" | "library" | "activity" | "statistics" | "profile" | "nutrition" | "utilitaire" | "sessions";
 
-const SWIPE_TABS: Tab[] = ["library", "statistics", "activity", "nutrition"];
+const TRAINING_TABS: Tab[] = ["library", "sessions", "statistics", "activity"];
+const TRAINING_LABELS: Record<string, string> = {
+  library: "Librairie",
+  sessions: "Séances",
+  statistics: "Stats",
+  activity: "Activité",
+};
+const SWIPE_TABS: Tab[] = ["home", "library", "nutrition"];
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState<Tab>("library");
+  const [activeTab, setActiveTab] = useState<Tab>("home");
+  const [trainingTab, setTrainingTab] = useState<Tab>("library");
   const [swipeAnim, setSwipeAnim] = useState<string>("");
   const touchRef = (typeof window !== "undefined") ? ((window as any).__touchRef ||= { current: null as null | { x: number; y: number; t: number } }) : { current: null };
   const [user, setUser] = useState<any>(null);
@@ -47,8 +56,8 @@ const Index = () => {
     const dy = t.clientY - start.y;
     touchRef.current = null;
     if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx)) return;
-    if (activeTab === "profile" || activeTab === "utilitaire" || activeTab === "sessions") return;
-    const idx = SWIPE_TABS.indexOf(activeTab);
+    const current: Tab = TRAINING_TABS.includes(activeTab) ? "library" : activeTab;
+    const idx = SWIPE_TABS.indexOf(current);
     if (idx === -1) return;
     if (dx < 0 && idx < SWIPE_TABS.length - 1) goToTab(SWIPE_TABS[idx + 1], "left");
     else if (dx > 0 && idx > 0) goToTab(SWIPE_TABS[idx - 1], "right");
@@ -134,41 +143,68 @@ const Index = () => {
  
   if (!user) return null;
  
-  const hideTopNav = activeTab === "profile" || activeTab === "utilitaire" || activeTab === "sessions";
-  const topHeight = !hideTopNav
-      ? "calc(7rem + env(safe-area-inset-top))"
-      : "calc(3.5rem + env(safe-area-inset-top))";
- 
+  const isTraining = TRAINING_TABS.includes(activeTab);
+  const hideTopNav = activeTab === "profile" || activeTab === "utilitaire";
+  const showSubNav = isTraining;
+  const topHeight = hideTopNav
+    ? "calc(3.5rem + env(safe-area-inset-top))"
+    : showSubNav
+      ? "calc(10.5rem + env(safe-area-inset-top))"
+      : "calc(7rem + env(safe-area-inset-top))";
+
   return (
     <div style={{ height: "var(--app-height, 100vh)", display: "flex", flexDirection: "column", overflow: "hidden", background: "hsl(var(--background))" }}>
- 
+
       {/* Header */}
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 40, height: "calc(3.5rem + env(safe-area-inset-top))", paddingTop: "env(safe-area-inset-top)", display: "flex", alignItems: "center", justifyContent: "center", background: "hsl(var(--background))" }}>
           <h1 className="text-xl font-light tracking-widest text-foreground">LIFTLOG</h1>
       </div>
- 
+
       {/* Top Nav */}
       {!hideTopNav && (
           <div style={{ position: "fixed", top: "calc(3.5rem + env(safe-area-inset-top))", left: 0, right: 0, zIndex: 50, background: "hsl(var(--background))", padding: "0.4rem 0.5rem" }}>
-          <div className="flex gap-1">
-              {(["library", "statistics", "activity", "nutrition"] as Tab[]).map((tab) => (
-                <Button key={tab} variant="minimal" className={`flex-1 h-10 rounded-lg min-w-0 px-1 ${activeTab === tab ? "bg-accent" : ""}`} onClick={() => {
-                  const curIdx = SWIPE_TABS.indexOf(activeTab);
+          <div className="mx-auto flex max-w-[430px] gap-1">
+              {([["home", "Home"], ["library", "Training"], ["nutrition", "Nutrition"]] as [Tab, string][]).map(([tab, label]) => {
+                const active = tab === "library" ? isTraining : activeTab === tab;
+                return (
+                <Button key={tab} variant="minimal" className={`flex-1 h-10 rounded-lg min-w-0 px-1 ${active ? "bg-accent" : ""}`} onClick={() => {
+                  const target: Tab = tab === "library" ? trainingTab : tab;
+                  const curIdx = SWIPE_TABS.indexOf(isTraining ? "library" : activeTab);
                   const nextIdx = SWIPE_TABS.indexOf(tab);
-                  goToTab(tab, curIdx === -1 || nextIdx === -1 ? undefined : nextIdx > curIdx ? "left" : "right");
+                  goToTab(target, curIdx === -1 || nextIdx === -1 ? undefined : nextIdx > curIdx ? "left" : "right");
                 }}>
-                <span className="text-xs font-light tracking-wide uppercase truncate">
-                  {tab === "library" ? "Librairie" : tab === "statistics" ? "Stats" : tab === "nutrition" ? "Nutrition" : "Activité"}
-                </span>
+                <span className="text-xs font-light tracking-wide uppercase truncate">{label}</span>
               </Button>
-            ))}
+              );
+            })}
           </div>
+          {showSubNav && (
+            <div className="mx-auto mt-1 flex max-w-[430px] gap-1">
+              {TRAINING_TABS.map((tab) => (
+                <Button
+                  key={tab}
+                  variant="minimal"
+                  className={`flex-1 h-9 rounded-lg min-w-0 px-1 ${activeTab === tab ? "bg-accent" : ""}`}
+                  onClick={() => { setTrainingTab(tab); goToTab(tab); }}
+                >
+                  <span className="text-[11px] font-light tracking-wide truncate">{TRAINING_LABELS[tab]}</span>
+                </Button>
+              ))}
+            </div>
+          )}
         </div>
       )}
- 
+
       {/* Main */}
       <main onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ flex: 1, overflowY: "auto", marginTop: topHeight, paddingBottom: "calc(4rem + env(safe-area-inset-bottom))", WebkitOverflowScrolling: "touch" }}>
         <div>
+          <div className={activeTab === "home" ? swipeAnim : "hidden"}>
+            <Home onNavigate={(t) => {
+              if (t === "training") goToTab(trainingTab, "left");
+              else if (t === "nutrition") goToTab("nutrition", "left");
+              else { setTrainingTab(t as Tab); goToTab(t as Tab, "left"); }
+            }} />
+          </div>
           <div className={activeTab === "library" ? swipeAnim : "hidden"}><Library /></div>
           <div className={activeTab === "activity" ? swipeAnim : "hidden"}><Activity /></div>
           <div className={activeTab === "statistics" ? swipeAnim : "hidden"}><Statistics /></div>
@@ -187,20 +223,20 @@ const Index = () => {
           <div className="flex justify-between items-center h-full px-3">
             <Button
               variant="ghost"
-              className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab !== "profile" && activeTab !== "utilitaire" && activeTab !== "sessions" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
-              onClick={() => goToTab(activeTab === "profile" || activeTab === "utilitaire" || activeTab === "sessions" ? "library" : activeTab, "right")}
+              className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab === "home" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
+              onClick={() => goToTab("home", "right")}
             >
-              <Dumbbell className="h-5 w-5" />
-              <span className="text-[10px] mt-0.5">Training</span>
+              <HomeIcon className="h-5 w-5" />
+              <span className="text-[10px] mt-0.5">Accueil</span>
             </Button>
 
             <Button
               variant="ghost"
-              className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab === "sessions" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
-              onClick={() => goToTab("sessions")}
+              className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${isTraining ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
+              onClick={() => goToTab(trainingTab, "left")}
             >
-              <CalendarDays className="h-5 w-5" />
-              <span className="text-[10px] mt-0.5">Séances</span>
+              <Dumbbell className="h-5 w-5" />
+              <span className="text-[10px] mt-0.5">Training</span>
             </Button>
 
             <Button
