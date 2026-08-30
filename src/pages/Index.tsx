@@ -151,12 +151,9 @@ const Index = () => {
  
   const isTraining = TRAINING_TABS.includes(activeTab);
   const hideTopNav = activeTab === "profile" || activeTab === "utilitaire";
-  const showSubNav = isTraining;
   const topHeight = hideTopNav
     ? "calc(3.5rem + env(safe-area-inset-top))"
-    : showSubNav
-      ? "calc(10.5rem + env(safe-area-inset-top))"
-      : "calc(7rem + env(safe-area-inset-top))";
+    : "calc(7rem + env(safe-area-inset-top))";
 
   return (
     <div style={{ height: "var(--app-height, 100vh)", display: "flex", flexDirection: "column", overflow: "hidden", background: "hsl(var(--background))" }}>
@@ -184,20 +181,6 @@ const Index = () => {
               );
             })}
           </div>
-          {showSubNav && (
-            <div className="mx-auto mt-1 flex max-w-[430px] gap-1">
-              {TRAINING_TABS.map((tab) => (
-                <Button
-                  key={tab}
-                  variant="minimal"
-                  className={`flex-1 h-9 rounded-lg min-w-0 px-1 ${activeTab === tab ? "bg-accent" : ""}`}
-                  onClick={() => { setTrainingTab(tab); goToTab(tab); }}
-                >
-                  <span className="text-[11px] font-light tracking-wide truncate">{TRAINING_LABELS[tab]}</span>
-                </Button>
-              ))}
-            </div>
-          )}
         </div>
       )}
 
