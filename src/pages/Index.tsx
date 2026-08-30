@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Dumbbell, Home as HomeIcon, User, Wrench } from "lucide-react";
+import { BarChart3, BookOpen, CalendarDays, History, Home as HomeIcon, User, Wrench } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +22,12 @@ const TRAINING_LABELS: Record<string, string> = {
   sessions: "Séances",
   statistics: "Stats",
   activity: "Activité",
+};
+const TRAINING_ICONS: Record<string, any> = {
+  library: BookOpen,
+  sessions: CalendarDays,
+  statistics: BarChart3,
+  activity: History,
 };
 const SWIPE_TABS: Tab[] = ["home", "library", "nutrition"];
 
