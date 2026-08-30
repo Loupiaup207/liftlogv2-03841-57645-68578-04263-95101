@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Dumbbell, Home as HomeIcon, User, Wrench } from "lucide-react";
+import { BarChart3, BookOpen, CalendarDays, History, Home as HomeIcon, User, Wrench } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +22,12 @@ const TRAINING_LABELS: Record<string, string> = {
   sessions: "Séances",
   statistics: "Stats",
   activity: "Activité",
+};
+const TRAINING_ICONS: Record<string, any> = {
+  library: BookOpen,
+  sessions: CalendarDays,
+  statistics: BarChart3,
+  activity: History,
 };
 const SWIPE_TABS: Tab[] = ["home", "library", "nutrition"];
 
@@ -145,12 +151,9 @@ const Index = () => {
  
   const isTraining = TRAINING_TABS.includes(activeTab);
   const hideTopNav = activeTab === "profile" || activeTab === "utilitaire";
-  const showSubNav = isTraining;
   const topHeight = hideTopNav
     ? "calc(3.5rem + env(safe-area-inset-top))"
-    : showSubNav
-      ? "calc(10.5rem + env(safe-area-inset-top))"
-      : "calc(7rem + env(safe-area-inset-top))";
+    : "calc(7rem + env(safe-area-inset-top))";
 
   return (
     <div style={{ height: "var(--app-height, 100vh)", display: "flex", flexDirection: "column", overflow: "hidden", background: "hsl(var(--background))" }}>
@@ -178,20 +181,6 @@ const Index = () => {
               );
             })}
           </div>
-          {showSubNav && (
-            <div className="mx-auto mt-1 flex max-w-[430px] gap-1">
-              {TRAINING_TABS.map((tab) => (
-                <Button
-                  key={tab}
-                  variant="minimal"
-                  className={`flex-1 h-9 rounded-lg min-w-0 px-1 ${activeTab === tab ? "bg-accent" : ""}`}
-                  onClick={() => { setTrainingTab(tab); goToTab(tab); }}
-                >
-                  <span className="text-[11px] font-light tracking-wide truncate">{TRAINING_LABELS[tab]}</span>
-                </Button>
-              ))}
-            </div>
-          )}
         </div>
       )}
 
@@ -220,43 +209,53 @@ const Index = () => {
 
       {/* Bottom Nav — z-30 pour rester sous les overlays de dialogue (z-50) */}
         <div ref={bottomNavRef} className="bottom-nav-bar" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 30, height: "calc(3.5rem + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border))" }}>
-          <div className="flex justify-between items-center h-full px-3">
-            <Button
-              variant="ghost"
-              className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab === "home" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
-              onClick={() => goToTab("home", "right")}
-            >
-              <HomeIcon className="h-5 w-5" />
-              <span className="text-[10px] mt-0.5">Accueil</span>
-            </Button>
+          {isTraining ? (
+            <div className="flex justify-between items-center h-full px-3 animate-slide-from-right">
+              {TRAINING_TABS.map((tab) => {
+                const Icon = TRAINING_ICONS[tab];
+                return (
+                  <Button
+                    key={tab}
+                    variant="ghost"
+                    className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab === tab ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
+                    onClick={() => { setTrainingTab(tab); goToTab(tab); }}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="text-[10px] mt-0.5">{TRAINING_LABELS[tab]}</span>
+                  </Button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex justify-between items-center h-full px-3">
+              <Button
+                variant="ghost"
+                className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab === "home" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
+                onClick={() => goToTab("home", "right")}
+              >
+                <HomeIcon className="h-5 w-5" />
+                <span className="text-[10px] mt-0.5">Accueil</span>
+              </Button>
 
-            <Button
-              variant="ghost"
-              className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${isTraining ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
-              onClick={() => goToTab(trainingTab, "left")}
-            >
-              <Dumbbell className="h-5 w-5" />
-              <span className="text-[10px] mt-0.5">Training</span>
-            </Button>
+              <Button
+                variant="ghost"
+                className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab === "utilitaire" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
+                onClick={() => goToTab("utilitaire")}
+              >
+                <Wrench className="h-5 w-5" />
+                <span className="text-[10px] mt-0.5">Utilitaire</span>
+              </Button>
 
-            <Button
-              variant="ghost"
-              className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab === "utilitaire" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
-              onClick={() => goToTab("utilitaire")}
-            >
-              <Wrench className="h-5 w-5" />
-              <span className="text-[10px] mt-0.5">Utilitaire</span>
-            </Button>
-
-            <Button
-              variant="ghost"
-              className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab === "profile" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
-              onClick={() => goToTab("profile", "left")}
-            >
-              <User className="h-5 w-5" />
-              <span className="text-[10px] mt-0.5">Profil</span>
-            </Button>
-          </div>
+              <Button
+                variant="ghost"
+                className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab === "profile" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
+                onClick={() => goToTab("profile", "left")}
+              >
+                <User className="h-5 w-5" />
+                <span className="text-[10px] mt-0.5">Profil</span>
+              </Button>
+            </div>
+          )}
         </div>
     </div>
 
