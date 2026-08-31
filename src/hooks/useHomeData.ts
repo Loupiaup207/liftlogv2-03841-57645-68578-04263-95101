@@ -141,10 +141,11 @@ export const useHomeData = (): HomeData => {
     const [{ data: workouts }, { data: templates }, { data: weekly }, { data: bwLogs }] = await Promise.all([
       supabase
         .from("workouts")
-        .select("id, started_at, completed_at, workout_sets(reps, weight, additional_weight, exercise_id)")
+        .select("id, name, started_at, completed_at, workout_sets(reps, weight, additional_weight, exercise_id)")
         .eq("user_id", user.id)
         .order("started_at", { ascending: false })
         .limit(50000),
+
       supabase.from("session_templates").select("name, days_of_week").eq("user_id", user.id),
       supabase.from("user_weekly_programs").select("day_of_week, muscle_group").eq("user_id", user.id),
       supabase
@@ -158,12 +159,22 @@ export const useHomeData = (): HomeData => {
     const sessions = (workouts || []).map((w: any) => ({
       date: dayKey(new Date(w.completed_at || w.started_at)),
       ts: new Date(w.completed_at || w.started_at).getTime(),
+      name: (w.name || "").trim(),
       sets: (w.workout_sets || []).map((s: any) => ({
         reps: Number(s.reps) || 0,
         weight: (Number(s.weight) || 0) + (Number(s.additional_weight) || 0),
         exercise_id: s.exercise_id,
       })),
     }));
+
+    // Nom réel de la séance effectuée, par jour (la plus récente du jour)
+    const realNames = new Map<string, string>();
+    [...sessions]
+      .sort((a, b) => a.ts - b.ts)
+      .forEach((s) => {
+        if (s.name) realNames.set(s.date, s.name);
+      });
+
 
     // --- Semaine courante (stats rapides) --------------------------------
     const weekStart = startOfWeek().getTime();
@@ -253,15 +264,19 @@ export const useHomeData = (): HomeData => {
         .filter((t: any) => (t.days_of_week || []).includes(dayIndex))
         .map((t: any) => t.name);
       const muscle = (weekly || []).find((w: any) => w.day_of_week === dayIndex)?.muscle_group;
-      const title = tplNames.length ? tplNames.join(" · ") : muscle || "Repos";
+      const done = days.has(key);
+      const realName = realNames.get(key);
+      // Priorité à la séance réellement effectuée, sinon au modèle prévu
+      const title = realName || (tplNames.length ? tplNames.join(" · ") : muscle || "Repos");
       weekDays.push({
         day: dayIndex,
         label: DAY_LABELS[dayIndex],
         title,
-        done: days.has(key),
+        done,
         isToday: dayIndex === todayIdx,
-        isRest: !tplNames.length && !muscle,
+        isRest: !done && !tplNames.length && !muscle,
       });
+
     }
     setProgram(weekDays);
 

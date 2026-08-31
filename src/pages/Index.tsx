@@ -116,17 +116,25 @@ const Index = () => {
     };
   }, []);
  
-  // Bottom nav: assurer qu'il est en dessous des dialogues (overlay Radix = z-50).
-  // Pas de compensation clavier iOS: on garde la barre fixe au bas de la fenêtre.
+  // iOS PWA: quand le clavier s'ouvre, visualViewport rétrécit et la barre
+  // fixed remonte. On compense dynamiquement l'offset et on remet 0 à la fermeture.
   useEffect(() => {
-    const style = document.createElement('style');
-    style.id = 'bottom-nav-override';
-    // Rien à forcer: la barre est en z-30, l'overlay Radix (z-50) la couvre naturellement
-    // ce qui l'assombrit et empêche l'interaction pendant qu'un dialogue est ouvert.
-    style.textContent = '';
-    document.head.appendChild(style);
-    return () => document.getElementById('bottom-nav-override')?.remove();
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => {
+      const offset = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+      const el = bottomNavRef.current;
+      if (el) el.style.setProperty("--kb-offset", `${offset > 60 ? offset : 0}px`);
+    };
+    update();
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+    };
   }, []);
+
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -185,7 +193,7 @@ const Index = () => {
       )}
 
       {/* Main */}
-      <main onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ flex: 1, overflowY: "auto", marginTop: topHeight, paddingBottom: "calc(4rem + env(safe-area-inset-bottom))", WebkitOverflowScrolling: "touch" }}>
+      <main onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ flex: 1, overflowY: "auto", marginTop: topHeight, paddingBottom: "calc(6.5rem + env(safe-area-inset-bottom))", WebkitOverflowScrolling: "touch" }}>
         <div>
           <div className={activeTab === "home" ? swipeAnim : "hidden"}>
             <Home onNavigate={(t) => {
@@ -207,10 +215,29 @@ const Index = () => {
       {/* Floating mini timer (visible sur tous les onglets sauf Utilitaire) */}
       {activeTab !== "utilitaire" && <FloatingTimer onOpen={() => goToTab("utilitaire")} />}
 
-      {/* Bottom Nav — z-30 pour rester sous les overlays de dialogue (z-50) */}
-        <div ref={bottomNavRef} className="bottom-nav-bar" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 30, height: "calc(3.5rem + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border))" }}>
+      {/* Bottom Nav flottante — z-30 pour rester sous les overlays de dialogue (z-50) */}
+        <div
+          ref={bottomNavRef}
+          className="bottom-nav-bar bg-card/80 border border-border/60 backdrop-blur-xl"
+          style={{
+            position: "fixed",
+            bottom: "calc(env(safe-area-inset-bottom) + 18px + var(--kb-offset, 0px))",
+            left: 16,
+            right: 16,
+            maxWidth: 430,
+            marginLeft: "auto",
+            marginRight: "auto",
+            zIndex: 30,
+            height: "3.75rem",
+            borderRadius: 28,
+            boxShadow: "0 12px 32px -8px hsl(0 0% 0% / 0.45), 0 2px 8px hsl(0 0% 0% / 0.25)",
+            WebkitBackdropFilter: "blur(20px)",
+            transition: "bottom 0.2s ease",
+          }}
+        >
           {isTraining ? (
             <div className="flex justify-between items-center h-full px-3 animate-slide-from-right">
+
               {TRAINING_TABS.map((tab) => {
                 const Icon = TRAINING_ICONS[tab];
                 return (
