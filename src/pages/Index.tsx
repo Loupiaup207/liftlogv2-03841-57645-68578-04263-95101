@@ -235,8 +235,9 @@ const Index = () => {
             transition: "bottom 0.2s ease",
           }}
         >
-
+          {isTraining ? (
             <div className="flex justify-between items-center h-full px-3 animate-slide-from-right">
+
               {TRAINING_TABS.map((tab) => {
                 const Icon = TRAINING_ICONS[tab];
                 return (
