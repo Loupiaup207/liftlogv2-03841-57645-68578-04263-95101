@@ -215,9 +215,27 @@ const Index = () => {
       {/* Floating mini timer (visible sur tous les onglets sauf Utilitaire) */}
       {activeTab !== "utilitaire" && <FloatingTimer onOpen={() => goToTab("utilitaire")} />}
 
-      {/* Bottom Nav — z-30 pour rester sous les overlays de dialogue (z-50) */}
-        <div ref={bottomNavRef} className="bottom-nav-bar" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 30, height: "calc(3.5rem + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "hsl(var(--card))", borderTop: "1px solid hsl(var(--border))" }}>
-          {isTraining ? (
+      {/* Bottom Nav flottante — z-30 pour rester sous les overlays de dialogue (z-50) */}
+        <div
+          ref={bottomNavRef}
+          className="bottom-nav-bar bg-card/80 border border-border/60 backdrop-blur-xl"
+          style={{
+            position: "fixed",
+            bottom: "calc(env(safe-area-inset-bottom) + 18px + var(--kb-offset, 0px))",
+            left: 16,
+            right: 16,
+            maxWidth: 430,
+            marginLeft: "auto",
+            marginRight: "auto",
+            zIndex: 30,
+            height: "3.75rem",
+            borderRadius: 28,
+            boxShadow: "0 12px 32px -8px hsl(0 0% 0% / 0.45), 0 2px 8px hsl(0 0% 0% / 0.25)",
+            WebkitBackdropFilter: "blur(20px)",
+            transition: "bottom 0.2s ease",
+          }}
+        >
+
             <div className="flex justify-between items-center h-full px-3 animate-slide-from-right">
               {TRAINING_TABS.map((tab) => {
                 const Icon = TRAINING_ICONS[tab];
