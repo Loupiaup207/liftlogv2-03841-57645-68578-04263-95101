@@ -91,13 +91,17 @@ const Home = ({ onNavigate }: HomeProps) => {
         </HomeCard>
         <HomeCard delay={110} className="p-3">
           <Dumbbell className="mb-1 h-4 w-4 text-muted-foreground" />
-          <p className="text-xl font-light tabular-nums">{metrics.workoutsThisWeek}</p>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">séances</p>
+          <p className="text-xl font-light tabular-nums">{metrics.totalWorkouts}</p>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            séances ({metrics.workoutsThisWeek} sem.)
+          </p>
         </HomeCard>
         <HomeCard delay={140} className="p-3">
           <Activity className="mb-1 h-4 w-4 text-muted-foreground" />
-          <p className="text-xl font-light tabular-nums">{Math.round(metrics.volumeThisWeek / 1000)}t</p>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">volume</p>
+          <p className="text-xl font-light tabular-nums">{Math.round(metrics.totalVolume / 1000)}t</p>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            volume ({Math.round(metrics.volumeThisWeek / 1000)}t sem.)
+          </p>
         </HomeCard>
       </div>
 
