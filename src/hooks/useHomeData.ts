@@ -165,33 +165,55 @@ export const useHomeData = (): HomeData => {
       })),
     }));
 
-    // --- Semaines --------------------------------------------------------
+    // --- Semaine courante (stats rapides) --------------------------------
     const weekStart = startOfWeek().getTime();
-    const prevStart = weekStart - 7 * 86400000;
-
-    const inRange = (from: number, to: number) => sessions.filter((s) => s.ts >= from && s.ts < to);
-    const cur = inRange(weekStart, Date.now() + 86400000);
-    const prev = inRange(prevStart, weekStart);
+    const WEEK = 7 * 86400000;
+    const chrono = [...sessions].sort((a, b) => a.ts - b.ts);
+    const cur = chrono.filter((s) => s.ts >= weekStart);
 
     const volumeOf = (arr: typeof sessions) =>
       arr.reduce((a, s) => a + s.sets.reduce((b, x) => b + x.weight * x.reps, 0), 0);
-    const repsOf = (arr: typeof sessions) => arr.reduce((a, s) => a + s.sets.reduce((b, x) => b + x.reps, 0), 0);
-    const bestRmOf = (arr: typeof sessions) => {
-      const byEx: Record<string, number> = {};
-      arr.forEach((s) =>
-        s.sets.forEach((x) => {
-          const rm = epley1RM(x.weight, x.reps);
-          if (rm > (byEx[x.exercise_id] || 0)) byEx[x.exercise_id] = rm;
-        })
-      );
-      const vals = Object.values(byEx);
-      return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+
+    // --- Progression all-time par exercice (inspirée de l'onglet Stats) ---
+    // Pour chaque exercice : meilleur 1RM/reps de la 1ère séance vs la dernière
+    const exFirst: Record<string, { rm: number; reps: number }> = {};
+    const exLast: Record<string, { rm: number; reps: number }> = {};
+    const exCount: Record<string, number> = {};
+    chrono.forEach((s) => {
+      const best: Record<string, { rm: number; reps: number }> = {};
+      s.sets.forEach((x) => {
+        const rm = epley1RM(x.weight, x.reps);
+        if (rm > (best[x.exercise_id]?.rm || 0)) best[x.exercise_id] = { rm, reps: x.reps };
+      });
+      Object.entries(best).forEach(([id, b]) => {
+        if (!exFirst[id]) exFirst[id] = b;
+        exLast[id] = b;
+        exCount[id] = (exCount[id] || 0) + 1;
+      });
+    });
+
+    const avgProg = (key: "rm" | "reps") => {
+      const vals = Object.keys(exFirst)
+        .filter((id) => (exCount[id] || 0) > 1)
+        .map((id) => pctChange(exLast[id][key], exFirst[id][key]));
+      return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
     };
 
-    const volume = pctChange(volumeOf(cur), volumeOf(prev));
-    const endurance = pctChange(repsOf(cur), repsOf(prev));
-    const strength = pctChange(bestRmOf(cur), bestRmOf(prev));
-    const regularity = pctChange(cur.length, prev.length);
+    const strength = avgProg("rm");
+    const endurance = avgProg("reps");
+
+    // Volume : moyenne des 4 dernières semaines vs les 4 précédentes
+    const last4 = chrono.filter((s) => s.ts >= weekStart - 3 * WEEK);
+    const prev4 = chrono.filter((s) => s.ts >= weekStart - 7 * WEEK && s.ts < weekStart - 3 * WEEK);
+    const volume = pctChange(volumeOf(last4) / 4, volumeOf(prev4) / 4);
+
+    // Régularité : séances des 30 derniers jours vs les 30 précédents
+    const now = Date.now();
+    const d30 = 30 * 86400000;
+    const regularity = pctChange(
+      chrono.filter((s) => s.ts >= now - d30).length,
+      chrono.filter((s) => s.ts >= now - 2 * d30 && s.ts < now - d30).length
+    );
 
     const score = (v: number) => Math.max(0, Math.min(100, 50 + v * 2));
     const global = Math.round((score(strength) + score(endurance) + score(volume) + score(regularity)) / 4);
@@ -204,6 +226,8 @@ export const useHomeData = (): HomeData => {
       global,
       workoutsThisWeek: cur.length,
       volumeThisWeek: Math.round(volumeOf(cur)),
+      totalWorkouts: chrono.length,
+      totalVolume: Math.round(volumeOf(chrono)),
     });
 
     // --- Streak ----------------------------------------------------------
