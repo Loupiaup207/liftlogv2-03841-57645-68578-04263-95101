@@ -141,10 +141,11 @@ export const useHomeData = (): HomeData => {
     const [{ data: workouts }, { data: templates }, { data: weekly }, { data: bwLogs }] = await Promise.all([
       supabase
         .from("workouts")
-        .select("id, started_at, completed_at, workout_sets(reps, weight, additional_weight, exercise_id)")
+        .select("id, name, started_at, completed_at, workout_sets(reps, weight, additional_weight, exercise_id)")
         .eq("user_id", user.id)
         .order("started_at", { ascending: false })
         .limit(50000),
+
       supabase.from("session_templates").select("name, days_of_week").eq("user_id", user.id),
       supabase.from("user_weekly_programs").select("day_of_week, muscle_group").eq("user_id", user.id),
       supabase
