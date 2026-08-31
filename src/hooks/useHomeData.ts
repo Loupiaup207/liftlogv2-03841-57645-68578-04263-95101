@@ -24,6 +24,8 @@ export interface HomeMetrics {
   global: number;
   workoutsThisWeek: number;
   volumeThisWeek: number;
+  totalWorkouts: number;
+  totalVolume: number;
 }
 
 export interface HomeNutrition {
@@ -74,6 +76,8 @@ const emptyMetrics: HomeMetrics = {
   global: 0,
   workoutsThisWeek: 0,
   volumeThisWeek: 0,
+  totalWorkouts: 0,
+  totalVolume: 0,
 };
 
 export const useHomeData = (): HomeData => {
