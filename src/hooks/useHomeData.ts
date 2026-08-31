@@ -159,12 +159,22 @@ export const useHomeData = (): HomeData => {
     const sessions = (workouts || []).map((w: any) => ({
       date: dayKey(new Date(w.completed_at || w.started_at)),
       ts: new Date(w.completed_at || w.started_at).getTime(),
+      name: (w.name || "").trim(),
       sets: (w.workout_sets || []).map((s: any) => ({
         reps: Number(s.reps) || 0,
         weight: (Number(s.weight) || 0) + (Number(s.additional_weight) || 0),
         exercise_id: s.exercise_id,
       })),
     }));
+
+    // Nom réel de la séance effectuée, par jour (la plus récente du jour)
+    const realNames = new Map<string, string>();
+    [...sessions]
+      .sort((a, b) => a.ts - b.ts)
+      .forEach((s) => {
+        if (s.name) realNames.set(s.date, s.name);
+      });
+
 
     // --- Semaine courante (stats rapides) --------------------------------
     const weekStart = startOfWeek().getTime();
