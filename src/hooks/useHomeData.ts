@@ -264,15 +264,19 @@ export const useHomeData = (): HomeData => {
         .filter((t: any) => (t.days_of_week || []).includes(dayIndex))
         .map((t: any) => t.name);
       const muscle = (weekly || []).find((w: any) => w.day_of_week === dayIndex)?.muscle_group;
-      const title = tplNames.length ? tplNames.join(" · ") : muscle || "Repos";
+      const done = days.has(key);
+      const realName = realNames.get(key);
+      // Priorité à la séance réellement effectuée, sinon au modèle prévu
+      const title = realName || (tplNames.length ? tplNames.join(" · ") : muscle || "Repos");
       weekDays.push({
         day: dayIndex,
         label: DAY_LABELS[dayIndex],
         title,
-        done: days.has(key),
+        done,
         isToday: dayIndex === todayIdx,
-        isRest: !tplNames.length && !muscle,
+        isRest: !done && !tplNames.length && !muscle,
       });
+
     }
     setProgram(weekDays);
 
