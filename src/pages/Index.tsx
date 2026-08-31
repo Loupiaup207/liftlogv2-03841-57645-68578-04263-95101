@@ -116,22 +116,33 @@ const Index = () => {
     };
   }, []);
  
-  // iOS PWA: quand le clavier s'ouvre, visualViewport rétrécit et la barre
-  // fixed remonte. On compense dynamiquement l'offset et on remet 0 à la fermeture.
+  // iOS PWA : masque la bottom nav dès qu'un champ de saisie prend le focus,
+  // la réaffiche au blur après un court délai et recentre le layout viewport.
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
   useEffect(() => {
-    const vv = window.visualViewport;
-    if (!vv) return;
-    const update = () => {
-      const offset = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
-      const el = bottomNavRef.current;
-      if (el) el.style.setProperty("--kb-offset", `${offset > 60 ? offset : 0}px`);
+    const isInputLike = (el: EventTarget | null) => {
+      if (!(el instanceof HTMLElement)) return false;
+      const tag = el.tagName;
+      return tag === "INPUT" || tag === "TEXTAREA" || el.isContentEditable;
     };
-    update();
-    vv.addEventListener("resize", update);
-    vv.addEventListener("scroll", update);
+
+    const onFocusIn = (e: FocusEvent) => {
+      if (isInputLike(e.target)) setKeyboardOpen(true);
+    };
+
+    const onFocusOut = (e: FocusEvent) => {
+      if (!isInputLike(e.target)) return;
+      window.setTimeout(() => {
+        setKeyboardOpen(false);
+        window.scrollTo(0, 0);
+      }, 100);
+    };
+
+    document.addEventListener("focusin", onFocusIn);
+    document.addEventListener("focusout", onFocusOut);
     return () => {
-      vv.removeEventListener("resize", update);
-      vv.removeEventListener("scroll", update);
+      document.removeEventListener("focusin", onFocusIn);
+      document.removeEventListener("focusout", onFocusOut);
     };
   }, []);
 
