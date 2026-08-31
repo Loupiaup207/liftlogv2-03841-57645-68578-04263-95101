@@ -193,7 +193,7 @@ const Index = () => {
       )}
 
       {/* Main */}
-      <main onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ flex: 1, overflowY: "auto", marginTop: topHeight, paddingBottom: "calc(4rem + env(safe-area-inset-bottom))", WebkitOverflowScrolling: "touch" }}>
+      <main onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ flex: 1, overflowY: "auto", marginTop: topHeight, paddingBottom: "calc(6.5rem + env(safe-area-inset-bottom))", WebkitOverflowScrolling: "touch" }}>
         <div>
           <div className={activeTab === "home" ? swipeAnim : "hidden"}>
             <Home onNavigate={(t) => {
