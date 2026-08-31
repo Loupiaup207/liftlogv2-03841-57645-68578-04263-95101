@@ -116,17 +116,25 @@ const Index = () => {
     };
   }, []);
  
-  // Bottom nav: assurer qu'il est en dessous des dialogues (overlay Radix = z-50).
-  // Pas de compensation clavier iOS: on garde la barre fixe au bas de la fenêtre.
+  // iOS PWA: quand le clavier s'ouvre, visualViewport rétrécit et la barre
+  // fixed remonte. On compense dynamiquement l'offset et on remet 0 à la fermeture.
   useEffect(() => {
-    const style = document.createElement('style');
-    style.id = 'bottom-nav-override';
-    // Rien à forcer: la barre est en z-30, l'overlay Radix (z-50) la couvre naturellement
-    // ce qui l'assombrit et empêche l'interaction pendant qu'un dialogue est ouvert.
-    style.textContent = '';
-    document.head.appendChild(style);
-    return () => document.getElementById('bottom-nav-override')?.remove();
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => {
+      const offset = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+      const el = bottomNavRef.current;
+      if (el) el.style.setProperty("--kb-offset", `${offset > 60 ? offset : 0}px`);
+    };
+    update();
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+    };
   }, []);
+
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
