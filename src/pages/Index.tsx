@@ -193,7 +193,7 @@ const Index = () => {
     : "calc(7rem + env(safe-area-inset-top))";
 
   return (
-    <div style={{ height: "100dvh", overflow: "hidden", display: "flex", flexDirection: "column", background: "hsl(var(--background))" }}>
+    <div style={{ height: "var(--app-height, 100dvh)", overflow: "hidden", display: "flex", flexDirection: "column", background: "hsl(var(--background))" }}>
 
       {/* Header */}
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 40, height: "calc(3.5rem + env(safe-area-inset-top))", paddingTop: "env(safe-area-inset-top)", display: "flex", alignItems: "center", justifyContent: "center", background: "hsl(var(--background))" }}>
