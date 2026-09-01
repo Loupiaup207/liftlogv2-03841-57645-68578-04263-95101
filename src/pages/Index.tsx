@@ -127,14 +127,32 @@ const Index = () => {
     };
 
     const onFocusIn = (e: FocusEvent) => {
-      if (isInputLike(e.target)) setKeyboardOpen(true);
+      if (!isInputLike(e.target)) return;
+      setKeyboardOpen(true);
+      // Neutralise le scrollIntoView automatique du navigateur au focus :
+      // on restaure la position des conteneurs scrollables et de la fenêtre.
+      const el = e.target as HTMLElement;
+      const scrollers: { node: Element; top: number; left: number }[] = [];
+      let p: Element | null = el.parentElement;
+      while (p) {
+        if (p.scrollHeight > p.clientHeight || p.scrollWidth > p.clientWidth) {
+          scrollers.push({ node: p, top: p.scrollTop, left: p.scrollLeft });
+        }
+        p = p.parentElement;
+      }
+      requestAnimationFrame(() => {
+        scrollers.forEach(({ node, top, left }) => {
+          node.scrollTop = top;
+          node.scrollLeft = left;
+        });
+        if (window.scrollY !== 0 || window.scrollX !== 0) window.scrollTo(0, 0);
+      });
     };
 
     const onFocusOut = (e: FocusEvent) => {
       if (!isInputLike(e.target)) return;
       window.setTimeout(() => {
         setKeyboardOpen(false);
-        window.scrollTo(0, 0);
       }, 100);
     };
 
@@ -175,7 +193,7 @@ const Index = () => {
     : "calc(7rem + env(safe-area-inset-top))";
 
   return (
-    <div style={{ height: "var(--app-height, 100vh)", display: "flex", flexDirection: "column", background: "hsl(var(--background))" }}>
+    <div style={{ height: "100dvh", overflow: "hidden", display: "flex", flexDirection: "column", background: "hsl(var(--background))" }}>
 
       {/* Header */}
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 40, height: "calc(3.5rem + env(safe-area-inset-top))", paddingTop: "env(safe-area-inset-top)", display: "flex", alignItems: "center", justifyContent: "center", background: "hsl(var(--background))" }}>
