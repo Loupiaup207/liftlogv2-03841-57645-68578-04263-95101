@@ -175,7 +175,7 @@ const Index = () => {
     : "calc(7rem + env(safe-area-inset-top))";
 
   return (
-    <div style={{ height: "var(--app-height, 100vh)", display: "flex", flexDirection: "column", overflow: "hidden", background: "hsl(var(--background))" }}>
+    <div style={{ height: "var(--app-height, 100vh)", display: "flex", flexDirection: "column", background: "hsl(var(--background))" }}>
 
       {/* Header */}
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 40, height: "calc(3.5rem + env(safe-area-inset-top))", paddingTop: "env(safe-area-inset-top)", display: "flex", alignItems: "center", justifyContent: "center", background: "hsl(var(--background))" }}>
@@ -229,10 +229,10 @@ const Index = () => {
       {/* Bottom Nav flottante — z-30 pour rester sous les overlays de dialogue (z-50) */}
         <div
           ref={bottomNavRef}
-          className="bottom-nav-bar bg-card/80 border border-border/60 backdrop-blur-xl"
+          className={`bottom-nav-bar bg-card/80 border border-border/60 backdrop-blur-xl transition-opacity duration-200 ${keyboardOpen ? "opacity-0 pointer-events-none" : "opacity-100"}`}
           style={{
             position: "fixed",
-            bottom: "calc(env(safe-area-inset-bottom) + 18px + var(--kb-offset, 0px))",
+            bottom: "calc(env(safe-area-inset-bottom) + 18px)",
             left: 16,
             right: 16,
             maxWidth: 430,
@@ -243,7 +243,6 @@ const Index = () => {
             borderRadius: 28,
             boxShadow: "0 12px 32px -8px hsl(0 0% 0% / 0.45), 0 2px 8px hsl(0 0% 0% / 0.25)",
             WebkitBackdropFilter: "blur(20px)",
-            transition: "bottom 0.2s ease",
           }}
         >
           {isTraining ? (
