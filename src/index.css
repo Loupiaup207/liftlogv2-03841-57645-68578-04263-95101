@@ -59,6 +59,7 @@
     /* Hauteur fixe : le clavier virtuel se superpose sans redimensionner */
     height: 100%;
     height: 100dvh;
+    height: var(--app-height, 100dvh);
     overflow: hidden;
     -webkit-text-size-adjust: 100%;
     -webkit-user-select: none;
@@ -77,6 +78,7 @@
     font-size: 14px;
     height: 100%;
     height: 100dvh;
+    height: var(--app-height, 100dvh);
     margin: 0;
     padding: 0;
     /* Neutralise les injections Radix UI (margin/padding inline) */
@@ -95,6 +97,7 @@
   #root {
     /* Le scroll se fait uniquement dans les conteneurs enfants */
     height: 100dvh;
+    height: var(--app-height, 100dvh);
     overflow: hidden;
     display: flex;
     flex-direction: column;
