@@ -298,9 +298,20 @@ export const SessionRunner = ({ open, onOpenChange, template, plannedExercises, 
                     </p>
                     {ex.notes && <p className="text-[11px] text-muted-foreground italic">{ex.notes}</p>}
                   </div>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={() => removeTodayExercise(ex.exercise_id)}>
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      title="Historique"
+                      onClick={() => setHistoryExercise({ id: ex.exercise_id, name: ex.name })}
+                    >
+                      <History className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => removeTodayExercise(ex.exercise_id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Ajustements du jour */}
