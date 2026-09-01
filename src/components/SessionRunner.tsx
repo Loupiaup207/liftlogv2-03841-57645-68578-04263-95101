@@ -5,10 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Flag, Lightbulb, Plus, Search, Trash2, X } from "lucide-react";
+import { Check, Flag, History, Lightbulb, Plus, Search, Trash2, X } from "lucide-react";
 import { supabase } from "@/lib/supabase-helpers";
 import { useToast } from "@/hooks/use-toast";
 import { useTimer, fmtTime } from "@/contexts/TimerContext";
+import { ExerciseHistoryDialog } from "@/components/ExerciseHistoryDialog";
 
 export interface RunnerExercise {
   exercise_id: string;
@@ -58,6 +59,7 @@ export const SessionRunner = ({ open, onOpenChange, template, plannedExercises, 
   const [picking, setPicking] = useState(false);
   const [search, setSearch] = useState("");
   const [advice, setAdvice] = useState<Record<string, string>>({});
+  const [historyExercise, setHistoryExercise] = useState<{ id: string; name: string } | null>(null);
   const [inputs, setInputs] = useState<Record<string, { reps: string; weight: string; rpe: string }>>({});
 
   // ---- init / restore draft --------------------------------------------
@@ -273,6 +275,7 @@ export const SessionRunner = ({ open, onOpenChange, template, plannedExercises, 
   }, [open]);
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-screen p-0">
         <DialogHeader className="px-4 pt-4 pb-2 border-b border-border" style={{ paddingTop: "calc(1rem + env(safe-area-inset-top))" }}>
@@ -450,5 +453,14 @@ export const SessionRunner = ({ open, onOpenChange, template, plannedExercises, 
         </div>
       </DialogContent>
     </Dialog>
+    {historyExercise && (
+      <ExerciseHistoryDialog
+        open={!!historyExercise}
+        onOpenChange={(o) => !o && setHistoryExercise(null)}
+        exerciseId={historyExercise.id}
+        exerciseName={historyExercise.name}
+      />
+    )}
+    </>
   );
 };
