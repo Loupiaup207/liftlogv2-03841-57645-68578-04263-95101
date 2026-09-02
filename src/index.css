@@ -67,6 +67,7 @@
     user-select: none;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    overscroll-behavior: none;
   }
  
   html::-webkit-scrollbar {
@@ -102,6 +103,7 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    contain: layout style;
   }
  
   button, [role="button"] {
@@ -133,6 +135,7 @@
 
   .content-wrapper {
     padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+    overscroll-behavior: contain;
   }
 
   .pwa-standalone .content-wrapper {
