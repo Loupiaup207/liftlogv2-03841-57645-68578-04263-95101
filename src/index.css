@@ -24,6 +24,7 @@
     --input: 0 0% 20%;
     --ring: 0 0% 40%;
     --radius: 1rem;
+    --safe-bottom: 0px;
   }
  
   .light {
@@ -122,6 +123,21 @@
 
   /* Bottom nav reste visible sous l'overlay du dialogue (z-30 < overlay z-50),
      ce qui l'assombrit naturellement et empêche l'interaction. */
+
+  /* Safe-area pour la bottom nav flottante en PWA standalone iOS */
+  .bottom-nav-bar {
+    bottom: 16px;
+    bottom: constant(safe-area-inset-bottom);
+    bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+
+  .content-wrapper {
+    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+  }
+
+  .pwa-standalone .content-wrapper {
+    padding-bottom: calc(80px + var(--safe-bottom));
+  }
 
   /* Masquer la scrollbar (utilisé par le wheel picker iOS) */
   .no-scrollbar::-webkit-scrollbar { display: none; }
