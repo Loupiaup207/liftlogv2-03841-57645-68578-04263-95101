@@ -222,7 +222,7 @@ const Index = () => {
       )}
 
       {/* Main */}
-      <main onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ flex: 1, overflowY: "auto", marginTop: topHeight, paddingBottom: "calc(6.5rem + env(safe-area-inset-bottom))", WebkitOverflowScrolling: "touch" }}>
+      <main className="content-wrapper" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ flex: 1, overflowY: "auto", marginTop: topHeight, WebkitOverflowScrolling: "touch" }}>
         <div>
           <div className={activeTab === "home" ? swipeAnim : "hidden"}>
             <Home onNavigate={(t) => {
@@ -250,7 +250,6 @@ const Index = () => {
           className={`bottom-nav-bar bg-card/80 border border-border/60 backdrop-blur-xl transition-opacity duration-200 ${keyboardOpen ? "opacity-0 pointer-events-none" : "opacity-100"}`}
           style={{
             position: "fixed",
-            bottom: "calc(env(safe-area-inset-bottom) + 18px)",
             left: 16,
             right: 16,
             maxWidth: 430,
