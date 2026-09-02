@@ -58,7 +58,7 @@ const DialogContent = React.forwardRef<
           : "fixed left-[50%] top-[50%] z-50 grid w-[calc(100%-1rem)] max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg data-[state=open]:animate-dialog-slide-from-right data-[state=closed]:animate-dialog-slide-to-left rounded-2xl",
         className,
       )}
-      style={isFullscreen ? { height: '100dvh', maxHeight: '100dvh', paddingBottom: 'env(safe-area-inset-bottom)' } : undefined}
+      style={isFullscreen ? { height: 'var(--app-height, 100dvh)', maxHeight: 'var(--app-height, 100dvh)' } : undefined}
       onOpenAutoFocus={handleOpenAutoFocus}
       onCloseAutoFocus={handleCloseAutoFocus}
       {...props}
