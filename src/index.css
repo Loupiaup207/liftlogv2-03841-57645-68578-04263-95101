@@ -101,6 +101,7 @@
     height: 100dvh;
     height: var(--app-height, 100dvh);
     overflow: hidden;
+    position: relative;
     display: flex;
     flex-direction: column;
     contain: layout style;
