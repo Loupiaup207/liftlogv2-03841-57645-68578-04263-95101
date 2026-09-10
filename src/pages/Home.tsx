@@ -181,7 +181,15 @@ const Home = ({ onNavigate }: HomeProps) => {
         icon={<LineChartIcon className="h-3.5 w-3.5" />}
         action={
           chartWeights.length > 1 ? (
-            <Delta value={Math.round(weightDelta * 10)} />
+            <span
+              className={cn(
+                "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium tabular-nums",
+                weightDelta >= 0 ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"
+              )}
+            >
+              {weightDelta > 0 ? "+" : ""}
+              {weightDelta} kg
+            </span>
           ) : undefined
         }
       >
