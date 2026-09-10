@@ -49,6 +49,11 @@ const updateStandaloneSafeArea = () => {
 setAppHeight();
 updateStandaloneSafeArea();
 window.addEventListener("resize", setAppHeight);
+// Après la fermeture du clavier, on recalcule la hauteur réelle
+window.addEventListener("focusout", () => {
+  setTimeout(setAppHeight, 150);
+  setTimeout(setAppHeight, 400);
+});
 window.addEventListener("orientationchange", setAppHeight);
 window.addEventListener("pageshow", () => {
   setAppHeight();
