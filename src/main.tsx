@@ -6,7 +6,18 @@ import { queryClient } from "./lib/queryClient";
 
 // Corrige l'espace vide en bas au premier chargement de la PWA iOS :
 // on force un recalcul de la hauteur réelle du viewport après le premier rendu.
+// Vrai : un champ de saisie a le focus (clavier virtuel probablement ouvert)
+const isTypingTarget = () => {
+  const el = document.activeElement as HTMLElement | null;
+  if (!el) return false;
+  const tag = el.tagName;
+  return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || el.isContentEditable;
+};
+
 const setAppHeight = () => {
+  // Ne jamais réduire la hauteur pendant que le clavier est ouvert :
+  // sinon les fenêtres plein écran rétrécissent et laissent une grande zone noire.
+  if (isTypingTarget()) return;
   const h = window.innerHeight;
   document.documentElement.style.setProperty("--app-height", `${h}px`);
 };
