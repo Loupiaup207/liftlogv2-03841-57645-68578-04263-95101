@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { Activity, Dumbbell, Flame, LineChart as LineChartIcon, Sparkles, TrendingUp } from "lucide-react";
-import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Activity, Dumbbell, Flame, LineChart as LineChartIcon, Sparkles, TrendingUp, ChevronRight } from "lucide-react";
+import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { HomeCard, ProgressLine, Delta } from "@/components/home/HomeCard";
 import { useHomeData } from "@/hooks/useHomeData";
 import { cn } from "@/lib/utils";
@@ -14,8 +14,14 @@ const Gauge = ({ value }: { value: number }) => {
   const c = 2 * Math.PI * r;
   const off = c - (Math.min(100, Math.max(0, value)) / 100) * c;
   return (
-    <div className="relative h-32 w-32">
+    <div className="relative h-32 w-32 shrink-0">
       <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
+        <defs>
+          <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="hsl(var(--primary))" />
+            <stop offset="100%" stopColor="hsl(var(--primary) / 0.55)" />
+          </linearGradient>
+        </defs>
         <circle cx="60" cy="60" r={r} strokeWidth="8" className="stroke-muted" fill="none" />
         <circle
           cx="60"
@@ -24,13 +30,14 @@ const Gauge = ({ value }: { value: number }) => {
           strokeWidth="8"
           strokeLinecap="round"
           fill="none"
-          className="stroke-foreground transition-all duration-1000 ease-out"
+          stroke="url(#gaugeGrad)"
+          className="transition-all duration-1000 ease-out"
           strokeDasharray={c}
           strokeDashoffset={off}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-2xl font-light tabular-nums">{value}</span>
+        <span className="text-3xl font-light tabular-nums">{value}</span>
         <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">score</span>
       </div>
     </div>
@@ -53,6 +60,27 @@ const Home = ({ onNavigate }: HomeProps) => {
     chartWeights.length > 1
       ? Math.round((chartWeights[chartWeights.length - 1].value - chartWeights[0].value) * 10) / 10
       : 0;
+
+  const stats = [
+    {
+      icon: Flame,
+      value: `${streak}`,
+      label: "série j.",
+      chip: "bg-orange-500/10 text-orange-500",
+    },
+    {
+      icon: Dumbbell,
+      value: `${metrics.totalWorkouts}`,
+      label: `séances (${metrics.workoutsThisWeek} sem.)`,
+      chip: "bg-primary/10 text-primary",
+    },
+    {
+      icon: Activity,
+      value: `${Math.round(metrics.totalVolume / 1000)}t`,
+      label: `volume (${Math.round(metrics.volumeThisWeek / 1000)}t sem.)`,
+      chip: "bg-emerald-500/10 text-emerald-500",
+    },
+  ];
 
   return (
     <div className="mx-auto w-full max-w-[430px] space-y-3 px-3 pb-8 pt-2">
@@ -84,32 +112,22 @@ const Home = ({ onNavigate }: HomeProps) => {
 
       {/* Stats rapides */}
       <div className="grid grid-cols-3 gap-3">
-        <HomeCard delay={80} className="p-3">
-          <Flame className="mb-1 h-4 w-4 text-muted-foreground" />
-          <p className="text-xl font-light tabular-nums">{streak}</p>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">série j.</p>
-        </HomeCard>
-        <HomeCard delay={110} className="p-3">
-          <Dumbbell className="mb-1 h-4 w-4 text-muted-foreground" />
-          <p className="text-xl font-light tabular-nums">{metrics.totalWorkouts}</p>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-            séances ({metrics.workoutsThisWeek} sem.)
-          </p>
-        </HomeCard>
-        <HomeCard delay={140} className="p-3">
-          <Activity className="mb-1 h-4 w-4 text-muted-foreground" />
-          <p className="text-xl font-light tabular-nums">{Math.round(metrics.totalVolume / 1000)}t</p>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-            volume ({Math.round(metrics.volumeThisWeek / 1000)}t sem.)
-          </p>
-        </HomeCard>
+        {stats.map((s, i) => (
+          <HomeCard key={s.label} delay={80 + i * 30} className="p-3">
+            <span className={cn("mb-1.5 inline-flex h-7 w-7 items-center justify-center rounded-full", s.chip)}>
+              <s.icon className="h-3.5 w-3.5" />
+            </span>
+            <p className="text-xl font-light tabular-nums">{s.value}</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground leading-tight">{s.label}</p>
+          </HomeCard>
+        ))}
       </div>
 
       {/* Nutrition */}
       <HomeCard
         delay={170}
         title="Nutrition du jour"
-        icon={<Sparkles className="h-3.5 w-3.5 text-muted-foreground" />}
+        icon={<Sparkles className="h-3.5 w-3.5" />}
         onClick={() => onNavigate?.("nutrition")}
       >
         <div className="space-y-2.5">
@@ -124,7 +142,7 @@ const Home = ({ onNavigate }: HomeProps) => {
       <HomeCard
         delay={200}
         title="Semaine"
-        icon={<Dumbbell className="h-3.5 w-3.5 text-muted-foreground" />}
+        icon={<Dumbbell className="h-3.5 w-3.5" />}
         onClick={() => onNavigate?.("sessions")}
       >
         <div className="space-y-1">
@@ -133,20 +151,24 @@ const Home = ({ onNavigate }: HomeProps) => {
               key={d.day}
               className={cn(
                 "flex items-center justify-between rounded-xl px-2.5 py-2",
-                d.isToday && "bg-accent"
+                d.isToday && "bg-primary/10 ring-1 ring-primary/20"
               )}
             >
               <div className="flex min-w-0 items-center gap-2.5">
                 <span
                   className={cn(
                     "h-1.5 w-1.5 shrink-0 rounded-full",
-                    d.done ? "bg-foreground" : d.isRest ? "bg-muted-foreground/30" : "bg-muted-foreground/60"
+                    d.done ? "bg-primary" : d.isRest ? "bg-muted-foreground/30" : "bg-muted-foreground/60"
                   )}
                 />
                 <span className="w-16 shrink-0 text-xs text-muted-foreground">{d.label.slice(0, 3)}</span>
                 <span className={cn("truncate text-xs", d.isRest && "text-muted-foreground")}>{d.title}</span>
               </div>
-              {d.done && <span className="text-[10px] uppercase tracking-wider text-muted-foreground">fait</span>}
+              {d.done ? (
+                <span className="text-[10px] uppercase tracking-wider text-primary">fait</span>
+              ) : d.isToday ? (
+                <span className="text-[10px] uppercase tracking-wider text-primary/70">auj.</span>
+              ) : null}
             </div>
           ))}
         </div>
@@ -156,20 +178,23 @@ const Home = ({ onNavigate }: HomeProps) => {
       <HomeCard
         delay={230}
         title="Poids corporel"
-        icon={<LineChartIcon className="h-3.5 w-3.5 text-muted-foreground" />}
+        icon={<LineChartIcon className="h-3.5 w-3.5" />}
         action={
           chartWeights.length > 1 ? (
-            <span className="text-xs tabular-nums text-muted-foreground">
-              {weightDelta > 0 ? "+" : ""}
-              {weightDelta} kg
-            </span>
+            <Delta value={Math.round(weightDelta * 10)} />
           ) : undefined
         }
       >
         {chartWeights.length > 1 ? (
           <div className="h-32">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartWeights} margin={{ top: 8, right: 8, bottom: 0, left: -20 }}>
+              <AreaChart data={chartWeights} margin={{ top: 8, right: 8, bottom: 0, left: -20 }}>
+                <defs>
+                  <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
+                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
                 <XAxis dataKey="date" hide />
                 <YAxis
                   domain={["dataMin - 1", "dataMax + 1"]}
@@ -186,15 +211,16 @@ const Home = ({ onNavigate }: HomeProps) => {
                     fontSize: 12,
                   }}
                 />
-                <Line
+                <Area
                   type="monotone"
                   dataKey="value"
-                  stroke="hsl(var(--foreground))"
+                  stroke="hsl(var(--primary))"
                   strokeWidth={2}
+                  fill="url(#weightGrad)"
                   dot={false}
                   animationDuration={900}
                 />
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         ) : (
@@ -207,10 +233,12 @@ const Home = ({ onNavigate }: HomeProps) => {
       {/* Raccourci entraînement */}
       <HomeCard delay={260} onClick={() => onNavigate?.("training")} className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <TrendingUp className="h-4 w-4" />
+          </span>
           <span className="text-sm">Ouvrir l'entraînement</span>
         </div>
-        <span className="text-muted-foreground">→</span>
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
       </HomeCard>
     </div>
   );
