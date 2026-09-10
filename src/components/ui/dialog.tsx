@@ -49,7 +49,7 @@ const DialogContent = React.forwardRef<
  
   return (
   <DialogPortal>
-    <DialogOverlay />
+    <DialogOverlay className={isFullscreen ? "bg-background" : undefined} />
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
