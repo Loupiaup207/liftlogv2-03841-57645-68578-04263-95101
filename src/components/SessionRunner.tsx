@@ -62,6 +62,12 @@ export const SessionRunner = ({ open, onOpenChange, template, plannedExercises, 
   const [historyExercise, setHistoryExercise] = useState<{ id: string; name: string } | null>(null);
   const [inputs, setInputs] = useState<Record<string, { reps: string; weight: string; rpe: string }>>({});
 
+  useEffect(() => {
+    if (!open) return;
+    document.body.classList.add("session-runner-open");
+    return () => document.body.classList.remove("session-runner-open");
+  }, [open]);
+
   // ---- init / restore draft --------------------------------------------
   useEffect(() => {
     if (!open) return;
@@ -277,15 +283,15 @@ export const SessionRunner = ({ open, onOpenChange, template, plannedExercises, 
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-screen p-0">
-        <DialogHeader className="px-4 pt-4 pb-2 border-b border-border" style={{ paddingTop: "calc(1rem + env(safe-area-inset-top))" }}>
+      <DialogContent className="session-runner-dialog w-screen p-0">
+        <DialogHeader className="session-runner-header px-4 pt-4 pb-2 border-b border-border" style={{ paddingTop: "calc(1rem + env(safe-area-inset-top))" }}>
           <DialogTitle className="text-base font-light tracking-wide flex items-center justify-between pr-8">
             <span className="truncate">{template.name}</span>
             <span className="text-xs text-muted-foreground tabular-nums">{fmtTime(elapsed)}</span>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        <div className="session-runner-scroll flex-1 overflow-y-auto px-4 py-4 space-y-3">
           {loading && <p className="text-xs text-muted-foreground">Chargement...</p>}
 
           {draft?.exercises.map((ex) => {
@@ -442,7 +448,7 @@ export const SessionRunner = ({ open, onOpenChange, template, plannedExercises, 
           </p>
         </div>
 
-        <div className="px-4 py-3 border-t border-border flex gap-2" style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}>
+        <div className="session-runner-footer px-4 py-3 border-t border-border flex gap-2" style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}>
           <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
             Reprendre plus tard
           </Button>
