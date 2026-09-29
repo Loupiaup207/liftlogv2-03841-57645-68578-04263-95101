@@ -24,7 +24,6 @@
     --input: 0 0% 20%;
     --ring: 0 0% 40%;
     --radius: 1rem;
-    --safe-bottom: 0px;
   }
  
   .light {
@@ -67,7 +66,6 @@
     user-select: none;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    overscroll-behavior: none;
   }
  
   html::-webkit-scrollbar {
@@ -101,10 +99,8 @@
     height: 100dvh;
     height: var(--app-height, 100dvh);
     overflow: hidden;
-    position: relative;
     display: flex;
     flex-direction: column;
-    contain: layout style;
   }
  
   button, [role="button"] {
@@ -126,50 +122,6 @@
 
   /* Bottom nav reste visible sous l'overlay du dialogue (z-30 < overlay z-50),
      ce qui l'assombrit naturellement et empêche l'interaction. */
-
-  /* Safe-area pour la bottom nav flottante en PWA standalone iOS */
-  .bottom-nav-bar {
-    bottom: 16px;
-    bottom: constant(safe-area-inset-bottom);
-    bottom: calc(16px + env(safe-area-inset-bottom));
-  }
-
-  .content-wrapper {
-    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
-    overscroll-behavior: contain;
-  }
-
-  .pwa-standalone .content-wrapper {
-    padding-bottom: calc(80px + var(--safe-bottom));
-  }
-
-  /* La séance reste ancrée au viewport de l'app quand le clavier iOS apparaît. */
-  .session-runner-dialog {
-    position: absolute !important;
-    inset: 0 !important;
-    height: var(--app-height, 100dvh) !important;
-    max-height: var(--app-height, 100dvh) !important;
-    overflow: hidden;
-    contain: layout style;
-  }
-
-  .session-runner-header,
-  .session-runner-footer {
-    flex: 0 0 auto;
-  }
-
-  .session-runner-scroll {
-    min-height: 0;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* iOS zoome et décale le viewport si la police d'un champ est sous 16px. */
-  .session-runner-dialog input,
-  .session-runner-dialog textarea,
-  .session-runner-dialog select {
-    font-size: 16px;
-  }
 
   /* Masquer la scrollbar (utilisé par le wheel picker iOS) */
   .no-scrollbar::-webkit-scrollbar { display: none; }

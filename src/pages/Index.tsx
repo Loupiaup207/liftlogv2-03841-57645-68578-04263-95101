@@ -76,9 +76,6 @@ const Index = () => {
     const doc = document.documentElement;
 
     const computeHeight = () => {
-      // La séance utilise la hauteur mémorisée avant l'ouverture du clavier.
-      // Ne pas laisser visualViewport la réduire pendant la saisie.
-      if (document.body.classList.contains("session-runner-open")) return;
       const vh = window.visualViewport?.height ?? window.innerHeight;
       doc.style.setProperty("--app-height", `${Math.round(vh)}px`);
     };
@@ -196,7 +193,7 @@ const Index = () => {
     : "calc(7rem + env(safe-area-inset-top))";
 
   return (
-    <div style={{ height: "var(--app-height, 100dvh)", overflow: "hidden", position: "relative", display: "flex", flexDirection: "column", background: "hsl(var(--background))" }}>
+    <div style={{ height: "var(--app-height, 100dvh)", overflow: "hidden", display: "flex", flexDirection: "column", background: "hsl(var(--background))" }}>
 
       {/* Header */}
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 40, height: "calc(3.5rem + env(safe-area-inset-top))", paddingTop: "env(safe-area-inset-top)", display: "flex", alignItems: "center", justifyContent: "center", background: "hsl(var(--background))" }}>
@@ -225,7 +222,7 @@ const Index = () => {
       )}
 
       {/* Main */}
-      <main className="content-wrapper" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ flex: 1, overflowY: "auto", marginTop: topHeight, WebkitOverflowScrolling: "touch" }}>
+      <main onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ flex: 1, overflowY: "auto", marginTop: topHeight, paddingBottom: "calc(6.5rem + env(safe-area-inset-bottom))", WebkitOverflowScrolling: "touch" }}>
         <div>
           <div className={activeTab === "home" ? swipeAnim : "hidden"}>
             <Home onNavigate={(t) => {
@@ -252,7 +249,8 @@ const Index = () => {
           ref={bottomNavRef}
           className={`bottom-nav-bar bg-card/80 border border-border/60 backdrop-blur-xl transition-opacity duration-200 ${keyboardOpen ? "opacity-0 pointer-events-none" : "opacity-100"}`}
           style={{
-            position: "absolute",
+            position: "fixed",
+            bottom: "calc(env(safe-area-inset-bottom) + 18px)",
             left: 16,
             right: 16,
             maxWidth: 430,
