@@ -143,6 +143,34 @@
     padding-bottom: calc(80px + var(--safe-bottom));
   }
 
+  /* La séance reste ancrée au viewport de l'app quand le clavier iOS apparaît. */
+  .session-runner-dialog {
+    position: absolute !important;
+    inset: 0 !important;
+    height: var(--app-height, 100dvh) !important;
+    max-height: var(--app-height, 100dvh) !important;
+    overflow: hidden;
+    contain: layout style;
+  }
+
+  .session-runner-header,
+  .session-runner-footer {
+    flex: 0 0 auto;
+  }
+
+  .session-runner-scroll {
+    min-height: 0;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* iOS zoome et décale le viewport si la police d'un champ est sous 16px. */
+  .session-runner-dialog input,
+  .session-runner-dialog textarea,
+  .session-runner-dialog select {
+    font-size: 16px;
+  }
+
   /* Masquer la scrollbar (utilisé par le wheel picker iOS) */
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
