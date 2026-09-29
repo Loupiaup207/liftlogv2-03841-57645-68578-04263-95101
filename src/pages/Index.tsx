@@ -76,6 +76,9 @@ const Index = () => {
     const doc = document.documentElement;
 
     const computeHeight = () => {
+      // La séance utilise la hauteur mémorisée avant l'ouverture du clavier.
+      // Ne pas laisser visualViewport la réduire pendant la saisie.
+      if (document.body.classList.contains("session-runner-open")) return;
       const vh = window.visualViewport?.height ?? window.innerHeight;
       doc.style.setProperty("--app-height", `${Math.round(vh)}px`);
     };

@@ -62,6 +62,12 @@ export const SessionRunner = ({ open, onOpenChange, template, plannedExercises, 
   const [historyExercise, setHistoryExercise] = useState<{ id: string; name: string } | null>(null);
   const [inputs, setInputs] = useState<Record<string, { reps: string; weight: string; rpe: string }>>({});
 
+  useEffect(() => {
+    if (!open) return;
+    document.body.classList.add("session-runner-open");
+    return () => document.body.classList.remove("session-runner-open");
+  }, [open]);
+
   // ---- init / restore draft --------------------------------------------
   useEffect(() => {
     if (!open) return;
