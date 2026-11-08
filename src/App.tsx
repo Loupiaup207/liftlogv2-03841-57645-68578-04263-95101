@@ -16,8 +16,10 @@ import { initializeWebNotifications } from "./lib/notifications";
 
 import { queryClient } from "./lib/queryClient";
 import { TimerProvider } from "./contexts/TimerContext";
+import { useIOSViewportFix } from "./hooks/useIOSViewportFix";
 
 const App = () => {
+  useIOSViewportFix();
 
   useEffect(() => {
     // Initialize web notifications on app load
