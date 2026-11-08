@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { BarChart3, BookOpen, CalendarDays, History, Home as HomeIcon, User, Wrench } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Library from "./Library";
@@ -39,7 +39,6 @@ const Index = () => {
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const bottomNavRef = useRef<HTMLDivElement>(null);
 
   const goToTab = (target: Tab, dir?: "left" | "right") => {
     if (target === activeTab) return;
@@ -70,101 +69,6 @@ const Index = () => {
   };
 
  
-  // Fix iOS PWA viewport height — use visualViewport when available and
-  // recalc on several events (resize/orientation/pageshow/focus/visibility).
-  useEffect(() => {
-    const doc = document.documentElement;
-
-    const computeHeight = () => {
-      const vh = window.visualViewport?.height ?? window.innerHeight;
-      doc.style.setProperty("--app-height", `${Math.round(vh)}px`);
-    };
-
-    // Call immediately and a couple of times after to catch async layout shifts
-    computeHeight();
-    const t1 = window.setTimeout(computeHeight, 250);
-    const t2 = window.setTimeout(computeHeight, 750);
-
-    const handleOrientationChange = () => {
-      // iOS sometimes needs a small delay
-      setTimeout(computeHeight, 400);
-    };
-
-    window.addEventListener("resize", computeHeight);
-    window.addEventListener("orientationchange", handleOrientationChange);
-    window.addEventListener("pageshow", computeHeight);
-    window.addEventListener("focus", computeHeight);
-    document.addEventListener("visibilitychange", () => { if (!document.hidden) computeHeight(); });
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", computeHeight);
-      window.visualViewport.addEventListener("scroll", computeHeight);
-    }
-
-    return () => {
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
-      window.removeEventListener("resize", computeHeight);
-      window.removeEventListener("orientationchange", handleOrientationChange);
-      window.removeEventListener("pageshow", computeHeight);
-      window.removeEventListener("focus", computeHeight);
-      document.removeEventListener("visibilitychange", () => { if (!document.hidden) computeHeight(); });
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener("resize", computeHeight);
-        window.visualViewport.removeEventListener("scroll", computeHeight);
-      }
-    };
-  }, []);
- 
-  // iOS PWA : masque la bottom nav dès qu'un champ de saisie prend le focus,
-  // la réaffiche au blur après un court délai et recentre le layout viewport.
-  const [keyboardOpen, setKeyboardOpen] = useState(false);
-  useEffect(() => {
-    const isInputLike = (el: EventTarget | null) => {
-      if (!(el instanceof HTMLElement)) return false;
-      const tag = el.tagName;
-      return tag === "INPUT" || tag === "TEXTAREA" || el.isContentEditable;
-    };
-
-    const onFocusIn = (e: FocusEvent) => {
-      if (!isInputLike(e.target)) return;
-      setKeyboardOpen(true);
-      // Neutralise le scrollIntoView automatique du navigateur au focus :
-      // on restaure la position des conteneurs scrollables et de la fenêtre.
-      const el = e.target as HTMLElement;
-      const scrollers: { node: Element; top: number; left: number }[] = [];
-      let p: Element | null = el.parentElement;
-      while (p) {
-        if (p.scrollHeight > p.clientHeight || p.scrollWidth > p.clientWidth) {
-          scrollers.push({ node: p, top: p.scrollTop, left: p.scrollLeft });
-        }
-        p = p.parentElement;
-      }
-      requestAnimationFrame(() => {
-        scrollers.forEach(({ node, top, left }) => {
-          node.scrollTop = top;
-          node.scrollLeft = left;
-        });
-        if (window.scrollY !== 0 || window.scrollX !== 0) window.scrollTo(0, 0);
-      });
-    };
-
-    const onFocusOut = (e: FocusEvent) => {
-      if (!isInputLike(e.target)) return;
-      window.setTimeout(() => {
-        setKeyboardOpen(false);
-      }, 100);
-    };
-
-    document.addEventListener("focusin", onFocusIn);
-    document.addEventListener("focusout", onFocusOut);
-    return () => {
-      document.removeEventListener("focusin", onFocusIn);
-      document.removeEventListener("focusout", onFocusOut);
-    };
-  }, []);
-
-
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) navigate("/auth");
@@ -193,7 +97,7 @@ const Index = () => {
     : "calc(7rem + env(safe-area-inset-top))";
 
   return (
-    <div style={{ height: "var(--app-height, 100dvh)", overflow: "hidden", display: "flex", flexDirection: "column", background: "hsl(var(--background))" }}>
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background">
 
       {/* Header */}
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 40, height: "calc(3.5rem + env(safe-area-inset-top))", paddingTop: "env(safe-area-inset-top)", display: "flex", alignItems: "center", justifyContent: "center", background: "hsl(var(--background))" }}>
@@ -222,7 +126,7 @@ const Index = () => {
       )}
 
       {/* Main */}
-      <main onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ flex: 1, overflowY: "auto", marginTop: topHeight, paddingBottom: "calc(6.5rem + env(safe-area-inset-bottom))", WebkitOverflowScrolling: "touch" }}>
+      <main className="min-h-0 flex-1 overflow-y-auto pb-6" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ marginTop: topHeight, WebkitOverflowScrolling: "touch" }}>
         <div>
           <div className={activeTab === "home" ? swipeAnim : "hidden"}>
             <Home onNavigate={(t) => {
@@ -244,25 +148,9 @@ const Index = () => {
       {/* Floating mini timer (visible sur tous les onglets sauf Utilitaire) */}
       {activeTab !== "utilitaire" && <FloatingTimer onOpen={() => goToTab("utilitaire")} />}
 
-      {/* Bottom Nav flottante — z-30 pour rester sous les overlays de dialogue (z-50) */}
-        <div
-          ref={bottomNavRef}
-          className={`bottom-nav-bar bg-card/80 border border-border/60 backdrop-blur-xl transition-opacity duration-200 ${keyboardOpen ? "opacity-0 pointer-events-none" : "opacity-100"}`}
-          style={{
-            position: "fixed",
-            bottom: "calc(env(safe-area-inset-bottom) + 18px)",
-            left: 16,
-            right: 16,
-            maxWidth: 430,
-            marginLeft: "auto",
-            marginRight: "auto",
-            zIndex: 30,
-            height: "3.75rem",
-            borderRadius: 28,
-            boxShadow: "0 12px 32px -8px hsl(0 0% 0% / 0.45), 0 2px 8px hsl(0 0% 0% / 0.25)",
-            WebkitBackdropFilter: "blur(20px)",
-          }}
-        >
+      {/* Normal flex child: its footprint stays reserved while the keyboard is open. */}
+      <nav aria-label="Navigation principale" className="bottom-nav-container z-30 transition-opacity duration-200">
+        <div className="bottom-nav-bar bg-card/80 border border-border/60 backdrop-blur-xl">
           {isTraining ? (
             <div className="flex justify-between items-center h-full px-3 animate-slide-from-right">
 
@@ -312,6 +200,7 @@ const Index = () => {
             </div>
           )}
         </div>
+      </nav>
     </div>
 
   );

@@ -24,6 +24,7 @@
     --input: 0 0% 20%;
     --ring: 0 0% 40%;
     --radius: 1rem;
+    --bottom-nav-shadow: 0 12px 32px -8px hsl(0 0% 0% / 0.45), 0 2px 8px hsl(0 0% 0% / 0.25);
   }
  
   .light {
@@ -56,10 +57,7 @@
   }
  
   html {
-    /* Hauteur fixe : le clavier virtuel se superpose sans redimensionner */
     height: 100%;
-    height: 100dvh;
-    height: var(--app-height, 100dvh);
     overflow: hidden;
     -webkit-text-size-adjust: 100%;
     -webkit-user-select: none;
@@ -77,8 +75,6 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
     font-size: 14px;
     height: 100%;
-    height: 100dvh;
-    height: var(--app-height, 100dvh);
     margin: 0;
     padding: 0;
     /* Neutralise les injections Radix UI (margin/padding inline) */
@@ -96,11 +92,47 @@
  
   #root {
     /* Le scroll se fait uniquement dans les conteneurs enfants */
+    position: fixed;
+    inset: 0;
     height: 100dvh;
-    height: var(--app-height, 100dvh);
     overflow: hidden;
     display: flex;
     flex-direction: column;
+  }
+
+  html.standalone,
+  html.standalone body {
+    overscroll-behavior: none;
+  }
+
+  @media (display-mode: standalone) {
+    html, body { overscroll-behavior: none; }
+  }
+
+  .bottom-nav-container {
+    flex-shrink: 0;
+    padding: 0 16px env(safe-area-inset-bottom, 0px);
+  }
+
+  .bottom-nav-bar {
+    height: 3.75rem;
+    max-width: 430px;
+    margin: 0 auto 18px;
+    border-radius: 28px;
+    box-shadow: var(--bottom-nav-shadow);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  html.kb-open .bottom-nav-container {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  html.kb-open input,
+  html.kb-open textarea,
+  html.kb-open [contenteditable="true"] {
+    font-size: max(16px, 1em);
   }
  
   button, [role="button"] {

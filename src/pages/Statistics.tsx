@@ -574,7 +574,7 @@ const Statistics = () => {
 
       {/* Dialog pour les performances détaillées */}
       <Dialog open={isPerformanceDialogOpen} onOpenChange={setIsPerformanceDialogOpen}>
-        <DialogContent className="bg-card w-screen h-screen max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden flex flex-col">
+        <DialogContent className="bg-card w-screen h-full max-w-none max-h-none m-0 rounded-none overflow-y-auto [&>button]:hidden flex flex-col">
           <DialogHeader className="pt-[calc(env(safe-area-inset-top)+8px)]">
             <div className="flex items-center gap-2">
               <Button

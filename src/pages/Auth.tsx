@@ -81,7 +81,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center bg-background p-6 overflow-hidden">
+    <div className="flex h-full items-center justify-center bg-background p-6 overflow-hidden">
       <Card className={`w-full max-w-md p-8 space-y-6 animate-fade-in ${!isLogin ? 'bg-white text-black' : ''}`}>
         <div className="space-y-2 text-center">
           <h1 className="text-2xl font-light tracking-widest">LIFTLOG</h1>
