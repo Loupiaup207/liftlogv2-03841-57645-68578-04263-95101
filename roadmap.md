@@ -1,4 +1,7 @@
 # Tasks
+- [ ] Remove viewport compensation and duplicate bottom navigation spacing.
+- [ ] Add a temporary live viewport/safe-area diagnostic badge without other interface changes.
+- [ ] Verify the badge and keyboard class on desktop/mobile; inspect authenticated nav if a session is available.
 - [x] Stabilize the iOS PWA frame and centralize keyboard handling.
 - [x] Move bottom navigation into normal flex flow and replace screen-height classes.
 - [x] Check Drawer/Sheet usage without modifying them; verify desktop/mobile frame and focus/blur on the public login page.
