@@ -16,10 +16,39 @@ import { initializeWebNotifications } from "./lib/notifications";
 
 import { queryClient } from "./lib/queryClient";
 import { TimerProvider } from "./contexts/TimerContext";
-import { useIOSViewportFix } from "./hooks/useIOSViewportFix";
+import { ViewportDebugBadge } from "./components/ViewportDebugBadge";
 
 const App = () => {
-  useIOSViewportFix();
+  useEffect(() => {
+    const root = document.documentElement;
+    let blurTimer: number | undefined;
+    const isEditable = (target: EventTarget | null) => {
+      if (!(target instanceof HTMLElement)) return false;
+      if (target.isContentEditable || target instanceof HTMLTextAreaElement) return true;
+      return target instanceof HTMLInputElement &&
+        !["button", "submit", "reset", "checkbox", "radio", "range", "color", "file", "hidden"].includes(target.type);
+    };
+    const onFocusIn = (event: FocusEvent) => {
+      if (!isEditable(event.target)) return;
+      window.clearTimeout(blurTimer);
+      root.classList.add("kb-open");
+    };
+    const onFocusOut = () => {
+      window.clearTimeout(blurTimer);
+      blurTimer = window.setTimeout(() => {
+        if (!isEditable(document.activeElement)) root.classList.remove("kb-open");
+      }, 100);
+    };
+    root.classList.toggle("kb-open", isEditable(document.activeElement));
+    document.addEventListener("focusin", onFocusIn);
+    document.addEventListener("focusout", onFocusOut);
+    return () => {
+      window.clearTimeout(blurTimer);
+      document.removeEventListener("focusin", onFocusIn);
+      document.removeEventListener("focusout", onFocusOut);
+      root.classList.remove("kb-open");
+    };
+  }, []);
 
   useEffect(() => {
     // Initialize web notifications on app load
@@ -30,6 +59,7 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
         <TooltipProvider>
+          <ViewportDebugBadge />
           <Toaster />
           <Sonner />
           <TimerProvider>
