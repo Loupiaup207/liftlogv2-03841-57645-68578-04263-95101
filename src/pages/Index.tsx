@@ -126,7 +126,7 @@ const Index = () => {
       )}
 
       {/* Main */}
-      <main className="min-h-0 flex-1 overflow-y-auto pb-6" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ marginTop: topHeight, WebkitOverflowScrolling: "touch" }}>
+      <main className="min-h-0 flex-1 overflow-y-auto" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ marginTop: topHeight, WebkitOverflowScrolling: "touch" }}>
         <div>
           <div className={activeTab === "home" ? swipeAnim : "hidden"}>
             <Home onNavigate={(t) => {
