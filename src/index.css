@@ -105,7 +105,7 @@
   .bottom-nav-container {
     flex-shrink: 0;
     padding-inline: 16px;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-bottom: min(env(safe-area-inset-bottom, 0px), 12px);
   }
 
   .bottom-nav-bar {
