@@ -160,11 +160,11 @@ const Index = () => {
                   <Button
                     key={tab}
                     variant="ghost"
-                    className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab === tab ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
+                    className={`flex flex-col items-center justify-center h-full px-2 py-0.5 transition-colors duration-200 ${activeTab === tab ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
                     onClick={() => { setTrainingTab(tab); goToTab(tab); }}
                   >
-                    <Icon className="h-5 w-5" />
-                    <span className="text-[10px] mt-0.5">{TRAINING_LABELS[tab]}</span>
+                    <Icon className="h-4 w-4" />
+                    <span className="text-[9px] leading-none mt-0">{TRAINING_LABELS[tab]}</span>
                   </Button>
                 );
               })}
@@ -173,29 +173,29 @@ const Index = () => {
             <div className="flex justify-between items-center h-full px-3">
               <Button
                 variant="ghost"
-                className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab === "home" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
+                className={`flex flex-col items-center justify-center h-full px-2 py-0.5 transition-colors duration-200 ${activeTab === "home" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
                 onClick={() => goToTab("home", "right")}
               >
-                <HomeIcon className="h-5 w-5" />
-                <span className="text-[10px] mt-0.5">Accueil</span>
+                <HomeIcon className="h-4 w-4" />
+                <span className="text-[9px] leading-none mt-0">Accueil</span>
               </Button>
 
               <Button
                 variant="ghost"
-                className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab === "utilitaire" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
+                className={`flex flex-col items-center justify-center h-full px-2 py-0.5 transition-colors duration-200 ${activeTab === "utilitaire" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
                 onClick={() => goToTab("utilitaire")}
               >
-                <Wrench className="h-5 w-5" />
-                <span className="text-[10px] mt-0.5">Utilitaire</span>
+                <Wrench className="h-4 w-4" />
+                <span className="text-[9px] leading-none mt-0">Utilitaire</span>
               </Button>
 
               <Button
                 variant="ghost"
-                className={`flex flex-col items-center justify-center h-full px-3 py-1 transition-colors duration-200 ${activeTab === "profile" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
+                className={`flex flex-col items-center justify-center h-full px-2 py-0.5 transition-colors duration-200 ${activeTab === "profile" ? "text-primary ring-2 ring-primary/40 rounded-lg" : "text-muted-foreground"}`}
                 onClick={() => goToTab("profile", "left")}
               >
-                <User className="h-5 w-5" />
-                <span className="text-[10px] mt-0.5">Profil</span>
+                <User className="h-4 w-4" />
+                <span className="text-[9px] leading-none mt-0">Profil</span>
               </Button>
             </div>
           )}

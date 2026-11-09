@@ -105,7 +105,7 @@
   .app-shell {
     display: grid;
     grid-template: minmax(0, 1fr) / minmax(0, 1fr);
-    --nav-height: 3.75rem;
+    --nav-height: 2.85rem;
     --nav-bottom-space: min(env(safe-area-inset-bottom, 0px), 12px);
   }
 
@@ -130,7 +130,7 @@
     pointer-events: auto;
     max-width: 430px;
     margin: 0 auto;
-    border-radius: 28px;
+    border-radius: 22px;
     box-shadow: var(--bottom-nav-shadow);
     -webkit-backdrop-filter: blur(20px);
   }
