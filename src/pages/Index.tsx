@@ -97,7 +97,7 @@ const Index = () => {
     : "calc(7rem + env(safe-area-inset-top))";
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background">
+    <div className="app-shell h-full min-h-0 overflow-hidden bg-background">
 
       {/* Header */}
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 40, height: "calc(3.5rem + env(safe-area-inset-top))", paddingTop: "env(safe-area-inset-top)", display: "flex", alignItems: "center", justifyContent: "center", background: "hsl(var(--background))" }}>
@@ -126,8 +126,8 @@ const Index = () => {
       )}
 
       {/* Main */}
-      <main className="min-h-0 flex-1 overflow-y-auto" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ marginTop: topHeight, WebkitOverflowScrolling: "touch" }}>
-        <div>
+      <main className="app-main min-h-0 overflow-y-auto" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ marginTop: topHeight, WebkitOverflowScrolling: "touch" }}>
+        <div className="app-scroll-content">
           <div className={activeTab === "home" ? swipeAnim : "hidden"}>
             <Home onNavigate={(t) => {
               if (t === "training") goToTab(trainingTab, "left");
@@ -148,7 +148,7 @@ const Index = () => {
       {/* Floating mini timer (visible sur tous les onglets sauf Utilitaire) */}
       {activeTab !== "utilitaire" && <FloatingTimer onOpen={() => goToTab("utilitaire")} />}
 
-      {/* Normal flex child: its footprint stays reserved while the keyboard is open. */}
+      {/* Shared grid cell overlays content without fixed viewport positioning. */}
       <nav aria-label="Navigation principale" className="bottom-nav-container z-30 transition-opacity duration-200">
         <div className="bottom-nav-bar bg-card/80 border border-border/60 backdrop-blur-xl">
           {isTraining ? (
