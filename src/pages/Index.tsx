@@ -29,7 +29,7 @@ const TRAINING_ICONS: Record<string, any> = {
   statistics: BarChart3,
   activity: History,
 };
-const SWIPE_TABS: Tab[] = ["home", "library", "nutrition"];
+const SWIPE_TABS: Tab[] = ["home", "library"];
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<Tab>("home");
@@ -108,7 +108,7 @@ const Index = () => {
       {!hideTopNav && (
           <div style={{ position: "fixed", top: "calc(3.5rem + env(safe-area-inset-top))", left: 0, right: 0, zIndex: 50, background: "hsl(var(--background))", padding: "0.4rem 0.5rem" }}>
           <div className="mx-auto flex max-w-[430px] gap-1">
-              {([["home", "Home"], ["library", "Training"], ["nutrition", "Nutrition"]] as [Tab, string][]).map(([tab, label]) => {
+              {([["home", "Home"], ["library", "Training"]] as [Tab, string][]).map(([tab, label]) => {
                 const active = tab === "library" ? isTraining : activeTab === tab;
                 return (
                 <Button key={tab} variant="minimal" className={`flex-1 h-10 rounded-lg min-w-0 px-1 ${active ? "bg-accent" : ""}`} onClick={() => {
